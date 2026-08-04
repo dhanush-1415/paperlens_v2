@@ -1,0 +1,222 @@
+/**
+ * Design tokens — the single source of truth for every visual value (requirement 23).
+ *
+ * Every colour, shadow, duration and layer in the product is declared here exactly once.
+ * Nothing else in the codebase may contain a hex code: components reference Tailwind
+ * utilities, Tailwind resolves them to the variables below, and a tenant re-skins the whole
+ * product by overriding a handful of these on `<html>` (see src/config/tenant.ts).
+ *
+ * ### Why CSS and not TypeScript
+ *
+ * These values are consumed at CSS build time by Tailwind and at paint time by the browser.
+ * A TypeScript object would have to be compiled into CSS by a codegen step, which means a
+ * generated artifact in the repo, a script to run, and a class of bug where the two disagree.
+ * Declaring them where they are consumed removes all of that. `src/shared/ui/tokens/`
+ * mirrors the *names* for type safety, and a unit test parses this file to prove the two
+ * never drift.
+ *
+ * ### Why dark is the base and light is the override
+ *
+ * The alternative — light base plus a dark block — requires writing every dark value twice:
+ * once for `[data-theme="dark"]` and once inside `@media (prefers-color-scheme: dark)` for
+ * users who have not chosen. CSS has no way to share one declaration block between two
+ * selectors, so one of the two themes must be the unconditional base. Dark wins because it
+ * is the product's default and hero look, which makes the duplicated-block problem
+ * disappear rather than move.
+ *
+ * The trade-off, stated plainly: a visitor with JavaScript disabled *and* a light OS
+ * preference sees the dark theme. Everyone with JavaScript gets their real preference,
+ * because the inline script in `shared/ui/theme/script.ts` resolves it before first paint.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ═══ Brand ═══════════════════════════════════════════════════════════════════════
+   * Theme-independent: the brand does not change between light and dark, only the
+   * surfaces behind it do. `-hover` is a real token rather than an opacity shift
+   * because a translucent brand colour over two different canvases is two different
+   * colours, and only one of them passes contrast.
+   */
+  --brand-primary: #5b8cff;
+  --brand-primary-hover: #3b6fe8;
+  --brand-secondary: #a78bfa;
+  --brand-tertiary: #22d3ee;
+
+  /* Used sparingly — hero accents, the lens rim, one key stat, the active nav indicator.
+   * Never as a section background. */
+  --brand-gradient: linear-gradient(135deg, #22d3ee 0%, #5b8cff 45%, #a78bfa 100%);
+
+  /* ═══ Surfaces ════════════════════════════════════════════════════════════════════
+   * An elevation ladder, not a palette. `canvas` is the page, `surface-1` is a panel on
+   * it, `surface-2` is a well inside that panel, `raised` is a card that floats above.
+   * Components pick by depth, never by lightness, which is what lets the light theme
+   * invert the lightness order without a single component changing.
+   */
+  --canvas: #08090b;
+  --surface-1: #0e1013;
+  --surface-2: #14171b;
+  --surface-raised: #191d22;
+  --surface-overlay: #191d22;
+
+  /* ═══ Borders ═════════════════════════════════════════════════════════════════════
+   * Hairlines do the heavy lifting in both themes. `strong` is for interactive edges
+   * (inputs, focused cards); `subtle` is for structural division.
+   */
+  --border-subtle: #1e2329;
+  --border-strong: #2b3138;
+
+  /* ═══ Text ════════════════════════════════════════════════════════════════════════
+   * Three levels only. A fourth always turns out to be a contrast failure wearing a
+   * token name. `on-brand` is the colour that sits on a filled brand button and is
+   * fixed across themes because the button's fill is fixed across themes.
+   */
+  --text-primary: #f5f7fa;
+  --text-secondary: #a0a8b4;
+  --text-tertiary: #6b7480;
+  --text-inverse: #0a0c0f;
+  --text-on-brand: #ffffff;
+
+  /* ═══ Risk palette — RESERVED ═════════════════════════════════════════════════════
+   * These four encode the risk of something in the user's actual document. They are
+   * never decorative. A "Critical" chip and a red button must not be the same red for
+   * the same reason a fire alarm is not a doorbell.
+   *
+   * Four slots per level, because one colour cannot do four jobs at AA:
+   *   base    the dot, the icon, the countdown ring — a solid mark on any surface
+   *   fg      text on `canvas` — darkened in light, lightened in dark
+   *   bg      the chip / callout fill
+   *   border  the chip / callout edge
+   */
+  --risk-critical: #f04438;
+  --risk-critical-fg: #fda29b;
+  --risk-critical-bg: #2b1513;
+  --risk-critical-border: #55211c;
+
+  --risk-caution: #f79009;
+  --risk-caution-fg: #fec84b;
+  --risk-caution-bg: #2b1d0a;
+  --risk-caution-border: #57340c;
+
+  --risk-safe: #12b76a;
+  --risk-safe-fg: #6ce9a6;
+  --risk-safe-bg: #0c2618;
+  --risk-safe-border: #12492c;
+
+  --risk-info: #5b8cff;
+  --risk-info-fg: #a3bfff;
+  --risk-info-bg: #131c33;
+  --risk-info-border: #22345e;
+
+  /* ═══ Depth ═══════════════════════════════════════════════════════════════════════
+   * Dark uses no drop shadows — a shadow on a near-black canvas is invisible, and
+   * faking it with a darker black reads as grime. Depth comes from a 1px border plus a
+   * 1px inset top highlight, so cards read as machined metal. Light inverts this: soft,
+   * wide, low-opacity shadows and no highlight.
+   *
+   * Both tokens exist in both themes, set to `none` where unused, so a component can
+   * apply both unconditionally and let the theme decide which one renders.
+   *
+   * Named `elevation-*` rather than `shadow-*` on purpose. Tailwind's shadow utilities live
+   * in the `--shadow-*` namespace, so a token called `--shadow-card` and the theme entry
+   * `--shadow-card: var(--shadow-card)` in globals.css would be the same custom property
+   * referring to itself — legal to write, guaranteed-invalid at computed-value time, and
+   * silent. The two layers keep separate names so that cannot happen here or in any token
+   * added later.
+   */
+  --elevation-card: none;
+  --elevation-inset-highlight: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+
+  --overlay-scrim: rgb(8 9 11 / 0.72);
+
+  /* ═══ Focus ═══════════════════════════════════════════════════════════════════════
+   * One ring for the entire product. Declared as a token rather than a utility so a
+   * tenant with a different brand colour gets a focus ring that matches it for free.
+   */
+  --focus-ring: var(--brand-primary);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* ═══ Motion ══════════════════════════════════════════════════════════════════════
+   * Named by intent, not by number, so "make the app feel snappier" is one edit here
+   * rather than a search for `240ms`.
+   *
+   * Mirrored in `shared/ui/tokens/motion.ts` for the animations that JavaScript drives
+   * (staggered reveals, the countdown). A unit test parses this file and asserts the two
+   * agree, so the mirror cannot rot.
+   */
+  --duration-micro: 150ms;
+  --duration-standard: 240ms;
+  --duration-entrance: 480ms;
+  --stagger-step: 60ms;
+
+  /* Precision machinery, never a toy: decelerating, no overshoot, no bounce. */
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ═══ Layout ══════════════════════════════════════════════════════════════════════ */
+  --measure: 68ch;
+
+  /* ═══ Layers ══════════════════════════════════════════════════════════════════════
+   * A stacking contract. Gaps of 100 leave room to slot something between two layers
+   * without renumbering, and every value being a named token is what prevents the
+   * `z-index: 99999` that eventually appears in every codebase without one.
+   *
+   * Mirrored in `shared/ui/tokens/layers.ts` for portals that set z-index in JS.
+   */
+  --z-base: 0;
+  --z-raised: 100;
+  --z-sticky: 200;
+  --z-drawer: 300;
+  --z-overlay: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-toast: 700;
+  --z-tooltip: 800;
+}
+
+/**
+ * Light theme — "paper" mode.
+ *
+ * Equal effort, not an afterthought. Only the values that actually change are listed:
+ * anything absent (brand, motion, layers, measure) is deliberately shared, and adding a
+ * duplicate here would create a second place to change it.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --canvas: #fcfcfd;
+  --surface-1: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-raised: #f1f3f6;
+  --surface-overlay: #ffffff;
+
+  --border-subtle: #e7eaef;
+  --border-strong: #d3d8e0;
+
+  --text-primary: #0a0c0f;
+  --text-secondary: #4a525e;
+  --text-tertiary: #79828f;
+  --text-inverse: #f5f7fa;
+
+  --risk-critical-fg: #b42318;
+  --risk-critical-bg: #fef3f2;
+  --risk-critical-border: #fecdca;
+
+  --risk-caution-fg: #b54708;
+  --risk-caution-bg: #fffaeb;
+  --risk-caution-border: #fedf89;
+
+  --risk-safe-fg: #027a48;
+  --risk-safe-bg: #ecfdf3;
+  --risk-safe-border: #a6f4c5;
+
+  --risk-info-fg: #2e5bd6;
+  --risk-info-bg: #eef3ff;
+  --risk-info-border: #c7d7fe;
+
+  --elevation-card:
+    0 1px 2px rgb(10 12 15 / 0.04), 0 8px 24px rgb(10 12 15 / 0.06);
+  --elevation-inset-highlight: none;
+
+  --overlay-scrim: rgb(10 12 15 / 0.48);
+}

@@ -1,0 +1,255 @@
+/**
+ * The stylesheet. There is exactly one, and this is it.
+ *
+ * Three sections, in dependency order:
+ *   1. `tokens.css` declares the raw values (and the light-theme overrides).
+ *   2. `@theme` maps those values into Tailwind's utility namespaces, which is what turns
+ *      `--surface-1` into `bg-surface-1` and `--risk-critical-fg` into `text-risk-critical-fg`.
+ *   3. `@layer base` sets the handful of element defaults that are genuinely global.
+ *
+ * No component styles live here. A rule in this file applies to the whole product forever;
+ * anything narrower belongs in the component that owns it, expressed as Tailwind utilities
+ * through a `cva` variant so it stays enumerable and type-checked.
+ */
+
+@import 'tailwindcss';
+@import './tokens.css';
+
+/**
+ * Static theme extensions.
+ *
+ * These are build-time constants — Tailwind needs their literal values to generate media
+ * queries and utility classes, so they cannot be `var()` references.
+ *
+ * Deliberately *not* overridden from Tailwind's defaults:
+ *   · The type scale. Tailwind's `text-xs`…`text-7xl` is 12/14/16/18/20/24/30/36/48/60/72,
+ *     which is the design system's scale exactly. Redefining it identically would create a
+ *     second source of truth for the same numbers. Only 13px is missing, added below.
+ *   · The spacing scale. Tailwind's `--spacing` base is already 0.25rem = the 4px unit.
+ *   · The breakpoints. `sm`/`md`/`lg`/`xl` are 640/768/1024/1280 and every developer
+ *     already knows them; renaming those boundaries to match a design mock buys nothing
+ *     and silently changes the meaning of `md:` in every file. 1920 is added as `3xl`.
+ */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  /* The one gap in Tailwind's scale. Used for chip labels and table meta. */
+  --text-2xs: 0.8125rem;
+  --text-2xs--line-height: 1.25rem;
+
+  /* Display type travels as three utilities — `font-display tracking-display
+   * leading-display` — rather than one composite class. A composite would bake letter
+   * spacing and line height into the font-family utility, where `tailwind-merge` cannot see
+   * them: `cn('font-display', 'tracking-normal')` would emit both and the composite would
+   * silently win. `Heading` applies all three so call sites rarely type them. */
+  --tracking-display: -0.02em;
+  --leading-display: 1.15;
+
+  /* Long-form prose. `leading-editorial` on a paragraph body, never on a UI label. */
+  --leading-editorial: 1.6;
+
+  /* Named by role, not by radius, so "make cards rounder" is one edit and not a search
+   * for every `rounded-xl` that happened to be a card. */
+  /* Small selection chrome — checkbox boxes, switch thumbs. A control radius on a 20px
+   * box is nearly a circle, which reads as a radio button and means the wrong thing. */
+  --radius-selection: 0.375rem;
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-panel: 1rem;
+  --radius-modal: 1.25rem;
+
+  --ease-brand: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* `max-w-content` for text and page bodies, `max-w-shell` for the nav and footer rails. */
+  --container-content: 75rem;
+  --container-shell: 90rem;
+
+  --breakpoint-3xl: 120rem;
+}
+
+/**
+ * Theme-reactive extensions.
+ *
+ * `inline` is load-bearing: it tells Tailwind to emit `var(--surface-1)` directly into each
+ * utility instead of copying the value at build time. Without it, `bg-canvas` would bake in
+ * whichever value `tokens.css` happened to declare first and the light theme would never
+ * apply — the class would be correct and the page would still be the wrong colour.
+ */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-on-brand: var(--text-on-brand);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-tertiary: var(--brand-tertiary);
+
+  --color-risk-critical: var(--risk-critical);
+  --color-risk-critical-fg: var(--risk-critical-fg);
+  --color-risk-critical-bg: var(--risk-critical-bg);
+  --color-risk-critical-border: var(--risk-critical-border);
+
+  --color-risk-caution: var(--risk-caution);
+  --color-risk-caution-fg: var(--risk-caution-fg);
+  --color-risk-caution-bg: var(--risk-caution-bg);
+  --color-risk-caution-border: var(--risk-caution-border);
+
+  --color-risk-safe: var(--risk-safe);
+  --color-risk-safe-fg: var(--risk-safe-fg);
+  --color-risk-safe-bg: var(--risk-safe-bg);
+  --color-risk-safe-border: var(--risk-safe-border);
+
+  --color-risk-info: var(--risk-info);
+  --color-risk-info-fg: var(--risk-info-fg);
+  --color-risk-info-bg: var(--risk-info-bg);
+  --color-risk-info-border: var(--risk-info-border);
+
+  --color-focus-ring: var(--focus-ring);
+
+  /* `shadow-card` and `inset-shadow-highlight` utilities. The token names differ from the
+   * utility names because Tailwind's shadow namespace *is* `--shadow-*`: pointing
+   * `--shadow-card` at `var(--shadow-card)` would be a self-reference. See tokens.css. */
+  --shadow-card: var(--elevation-card);
+  --inset-shadow-highlight: var(--elevation-inset-highlight);
+
+  /* `max-w-measure` — caps a paragraph at 68 characters. The value stays in tokens.css with
+   * the rest of the layout tokens; this only exposes it as a max-width utility. */
+  --container-measure: var(--measure);
+}
+
+@layer base {
+  /**
+   * The focus ring is defined once, on everything, and removed from nothing.
+   *
+   * `:focus-visible` rather than `:focus` so a mouse click on a button does not leave a
+   * ring behind, while keyboard and assistive-technology users always get one. No
+   * component is permitted to set `outline: none` without replacing it — the ring is a
+   * WCAG 2.2 requirement, not a style preference.
+   */
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  html {
+    /* Anchor links and `scrollIntoView` land below the sticky header rather than under it. */
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+
+    /**
+     * Reserve the scrollbar gutter permanently.
+     *
+     * Two bugs, one line. Navigating from a short page to a tall one adds a scrollbar and
+     * shifts the whole layout left by its width — a visible jump on every route change. And
+     * `Dialog` locks background scrolling with `overflow: hidden`, which removes the
+     * scrollbar and shifts the page *under* the open modal. The usual fix is to measure the
+     * scrollbar in JavaScript and add matching padding; reserving the gutter up front means
+     * neither case can happen and no component has to know about it.
+     */
+    scrollbar-gutter: stable;
+
+    /**
+     * Make `auto`, `min-content` and `fit-content` interpolable.
+     *
+     * Without this, `height: 0 → auto` is not a transition and every expand/collapse in the
+     * product needs JavaScript to measure `scrollHeight` — which is wrong the moment the
+     * content reflows, wrong before web fonts load, and the reason accordions clip. With it,
+     * `Accordion` animates `::details-content` in pure CSS.
+     *
+     * Set on `html` rather than `*` deliberately: it is inherited, so one declaration reaches
+     * everything, and a universal selector would make it non-overridable for the rare case
+     * that wants the old behaviour.
+     */
+    interpolate-size: allow-keywords;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /**
+   * Anything quoted *from* a user's document renders in mono. This is semantic, not
+   * decorative — it is how the interface distinguishes evidence from marketing copy, and
+   * it is why `<code>`, `<kbd>`, `<samp>` and `<pre>` all inherit it.
+   */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+    font-size: 0.9375em;
+  }
+
+  /* Placeholder text is tertiary in every input, in both themes, without each input
+   * having to say so. */
+  ::placeholder {
+    color: var(--text-tertiary);
+    opacity: 1;
+  }
+
+  /* Selection uses the brand at low alpha so quoted document text stays readable while
+   * highlighted — a solid brand fill makes mono excerpts unreadable mid-drag. */
+  ::selection {
+    background-color: color-mix(in srgb, var(--brand-primary) 28%, transparent);
+  }
+
+  /**
+   * Reduced motion is honoured globally, not component by component.
+   *
+   * Durations collapse to 0.01ms rather than 0 so that `transitionend` and `animationend`
+   * still fire — a state machine waiting on one of those would otherwise hang forever for
+   * exactly the users who asked for less motion.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/**
+ * The only two hand-written utilities in the product.
+ *
+ * Everything else is generated from the `@theme` blocks above, which is what keeps
+ * `tailwind-merge` able to reason about conflicts. These two are here because a gradient
+ * needs three declarations that no single Tailwind utility produces, and `@utility` is the
+ * v4-sanctioned way to add one — a plain `@layer utilities` rule would not participate in
+ * variant composition, so `hover:text-gradient-brand` would silently do nothing.
+ *
+ * The serif is for 40px-and-up display copy on marketing and editorial surfaces. Nothing is
+ * applied to `h1`–`h6` automatically: an `<h2>` in a settings panel is UI and stays sans,
+ * and a blanket rule would put the serif in every dashboard table header.
+ */
+@utility text-gradient-brand {
+  background-image: var(--brand-gradient);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-gradient-brand {
+  background-image: var(--brand-gradient);
+}
