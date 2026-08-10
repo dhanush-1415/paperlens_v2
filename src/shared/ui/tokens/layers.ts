@@ -8,13 +8,13 @@
  *
  * The order encodes real precedence rules, each of which has a reason:
  *
- *   sticky  < drawer   a drawer covers the sticky header, or the header floats over its own
- *                      backdrop and the drawer looks broken.
- *   overlay < modal    the scrim is *under* the thing it is dimming, by definition.
- *   modal   < popover  a select inside a modal must open above it, not clip inside it.
- *   popover < toast    a toast is an interruption and outranks anything transient.
- *   toast   < tooltip  the tooltip is always the topmost thing on screen; it is attached to
- *                      the pointer and never obscures a decision.
+ * sticky < drawer a drawer covers the sticky header, or the header floats over its own
+ * backdrop and the drawer looks broken.
+ * overlay < modal the scrim is *under* the thing it is dimming, by definition.
+ * modal < popover a select inside a modal must open above it, not clip inside it.
+ * popover < toast a toast is an interruption and outranks anything transient.
+ * toast < tooltip the tooltip is always the topmost thing on screen; it is attached to
+ * the pointer and never obscures a decision.
  *
  * Gaps of 100 leave room to slot a new layer between two existing ones without renumbering
  * everything below it. Mirrored as `--z-*` in `src/app/tokens.css`; the drift test proves
@@ -22,19 +22,19 @@
  */
 
 export const LAYERS = {
-  base: 0,
-  /** Cards and panels that lift on hover. */
-  raised: 100,
-  /** The app header and any sticky table header. */
-  sticky: 200,
-  drawer: 300,
-  /** The scrim behind a modal or drawer. */
-  overlay: 400,
-  modal: 500,
-  /** Selects, dropdowns, command palette results — anything anchored to a trigger. */
-  popover: 600,
-  toast: 700,
-  tooltip: 800,
+ base: 0,
+ /** Cards and panels that lift on hover. */
+ raised: 100,
+ /** The app header and any sticky table header. */
+ sticky: 200,
+ drawer: 300,
+ /** The scrim behind a modal or drawer. */
+ overlay: 400,
+ modal: 500,
+ /** Selects, dropdowns, command palette results — anything anchored to a trigger. */
+ popover: 600,
+ toast: 700,
+ tooltip: 800,
 } as const;
 
 export type LayerName = keyof typeof LAYERS;
@@ -46,5 +46,5 @@ export type LayerName = keyof typeof LAYERS;
  * or the `var(--z-modal)` custom property) so the value stays traceable to this file.
  */
 export function layer(name: LayerName): number {
-  return LAYERS[name];
+ return LAYERS[name];
 }

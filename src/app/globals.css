@@ -31,9 +31,9 @@
  *     and silently changes the meaning of `md:` in every file. 1920 is added as `3xl`.
  */
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-display: var(--font-geist-display), var(--font-sans);
 
   /* The one gap in Tailwind's scale. Used for chip labels and table meta. */
   --text-2xs: 0.8125rem;
@@ -95,6 +95,9 @@
 
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-solid: var(--brand-solid);
+  --color-brand-solid-hover: var(--brand-solid-hover);
+  --color-brand-ink: var(--brand-ink);
   --color-brand-secondary: var(--brand-secondary);
   --color-brand-tertiary: var(--brand-tertiary);
 
@@ -112,6 +115,28 @@
   --color-risk-safe-fg: var(--risk-safe-fg);
   --color-risk-safe-bg: var(--risk-safe-bg);
   --color-risk-safe-border: var(--risk-safe-border);
+  
+  --animate-scan: scan 3s ease-in-out infinite;
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    50% { transform: translateY(100%); }
+    100% { transform: translateY(-100%); }
+  }
+
+  --animate-scan-document: scan-document 4s ease-in-out infinite;
+  @keyframes scan-document {
+    0% { top: 0%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  --animate-dash: dash 2s linear infinite;
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
 
   --color-risk-info: var(--risk-info);
   --color-risk-info-fg: var(--risk-info-fg);
@@ -132,6 +157,11 @@
 }
 
 @layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-display);
+  }
+
   /**
    * The focus ring is defined once, on everything, and removed from nothing.
    *
@@ -149,6 +179,13 @@
     /* Anchor links and `scrollIntoView` land below the sticky header rather than under it. */
     scroll-padding-top: 6rem;
     -webkit-text-size-adjust: 100%;
+    
+    /* 120fps Smooth Scrolling for premium feel */
+    scroll-behavior: smooth;
+    
+    /* Hardware acceleration for scroll */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
 
     /**
      * Reserve the scrollbar gutter permanently.
@@ -184,6 +221,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Smooth transition for theme switching */
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  
+  /* Global smooth transitions for interactive elements */
+  a, button, input, select, textarea {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-duration: 300ms;
   }
 
   /**
@@ -197,6 +243,35 @@
   pre {
     font-family: var(--font-mono);
     font-size: 0.9375em;
+
+    /**
+     * Tabular figures wherever the mono face appears.
+     *
+     * Geist Mono is already fixed-advance, so this is not about alignment for `pre` — it is
+     * about the *other* numeric features coming along for free and staying consistent with
+     * `.tabular` below, so a deadline rendered in a `<code>` and the same deadline rendered
+     * in a `<time class="tabular">` are metrically identical.
+     */
+    font-variant-numeric: tabular-nums;
+  }
+
+  /**
+   * Numbers that change in place must not reflow.
+   *
+   * Geist Sans ships proportional figures by default, so a "3 days left" countdown ticking to
+   * "2 days left" shifts every glyph after it, and a column of dollar amounts in the pricing
+   * table fails to line up on the decimal. Both are the kind of small wrongness that reads as
+   * cheap without the viewer being able to say why.
+   *
+   * Applied to the elements that are numeric *by definition* rather than to a utility class,
+   * because the failure mode is someone forgetting the class on the one countdown that
+   * matters. `<time>` covers deadlines, `<data>` covers machine-readable values, and the
+   * `.tabular` escape hatch covers prices and counts sitting in a plain `<span>`.
+   */
+  time,
+  data,
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Placeholder text is tertiary in every input, in both themes, without each input

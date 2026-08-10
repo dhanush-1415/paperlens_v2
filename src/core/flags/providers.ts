@@ -22,10 +22,10 @@ import type { FlagContext, FlagProvider } from './types';
 
 /** Fixed values, decided at build time. For environment-specific defaults. */
 export function createStaticFlagProvider(values: Readonly<Record<string, FlagValue>>): FlagProvider {
-  return {
-    name: 'static',
-    evaluate: (key) => values[key],
-  };
+ return {
+ name: 'static',
+ evaluate: (key) => values[key],
+ };
 }
 
 /**
@@ -40,25 +40,25 @@ export function createStaticFlagProvider(values: Readonly<Record<string, FlagVal
  * defaults — that would turn a config outage into a product outage.
  */
 export interface RemoteFlagProviderOptions {
-  fetchSnapshot: (context: FlagContext) => Promise<Record<string, FlagValue>>;
-  onError?: (error: unknown) => void;
-  initial?: Record<string, FlagValue>;
+ fetchSnapshot: (context: FlagContext) => Promise<Record<string, FlagValue>>;
+ onError?: (error: unknown) => void;
+ initial?: Record<string, FlagValue>;
 }
 
 export function createRemoteFlagProvider(options: RemoteFlagProviderOptions): FlagProvider {
-  let snapshot: Record<string, FlagValue> = options.initial ?? {};
+ let snapshot: Record<string, FlagValue> = options.initial ?? {};
 
-  return {
-    name: 'remote',
-    evaluate: (key) => snapshot[key],
-    async refresh(context) {
-      try {
-        snapshot = await options.fetchSnapshot(context);
-      } catch (error) {
-        options.onError?.(error);
-      }
-    },
-  };
+ return {
+ name: 'remote',
+ evaluate: (key) => snapshot[key],
+ async refresh(context) {
+ try {
+ snapshot = await options.fetchSnapshot(context);
+ } catch (error) {
+ options.onError?.(error);
+ }
+ },
+ };
 }
 
 /**
@@ -70,53 +70,53 @@ export function createRemoteFlagProvider(options: RemoteFlagProviderOptions): Fl
  * self-service one either.
  */
 export function createOverrideFlagProvider(driver: StorageDriver): FlagProvider {
-  const entry = createStorageEntry<Record<string, FlagValue>>(
-    {
-      key: STORAGE_KEYS.flagOverrides,
-      version: 1,
-      fallback: {},
-    },
-    { driver },
-  );
+ const entry = createStorageEntry<Record<string, FlagValue>>(
+ {
+ key: STORAGE_KEYS.flagOverrides,
+ version: 1,
+ fallback: {},
+ },
+ { driver },
+ );
 
-  return {
-    name: 'override',
-    evaluate: (key) => (isProduction ? undefined : entry.get()[key]),
-  };
+ return {
+ name: 'override',
+ evaluate: (key) => (isProduction ? undefined : entry.get()[key]),
+ };
 }
 
 /** Answers nothing. Every flag falls through to its registry default. */
 export function createNoopFlagProvider(): FlagProvider {
-  return {
-    name: 'noop',
-    evaluate: () => undefined,
-  };
+ return {
+ name: 'noop',
+ evaluate: () => undefined,
+ };
 }
 
 /** Directly settable. The test double. */
 export interface MemoryFlagProvider extends FlagProvider {
-  set(key: string, value: FlagValue): void;
-  clear(): void;
-  refreshCount(): number;
+ set(key: string, value: FlagValue): void;
+ clear(): void;
+ refreshCount(): number;
 }
 
 export function createMemoryFlagProvider(
-  initial: Record<string, FlagValue> = {},
+ initial: Record<string, FlagValue> = {},
 ): MemoryFlagProvider {
-  const values = new Map(Object.entries(initial));
-  let refreshes = 0;
+ const values = new Map(Object.entries(initial));
+ let refreshes = 0;
 
-  return {
-    name: 'memory',
-    evaluate: (key) => values.get(key),
-    refresh: () => {
-      refreshes += 1;
-      return Promise.resolve();
-    },
-    set: (key, value) => {
-      values.set(key, value);
-    },
-    clear: () => values.clear(),
-    refreshCount: () => refreshes,
-  };
+ return {
+ name: 'memory',
+ evaluate: (key) => values.get(key),
+ refresh: () => {
+ refreshes += 1;
+ return Promise.resolve();
+ },
+ set: (key, value) => {
+ values.set(key, value);
+ },
+ clear: () => values.clear(),
+ refreshCount: () => refreshes,
+ };
 }

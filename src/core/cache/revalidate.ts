@@ -33,9 +33,9 @@ import type { CacheProfileName } from './profiles';
  * correct behaviour and the reason it is not silently caught here.
  */
 export function expire(tags: readonly string[]): void {
-  for (const tag of tags) {
-    updateTag(tag);
-  }
+ for (const tag of tags) {
+ updateTag(tag);
+ }
 }
 
 /**
@@ -49,9 +49,9 @@ export function expire(tags: readonly string[]): void {
  * Pass a `CacheProfileName` to override the staleness window for a specific invalidation.
  */
 export function markStale(tags: readonly string[], profile: CacheProfileName | 'max' = 'max'): void {
-  for (const tag of tags) {
-    revalidateTag(tag, profile);
-  }
+ for (const tag of tags) {
+ revalidateTag(tag, profile);
+ }
 }
 
 /**
@@ -61,5 +61,5 @@ export function markStale(tags: readonly string[], profile: CacheProfileName | '
  * after which *no* cached projection of this user is trustworthy.
  */
 export function expireUser(userId: string, extraTags: readonly string[] = []): void {
-  expire([CACHE_TAGS.user(userId), ...extraTags]);
+ expire([CACHE_TAGS.user(userId), ...extraTags]);
 }

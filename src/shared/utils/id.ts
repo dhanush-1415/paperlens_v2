@@ -12,7 +12,7 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 
 /** RFC 4122 v4 UUID. The canonical entity identifier. */
 export function uuid(): string {
-  return crypto.randomUUID();
+ return crypto.randomUUID();
 }
 
 /**
@@ -22,19 +22,19 @@ export function uuid(): string {
  * the first few characters, which quietly reduces the entropy a share link depends on.
  */
 export function randomToken(length = 22): string {
-  const bytes = new Uint8Array(length * 2);
-  crypto.getRandomValues(bytes);
+ const bytes = new Uint8Array(length * 2);
+ crypto.getRandomValues(bytes);
 
-  let output = '';
-  const limit = 256 - (256 % ALPHABET.length);
+ let output = '';
+ const limit = 256 - (256 % ALPHABET.length);
 
-  for (let index = 0; index < bytes.length && output.length < length; index += 1) {
-    const byte = bytes[index] as number;
-    if (byte < limit) output += ALPHABET[byte % ALPHABET.length];
-  }
+ for (let index = 0; index < bytes.length && output.length < length; index += 1) {
+ const byte = bytes[index] as number;
+ if (byte < limit) output += ALPHABET[byte % ALPHABET.length];
+ }
 
-  // Astronomically unlikely, but a short token is a security bug, not a cosmetic one.
-  return output.length === length ? output : output + randomToken(length - output.length);
+ // Astronomically unlikely, but a short token is a security bug, not a cosmetic one.
+ return output.length === length ? output : output + randomToken(length - output.length);
 }
 
 /**
@@ -44,7 +44,7 @@ export function randomToken(length = 22): string {
  * is distinguishable from one propagated in from an upstream caller.
  */
 export function correlationId(): string {
-  return `pl_${uuid()}`;
+ return `pl_${uuid()}`;
 }
 
 /**
@@ -55,11 +55,11 @@ export function correlationId(): string {
  * randomness would break reconciliation.
  */
 export function slugId(value: string, fallback = 'item'): string {
-  const slug = value
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 64);
-  return slug || fallback;
+ const slug = value
+ .toLowerCase()
+ .normalize('NFKD')
+ .replace(/[^a-z0-9]+/g, '-')
+ .replace(/^-+|-+$/g, '')
+ .slice(0, 64);
+ return slug || fallback;
 }

@@ -19,5 +19,5 @@ import { unstable_rethrow } from 'next/navigation';
  * occurrence to update when the API stabilizes.
  */
 export function rethrowIfFrameworkError(error: unknown): void {
-  unstable_rethrow(error);
+ unstable_rethrow(error);
 }

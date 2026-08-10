@@ -17,17 +17,17 @@ import { type AppError } from '@/core/errors/app-error';
 import { type Result } from '@/core/result/result';
 
 import {
-  type AnalysisDraft,
-  type DocumentAnalysis,
-  type DocumentAnalysisSummary,
-  type DocumentType,
-  type RiskFlag,
+ type AnalysisDraft,
+ type DocumentAnalysis,
+ type DocumentAnalysisSummary,
+ type DocumentType,
+ type RiskFlag,
 } from './document';
 
 /** What the analyzer is asked to look at. Text only — file parsing happens above it. */
 export interface AnalysisRequest {
-  readonly text: string;
-  readonly documentType: DocumentType;
+ readonly text: string;
+ readonly documentType: DocumentType;
 }
 
 /**
@@ -43,9 +43,9 @@ export interface AnalysisRequest {
  * one arrives. `Result` puts "the upstream was down" in the type rather than in a stack trace.
  */
 export interface DocumentAnalyzer {
-  /** Stable identifier for logs and analytics: `heuristic-v1`, `claude-opus-5`. */
-  readonly name: string;
-  analyze(request: AnalysisRequest): Promise<Result<readonly RiskFlag[], AppError>>;
+ /** Stable identifier for logs and analytics: `heuristic-v1`, `claude-opus-5`. */
+ readonly name: string;
+ analyze(request: AnalysisRequest): Promise<Result<readonly RiskFlag[], AppError>>;
 }
 
 /**
@@ -63,12 +63,12 @@ export interface DocumentAnalyzer {
  * and "I could not answer" visible at every call site.
  */
 export interface DocumentAnalysisRepository {
-  save(draft: AnalysisDraft): Promise<Result<DocumentAnalysis, AppError>>;
-  findById(id: string, ownerId: string): Promise<Result<DocumentAnalysis | null, AppError>>;
-  listRecent(
-    ownerId: string,
-    limit: number,
-  ): Promise<Result<readonly DocumentAnalysisSummary[], AppError>>;
-  /** Used by the ownership tests and by account deletion. Idempotent. */
-  remove(id: string, ownerId: string): Promise<Result<void, AppError>>;
+ save(draft: AnalysisDraft): Promise<Result<DocumentAnalysis, AppError>>;
+ findById(id: string, ownerId: string): Promise<Result<DocumentAnalysis | null, AppError>>;
+ listRecent(
+ ownerId: string,
+ limit: number,
+ ): Promise<Result<readonly DocumentAnalysisSummary[], AppError>>;
+ /** Used by the ownership tests and by account deletion. Idempotent. */
+ remove(id: string, ownerId: string): Promise<Result<void, AppError>>;
 }

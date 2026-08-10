@@ -38,39 +38,39 @@ import { type ClauseCategory, type DocumentType, type RiskLevel } from '../domai
 
 /** A stored row. Flat, primitive, and nothing a domain rule would recognise. */
 export interface AnalysisRecord {
-  readonly id: string;
-  readonly owner_id: string;
-  readonly title: string;
-  readonly document_type: DocumentType;
-  readonly char_count: number;
-  readonly score_value: number;
-  readonly score_level: RiskLevel;
-  readonly analyzed_at: string;
-  readonly flags: readonly FlagRecord[];
-  readonly deleted_at: string | null;
+ readonly id: string;
+ readonly owner_id: string;
+ readonly title: string;
+ readonly document_type: DocumentType;
+ readonly char_count: number;
+ readonly score_value: number;
+ readonly score_level: RiskLevel;
+ readonly analyzed_at: string;
+ readonly flags: readonly FlagRecord[];
+ readonly deleted_at: string | null;
 }
 
 export interface FlagRecord {
-  readonly id: string;
-  readonly category: ClauseCategory;
-  readonly level: RiskLevel;
-  readonly title: string;
-  readonly excerpt: string;
-  readonly explanation: string;
-  readonly recommendation: string | null;
-  readonly char_start: number;
-  readonly char_end: number;
+ readonly id: string;
+ readonly category: ClauseCategory;
+ readonly level: RiskLevel;
+ readonly title: string;
+ readonly excerpt: string;
+ readonly explanation: string;
+ readonly recommendation: string | null;
+ readonly char_start: number;
+ readonly char_end: number;
 }
 
 /**
  * Module-level state, and the honest caveats.
  *
  * · **Per process.** Two instances behind a load balancer are two different databases. On
- *   serverless, "process" means "whatever container answered this request".
+ * serverless, "process" means "whatever container answered this request".
  * · **Per dev reload.** Turbopack re-evaluating this module empties the store, so a document
- *   can vanish mid-session while editing. That is a property of the fake, not a bug above it.
+ * can vanish mid-session while editing. That is a property of the fake, not a bug above it.
  * · **Unbounded.** Nothing evicts. Fine for a demo, ruinous for anything else — one more
- *   reason this must not outlive the scaffold.
+ * reason this must not outlive the scaffold.
  *
  * `globalThis` is not used to survive reloads on purpose: a store that persists across code
  * changes hides schema mistakes until production, which is the opposite of what a fake is for.
@@ -78,12 +78,12 @@ export interface FlagRecord {
 const rows = new Map<string, AnalysisRecord>();
 
 export interface FakeAnalysisDataSource {
-  insert(record: AnalysisRecord): Promise<AnalysisRecord>;
-  selectById(id: string, ownerId: string): Promise<AnalysisRecord | null>;
-  selectRecent(ownerId: string, limit: number): Promise<readonly AnalysisRecord[]>;
-  softDelete(id: string, ownerId: string): Promise<void>;
-  /** Test seam. Not part of any port — the repository never calls it. */
-  clear(): void;
+ insert(record: AnalysisRecord): Promise<AnalysisRecord>;
+ selectById(id: string, ownerId: string): Promise<AnalysisRecord | null>;
+ selectRecent(ownerId: string, limit: number): Promise<readonly AnalysisRecord[]>;
+ softDelete(id: string, ownerId: string): Promise<void>;
+ /** Test seam. Not part of any port — the repository never calls it. */
+ clear(): void;
 }
 
 /**
@@ -112,88 +112,88 @@ export interface FakeAnalysisDataSource {
  * cost today is one serialisation of a small object.
  */
 async function selectById(id: string, ownerId: string): Promise<AnalysisRecord | null> {
-  'use cache';
+ 'use cache';
 
-  /**
-   * Tagged with both the document and the owner's vault. A single document's tag invalidates
-   * this read when it is re-analysed; the vault tag invalidates it when the user's whole
-   * collection changes — a bulk delete, an account downgrade — without needing to enumerate
-   * ids. `documentTags` builds both, which is why no call site writes a tag string by hand.
-   */
-  cacheTag(...documentTags(id, ownerId));
+ /**
+ * Tagged with both the document and the owner's vault. A single document's tag invalidates
+ * this read when it is re-analysed; the vault tag invalidates it when the user's whole
+ * collection changes — a bulk delete, an account downgrade — without needing to enumerate
+ * ids. `documentTags` builds both, which is why no call site writes a tag string by hand.
+ */
+ cacheTag(...documentTags(id, ownerId));
 
-  /**
-   * `session` — minutes, not hours. A document is immutable in practice once analysed, so a
-   * longer profile would be safe for the content; the short window is about *access*, since a
-   * revoked share or a deleted account should stop being readable promptly even if some tag
-   * is missed. Profiles are declared in `core/cache/profiles.ts` and registered in
-   * `next.config.ts`; passing a literal object here would be a fourth definition of "how long
-   * is a while".
-   */
-  cacheLife('session');
+ /**
+ * `session` — minutes, not hours. A document is immutable in practice once analysed, so a
+ * longer profile would be safe for the content; the short window is about *access*, since a
+ * revoked share or a deleted account should stop being readable promptly even if some tag
+ * is missed. Profiles are declared in `core/cache/profiles.ts` and registered in
+ * `next.config.ts`; passing a literal object here would be a fourth definition of "how long
+ * is a while".
+ */
+ cacheLife('session');
 
-  const found = rows.get(id);
-  if (!found) return null;
+ const found = rows.get(id);
+ if (!found) return null;
 
-  /**
-   * The ownership predicate lives in the query, not above it.
-   *
-   * This is the single most important line in the file to preserve when a real store replaces
-   * it: it must become a `WHERE owner_id = $2` (or a row-level-security policy), never a
-   * fetch-then-compare in application code. Fetch-then-compare is correct only for as long as
-   * nobody adds an early return above it.
-   */
-  if (found.owner_id !== ownerId || found.deleted_at !== null) return null;
+ /**
+ * The ownership predicate lives in the query, not above it.
+ *
+ * This is the single most important line in the file to preserve when a real store replaces
+ * it: it must become a `WHERE owner_id = $2` (or a row-level-security policy), never a
+ * fetch-then-compare in application code. Fetch-then-compare is correct only for as long as
+ * nobody adds an early return above it.
+ */
+ if (found.owner_id !== ownerId || found.deleted_at !== null) return null;
 
-  return found;
+ return found;
 }
 
 async function selectRecent(ownerId: string, limit: number): Promise<readonly AnalysisRecord[]> {
-  'use cache';
-  cacheTag(...vaultTags(ownerId));
-  cacheLife('session');
+ 'use cache';
+ cacheTag(...vaultTags(ownerId));
+ cacheLife('session');
 
-  return [...rows.values()]
-    .filter((row) => row.owner_id === ownerId && row.deleted_at === null)
-    .sort((a, b) => b.analyzed_at.localeCompare(a.analyzed_at))
-    .slice(0, limit);
+ return [...rows.values()]
+ .filter((row) => row.owner_id === ownerId && row.deleted_at === null)
+ .sort((a, b) => b.analyzed_at.localeCompare(a.analyzed_at))
+ .slice(0, limit);
 }
 
 export interface FakeAnalysisDataSourceOptions {
-  /**
-   * Injected for the same reason everything else in this codebase takes a clock: a soft
-   * delete writes a timestamp, and a test asserting "deleted at the right moment" cannot do
-   * so against the wall clock. A real store would take this from the database's own `now()`,
-   * which is the equivalent seam.
-   */
-  readonly now: () => Date;
+ /**
+ * Injected for the same reason everything else in this codebase takes a clock: a soft
+ * delete writes a timestamp, and a test asserting "deleted at the right moment" cannot do
+ * so against the wall clock. A real store would take this from the database's own `now()`,
+ * which is the equivalent seam.
+ */
+ readonly now: () => Date;
 }
 
 export function createFakeAnalysisDataSource(
-  options: FakeAnalysisDataSourceOptions,
+ options: FakeAnalysisDataSourceOptions,
 ): FakeAnalysisDataSource {
-  return {
-    async insert(record) {
-      rows.set(record.id, record);
-      return record;
-    },
+ return {
+ async insert(record) {
+ rows.set(record.id, record);
+ return record;
+ },
 
-    selectById,
-    selectRecent,
+ selectById,
+ selectRecent,
 
-    async softDelete(id, ownerId) {
-      const found = rows.get(id);
-      /**
-       * Idempotent, and silent on a miss. Deleting something that is already gone is not an
-       * error — the caller's intent ("this must not exist") is satisfied either way, and
-       * throwing would make retrying a failed request fail differently the second time.
-       */
-      if (!found || found.owner_id !== ownerId) return;
-      rows.set(id, { ...found, deleted_at: options.now().toISOString() });
-    },
+ async softDelete(id, ownerId) {
+ const found = rows.get(id);
+ /**
+ * Idempotent, and silent on a miss. Deleting something that is already gone is not an
+ * error — the caller's intent ("this must not exist") is satisfied either way, and
+ * throwing would make retrying a failed request fail differently the second time.
+ */
+ if (!found || found.owner_id !== ownerId) return;
+ rows.set(id, { ...found, deleted_at: options.now().toISOString() });
+ },
 
-    clear() {
-      rows.clear();
-    },
-  };
+ clear() {
+ rows.clear();
+ },
+ };
 }

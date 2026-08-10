@@ -14,14 +14,16 @@
 export { Slot, Slottable, type SlotProps } from './slot';
 
 export {
-  LAYOUT_ELEMENTS,
-  TEXT_ELEMENTS,
-  type LayoutElement,
-  type TextElement,
+ LAYOUT_ELEMENTS,
+ TEXT_ELEMENTS,
+ type LayoutElement,
+ type TextElement,
 } from './polymorphic';
 
 export {
-  useNativeDialog,
-  type NativeDialogHandles,
-  type UseNativeDialogOptions,
+ useNativeDialog,
+ type NativeDialogHandles,
+ type UseNativeDialogOptions,
 } from './use-native-dialog';
+
+export { useScrolledDown, useScrolledPast } from './use-scroll';

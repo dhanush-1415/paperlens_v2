@@ -7,30 +7,30 @@
  */
 
 export {
-  isSessionExpired,
-  toPublicSession,
-  type AuthProvider,
-  type Credentials,
-  type PublicSession,
-  type Session,
-  type SessionStore,
-  type SignUpInput,
-  type UserRole,
+ isSessionExpired,
+ toPublicSession,
+ type AuthProvider,
+ type Credentials,
+ type PublicSession,
+ type Session,
+ type SessionStore,
+ type SignUpInput,
+ type UserRole,
 } from './types';
 
 export {
-  PERMISSIONS,
-  checkPermission,
-  hasPermission,
-  permissionsOf,
-  planWouldAllow,
-  type Permission,
-  type PermissionCheck,
+ PERMISSIONS,
+ checkPermission,
+ hasPermission,
+ permissionsOf,
+ planWouldAllow,
+ type Permission,
+ type PermissionCheck,
 } from './policy';
 
 export {
-  DEMO_USERS,
-  createInMemoryAuthProvider,
-  type FakeUser,
-  type InMemoryAuthOptions,
+ DEMO_USERS,
+ createInMemoryAuthProvider,
+ type FakeUser,
+ type InMemoryAuthOptions,
 } from './in-memory-provider';

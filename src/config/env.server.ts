@@ -18,54 +18,54 @@ import { z } from 'zod';
  * first and read from `serverEnv` only.
  */
 const serverEnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+ NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  /** Absolute origin used for absolute URLs in server-rendered output and emails. */
-  APP_URL: z.url().default('http://localhost:3000'),
+ /** Absolute origin used for absolute URLs in server-rendered output and emails. */
+ APP_URL: z.url().default('http://localhost:3000'),
 
-  /**
-   * Signing key for anything this app issues itself (session cookie MAC, CSRF token).
-   * 32 bytes minimum: shorter keys make an HMAC forgeable in practice, not just in theory.
-   * Optional in development so a fresh clone runs with no setup; required in production by
-   * the refinement below.
-   */
-  APP_SECRET: z.string().min(32).optional(),
+ /**
+ * Signing key for anything this app issues itself (session cookie MAC, CSRF token).
+ * 32 bytes minimum: shorter keys make an HMAC forgeable in practice, not just in theory.
+ * Optional in development so a fresh clone runs with no setup; required in production by
+ * the refinement below.
+ */
+ APP_SECRET: z.string().min(32).optional(),
 
-  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
-  LOG_FORMAT: z.enum(['pretty', 'json']).optional(),
+ LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
+ LOG_FORMAT: z.enum(['pretty', 'json']).optional(),
 
-  /** Outbound HTTP defaults. Centralized so no call site invents its own timeout. */
-  HTTP_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(15_000),
-  HTTP_MAX_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
+ /** Outbound HTTP defaults. Centralized so no call site invents its own timeout. */
+ HTTP_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(15_000),
+ HTTP_MAX_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
 
-  /** Comma-separated origins the HTTP client is allowed to call. Empty = allow all. */
-  HTTP_ALLOWED_ORIGINS: z
-    .string()
-    .default('')
-    .transform((value) =>
-      value
-        .split(',')
-        .map((entry) => entry.trim())
-        .filter(Boolean),
-    ),
+ /** Comma-separated origins the HTTP client is allowed to call. Empty = allow all. */
+ HTTP_ALLOWED_ORIGINS: z
+ .string()
+ .default('')
+ .transform((value) =>
+ value
+ .split(',')
+ .map((entry) => entry.trim())
+ .filter(Boolean),
+ ),
 
-  /** White-label tenant this deployment serves. See `tenant.ts`. */
-  TENANT_ID: z.string().default('default'),
+ /** White-label tenant this deployment serves. See `tenant.ts`. */
+ TENANT_ID: z.string().default('default'),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
 const parsed = serverEnvSchema
-  .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.APP_SECRET), {
-    message: 'APP_SECRET is required in production',
-    path: ['APP_SECRET'],
-  })
-  .safeParse(process.env);
+ .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.APP_SECRET), {
+ message: 'APP_SECRET is required in production',
+ path: ['APP_SECRET'],
+ })
+ .safeParse(process.env);
 
 if (!parsed.success) {
-  throw new Error(
-    `Invalid server environment variables:\n${JSON.stringify(z.treeifyError(parsed.error), null, 2)}`,
-  );
+ throw new Error(
+ `Invalid server environment variables:\n${JSON.stringify(z.treeifyError(parsed.error), null, 2)}`,
+ );
 }
 
 export const serverEnv: ServerEnv = parsed.data;

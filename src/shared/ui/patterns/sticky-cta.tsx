@@ -1,0 +1,178 @@
+'use client';
+
+/**
+ * The scroll-triggered call to action.
+ *
+ * Appears once the reader has passed a threshold of the page, sits above the fold on mobile,
+ * and can be dismissed — after which it does not come back for the rest of the session.
+ *
+ * ### The ethics of this component, stated where it can be reviewed
+ *
+ * A sticky CTA is one edit away from being a nuisance, so the constraints are in the code
+ * rather than in a design doc nobody opens:
+ *
+ * · **It is earned, not immediate.** It appears at 60% by default, which means the reader has
+ * consumed most of the page. A bar that appears after four seconds is an interruption; one
+ * that appears after four screens is a convenience.
+ * · **Dismissal is permanent for the session.** Stored in *session* storage, not local: a
+ * dismissal is about this visit, and a user who returns next month has not opted out
+ * forever. Re-showing it on the next scroll — which is what a component with no memory
+ * does — is the behaviour that makes people install blockers.
+ * · **No fabricated urgency.** There is no countdown, no "3 people are viewing this", no
+ * "offer ends soon". The only deadline this product ever shows is the real one printed on
+ * the user's real document.
+ * · **The close button is a real 44px target with a real label.** Not a 12px grey ×.
+ *
+ * ### Why `sessionStorage` through the port rather than component state
+ *
+ * A `useState` dismissal resets on navigation, so the bar reappears on every page — which is
+ * indistinguishable, from the reader's side, from ignoring their dismissal. The port makes it
+ * survive navigation while still being scoped to the tab.
+ *
+ * ### Why the threshold is measured on every scroll rather than with an observer
+ *
+ * "60% of the page" has no element to observe — it is a fraction of a height that changes as
+ * images load and as the reader expands an accordion. Reading `scrollY` against
+ * `scrollHeight` at scroll time is the only measurement that stays correct. It is also two
+ * property reads on a passive listener, which is not a performance concern; the re-render is
+ * guarded by a boolean that flips once. `useScrolledPast` owns that listener and shares it
+ * with the header.
+ */
+
+import { useCallback, useState, useSyncExternalStore } from 'react';
+import Link from 'next/link';
+
+import type { Route } from 'next';
+
+import { SESSION_STORAGE_DRIVER } from '@/core/container';
+import { useService } from '@/core/container/context';
+import { cn } from '@/shared/ui/cn';
+
+import { Button } from '../components/button';
+import { CloseIcon } from '../icons';
+import { useScrolledPast } from '../primitives/use-scroll';
+
+/**
+ * A subscription that never fires.
+ *
+ * `sessionStorage` has no change event worth listening to here — this tab is the only writer,
+ * and this component is the only thing that writes this key. `useSyncExternalStore` is used
+ * not for the subscription but for the *snapshot*: it reads storage during render on the
+ * client and returns the server snapshot during SSR and hydration, which is precisely the
+ * "read a browser-only value without a hydration mismatch" problem. The write path re-renders
+ * through React state instead.
+ */
+const subscribeNever = () => () => {};
+
+export interface StickyCtaProps {
+ /** The offer. Short — this is read at a glance while scrolling. */
+ message: string;
+ ctaLabel: string;
+ ctaHref: Route;
+ dismissLabel: string;
+ /**
+ * Distinguishes one campaign's dismissal from another's, so replacing the message does not
+ * inherit the old one's dismissals. Part of the storage key.
+ */
+ campaignId: string;
+ /** Fraction of the page scrolled before it appears. `0.6` by default. */
+ threshold?: number;
+ className?: string;
+}
+
+export function StickyCta({
+ message,
+ ctaLabel,
+ ctaHref,
+ dismissLabel,
+ campaignId,
+ threshold = 0.6,
+ className,
+}: StickyCtaProps) {
+ const driver = useService(SESSION_STORAGE_DRIVER);
+ const storageKey = `pl:sticky-cta:${campaignId}`;
+
+ const isPastThreshold = useScrolledPast(threshold);
+
+ /**
+ * Dismissed until storage says otherwise — note the server snapshot is `true`.
+ *
+ * The inverse would render the bar for one frame on every page load before the read
+ * resolves: a flash of a component the user has already closed, which is the most annoying
+ * possible version of this control. Erring towards "hidden" costs nothing, because the bar
+ * is gated on a scroll threshold anyway and cannot be needed on the first frame.
+ */
+ const wasDismissed = useSyncExternalStore(
+ subscribeNever,
+ useCallback(() => driver.getItem(storageKey) === '1', [driver, storageKey]),
+ () => true,
+ );
+
+ /**
+ * The dismissal that happened in this render tree, tracked separately.
+ *
+ * Writing to `sessionStorage` does not notify `useSyncExternalStore` — there is no event to
+ * fire, and inventing one would mean a module-level emitter for a value only this component
+ * reads. React state is the honest way to say "the user just clicked close".
+ */
+ const [wasJustDismissed, setJustDismissed] = useState(false);
+
+ if (wasDismissed || wasJustDismissed || !isPastThreshold) return null;
+
+ return (
+ <div
+ role="region"
+ aria-label={message}
+ className={cn(
+ 'fixed inset-x-0 bottom-0 z-40 p-4',
+ 'pb-[max(1rem,env(safe-area-inset-bottom))]',
+ /**
+ * The entrance, in CSS, with no JavaScript and no animation library.
+ *
+ * `starting:` compiles to `@starting-style`, which gives the browser a "before" value
+ * to transition *from* on first render. The usual alternative is a `useState` flag
+ * flipped inside a `requestAnimationFrame` — an extra render, an extra effect, and a
+ * bug the first time someone reorders the hooks. Reduced motion is already handled
+ * globally in `globals.css`, which collapses every transition to 0.01ms.
+ */
+ 'transition-[opacity,translate] duration-(--duration-entrance) ease-brand',
+ 'starting:translate-y-4 starting:opacity-0',
+ className,
+ )}
+ >
+ <div
+ className={cn(
+ 'mx-auto flex max-w-content items-center gap-3 rounded-panel border border-border-subtle',
+ 'bg-surface-overlay/95 p-3 pl-5 shadow-card',
+ 'supports-[backdrop-filter]:bg-surface-overlay/80 supports-[backdrop-filter]:backdrop-blur-xl',
+ )}
+ >
+ {/* Hidden below `sm` — on a 390px screen the message and both controls do not fit,
+ and truncating the offer to keep the button is how a bar becomes noise. */}
+ <p className="hidden min-w-0 flex-1 truncate text-sm text-text-primary sm:block">
+ {message}
+ </p>
+
+ <Button asChild variant="primary" size="sm" className="flex-1 sm:flex-none">
+ <Link href={ctaHref}>{ctaLabel}</Link>
+ </Button>
+
+ <button
+ type="button"
+ onClick={() => {
+ driver.setItem(storageKey, '1');
+ setJustDismissed(true);
+ }}
+ aria-label={dismissLabel}
+ className={cn(
+ 'inline-flex size-11 shrink-0 items-center justify-center rounded-control',
+ 'text-text-tertiary transition-colors duration-(--duration-micro)',
+ 'hover:bg-surface-2 hover:text-text-primary',
+ )}
+ >
+ <CloseIcon className="size-4" />
+ </button>
+ </div>
+ </div>
+ );
+}

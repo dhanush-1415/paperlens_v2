@@ -5,13 +5,13 @@
  *
  * ```tsx
  * <html suppressHydrationWarning className={fontVariables}>
- *   <head>
- *     <ThemeScript nonce={nonce} />   {/* before paint: sets data-theme *\/}
- *     <TenantTokens tenant={tenant} />{/* after globals.css: overrides tokens *\/}
- *   </head>
- *   <body>
- *     <ThemeProvider driver={localStorageDriver}>{children}</ThemeProvider>
- *   </body>
+ * <head>
+ * <ThemeScript nonce={nonce} /> {/* before paint: sets data-theme *\/}
+ * <TenantTokens tenant={tenant} />{/* after globals.css: overrides tokens *\/}
+ * </head>
+ * <body>
+ * <ThemeProvider driver={localStorageDriver}>{children}</ThemeProvider>
+ * </body>
  * </html>
  * ```
  *
@@ -31,11 +31,11 @@ export { ThemeToggle, type ThemeToggleProps } from './theme-toggle';
 export { TenantTokens, type TenantTokensProps } from './tenant-tokens';
 
 export {
-  DEFAULT_THEME_PREFERENCE,
-  THEME_PREFERENCES,
-  isThemePreference,
-  type ResolvedTheme,
-  type ThemeController,
-  type ThemePreference,
-  type ThemeState,
+ DEFAULT_THEME_PREFERENCE,
+ THEME_PREFERENCES,
+ isThemePreference,
+ type ResolvedTheme,
+ type ThemeController,
+ type ThemePreference,
+ type ThemeState,
 } from './types';

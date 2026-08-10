@@ -45,48 +45,48 @@ import { cssVarName, TENANT_OVERRIDABLE_TOKENS, type TenantOverridableToken } fr
 const SAFE_CSS_VALUE = /^[a-z0-9\s,.()%#/*+-]+$/i;
 
 function isSafeValue(value: string): boolean {
-  if (value.length > 200) return false;
-  if (/url\s*\(/i.test(value)) return false;
-  return SAFE_CSS_VALUE.test(value);
+ if (value.length > 200) return false;
+ if (/url\s*\(/i.test(value)) return false;
+ return SAFE_CSS_VALUE.test(value);
 }
 
 function declarations(overrides: Readonly<Record<string, string>> | undefined): string {
-  if (!overrides) return '';
+ if (!overrides) return '';
 
-  return Object.entries(overrides)
-    .filter((entry): entry is [TenantOverridableToken, string] =>
-      (TENANT_OVERRIDABLE_TOKENS as readonly string[]).includes(entry[0]),
-    )
-    .filter(([, value]) => isSafeValue(value))
-    .map(([token, value]) => `${cssVarName(token)}:${value}`)
-    .join(';');
+ return Object.entries(overrides)
+ .filter((entry): entry is [TenantOverridableToken, string] =>
+ (TENANT_OVERRIDABLE_TOKENS as readonly string[]).includes(entry[0]),
+ )
+ .filter(([, value]) => isSafeValue(value))
+ .map(([token, value]) => `${cssVarName(token)}:${value}`)
+ .join(';');
 }
 
 export interface TenantTokensProps {
-  /** Resolved tenant. Pass `resolveTenant(serverEnv.TENANT_ID)` from the root layout. */
-  tenant?: TenantConfig;
+ /** Resolved tenant. Pass `resolveTenant(serverEnv.TENANT_ID)` from the root layout. */
+ tenant?: TenantConfig;
 }
 
 export function TenantTokens({ tenant = resolveTenant(undefined) }: TenantTokensProps) {
-  const dark = declarations(tenant.tokenOverrides.dark);
-  const light = declarations(tenant.tokenOverrides.light);
+ const dark = declarations(tenant.tokenOverrides.dark);
+ const light = declarations(tenant.tokenOverrides.light);
 
-  // The default tenant overrides nothing. Rendering an empty `<style>` on every page of
-  // every single-tenant deployment is bytes for no reason.
-  if (dark === '' && light === '') return null;
+ // The default tenant overrides nothing. Rendering an empty `<style>` on every page of
+ // every single-tenant deployment is bytes for no reason.
+ if (dark === '' && light === '') return null;
 
-  const css = [
-    dark === '' ? '' : `:root[data-tenant]{${dark}}`,
-    light === '' ? '' : `:root[data-tenant][data-theme="light"]{${light}}`,
-  ]
-    .filter(Boolean)
-    .join('');
+ const css = [
+ dark === '' ? '' : `:root[data-tenant]{${dark}}`,
+ light === '' ? '' : `:root[data-tenant][data-theme="light"]{${light}}`,
+ ]
+ .filter(Boolean)
+ .join('');
 
-  return (
-    <style
-      // Every name is allowlisted against the token contract and every value against
-      // `SAFE_CSS_VALUE` above; nothing here originates outside `config/tenant.ts`.
-      dangerouslySetInnerHTML={{ __html: css }}
-    />
-  );
+ return (
+ <style
+ // Every name is allowlisted against the token contract and every value against
+ // `SAFE_CSS_VALUE` above; nothing here originates outside `config/tenant.ts`.
+ dangerouslySetInnerHTML={{ __html: css }}
+ />
+ );
 }

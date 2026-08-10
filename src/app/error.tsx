@@ -8,100 +8,83 @@ import { ERROR_REPORTER } from '@/core/container';
 import { useOptionalContainer } from '@/core/container/context';
 import { isAppError, normalizeError } from '@/core/errors';
 import { ROUTES } from '@/shared/constants';
-import { Button, Container, ErrorState, Text } from '@/shared/ui';
 
-/**
- * The segment error boundary (requirements 4, 5).
- *
- * Catches anything thrown while rendering a page, a nested layout, `loading.tsx` or
- * `not-found.tsx` **below this segment**. It does not catch errors in the layout of its own
- * segment — that is what `global-error.tsx` is for — and it does not catch errors in event
- * handlers or in `setTimeout` callbacks, because React does not route those through error
- * boundaries at all. Those reach `instrumentation-client.ts` instead.
- *
- * ### `unstable_retry` and not `reset`
- *
- * `reset()` re-renders the boundary's children with the state it already has, which for a
- * Server Component means rendering the same failed payload again. `unstable_retry()` (Next
- * 16.2) asks the server for a fresh render, which is what a user pressing "Try again"
- * actually means. `reset` still exists for the narrow case of clearing client state without
- * re-fetching; this is not that case.
- *
- * ### Why the message is a key, not a string
- *
- * A caught error may have come from anywhere, including a database driver. Rendering
- * `error.message` would put upstream internals — table names, query fragments, occasionally
- * a connection string — on a user's screen. `AppError` carries a `messageKey` chosen by the
- * code that raised it, and the raw message is shown only when `devConfig` says we are in
- * development.
- */
 export default function SegmentError({
-  error,
-  unstable_retry,
+ error,
+ unstable_retry,
 }: {
-  error: Error & { digest?: string };
-  unstable_retry: () => void;
+ error: Error & { digest?: string };
+ unstable_retry: () => void;
 }) {
-  /**
-   * Reporting is opt-in on the container being present, not required.
-   *
-   * If the thing that failed *was* the composition root, a boundary that resolved from it
-   * would throw while handling an error — turning a recoverable page into `global-error`.
-   * Degrading to "no report" is strictly better than that: the server already reported this
-   * error through `onRequestError` if it originated there.
-   */
-  const container = useOptionalContainer();
+ const container = useOptionalContainer();
 
-  useEffect(() => {
-    container?.resolve(ERROR_REPORTER).report(error, {
-      boundary: 'segment',
-      digest: error.digest,
-      route: typeof window === 'undefined' ? undefined : window.location.pathname,
-    });
-  }, [container, error]);
+ useEffect(() => {
+ container?.resolve(ERROR_REPORTER).report(error, {
+ boundary: 'segment',
+ digest: error.digest,
+ route: typeof window === 'undefined' ? undefined : window.location.pathname,
+ });
+ }, [container, error]);
 
-  const appError = normalizeError(error);
+ const appError = normalizeError(error);
+ const correlationId = appError.correlationId ?? error.digest;
 
-  return (
-    <Container as="main" className="flex flex-1 flex-col justify-center py-24">
-      <ErrorState
-        title="Something went wrong on our end"
-        description={
-          appError.retryable
-            ? 'This looks temporary. Trying again will usually work.'
-            : 'We have been notified and are looking into it. Your documents are safe.'
-        }
-        /**
-         * The correlation ID is the entire point of showing an error page rather than a
-         * blank one: a user can quote it to support, and it resolves to the exact log line
-         * and the exact report. `digest` is React's own hash of the server-side error and is
-         * the fallback when the failure never reached our own error type.
-         */
-        correlationId={appError.correlationId ?? error.digest}
-        action={
-          <>
-            <Button onClick={unstable_retry}>Try again</Button>
-            <Button variant="secondary" asChild>
-              <Link href={ROUTES.home}>Go home</Link>
-            </Button>
-          </>
-        }
-      />
+ return (
+ <div className="relative min-h-[calc(100vh-8rem)] w-full flex items-center justify-center overflow-hidden bg-canvas py-12 md:py-24">
+ <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(var(--risk-critical-rgb),0.03),transparent_70%)] pointer-events-none" />
+ <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-risk-critical/10 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-      {/*
-       * The engineer-facing message, in development only. `devConfig.showTechnicalErrors`
-       * is a compile-time constant in a production build, so this branch and the string
-       * inside it are removed by dead-code elimination rather than merely hidden.
-       */}
-      {devConfig.showTechnicalErrors && (
-        <Text
-          size="sm"
-          tone="tertiary"
-          className="mx-auto mt-6 max-w-measure text-center font-mono"
-        >
-          {isAppError(error) ? `${error.code}: ${error.message}` : error.message}
-        </Text>
-      )}
-    </Container>
-  );
+ <main className="relative z-10 flex flex-col items-center w-[95%] md:w-[90%] lg:w-[80%] max-w-2xl mx-auto">
+ <div className="w-full rounded-3xl bg-surface-1/60 border border-border-strong/50 backdrop-blur-xl shadow-2xl overflow-hidden relative text-center flex flex-col items-center p-8 md:p-12 gap-8">
+ <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-risk-critical/40 to-transparent opacity-50" />
+ 
+ <div className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-risk-critical/20 to-risk-critical/5 text-risk-critical shadow-[0_0_20px_-5px_rgba(var(--risk-critical-rgb),0.2)] border border-risk-critical/30">
+ <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+ <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+ </svg>
+ </div>
+
+ <div className="flex flex-col gap-3">
+ <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-text-primary">
+ Something went wrong on our end
+ </h1>
+ <p className="text-base text-text-secondary leading-relaxed font-medium max-w-lg mx-auto">
+ {appError.retryable
+ ? 'This looks temporary. Trying again will usually work.'
+ : 'We have been notified and are looking into it. Your documents are safe.'}
+ </p>
+ </div>
+
+ {correlationId && (
+ <div className="px-4 py-2 rounded-xl bg-surface-raised border border-border-strong/50 text-xs text-text-tertiary">
+ Error ID: {correlationId}
+ </div>
+ )}
+
+ <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-2">
+ <button
+ onClick={unstable_retry}
+ className="inline-flex items-center justify-center rounded-xl bg-brand-primary px-6 py-3 text-sm font-bold text-canvas shadow-[0_0_20px_-5px_rgba(var(--brand-primary-rgb),0.5)] transition-all hover:bg-brand-primary-hover hover:scale-[1.02]"
+ >
+ Try again
+ </button>
+ <Link
+ href={ROUTES.home}
+ className="inline-flex items-center justify-center rounded-xl bg-surface-3 border border-border-strong px-6 py-3 text-sm font-bold text-text-primary transition-all hover:bg-surface-raised"
+ >
+ Go home
+ </Link>
+ </div>
+ </div>
+
+ {devConfig.showTechnicalErrors && (
+ <div className="mt-8 p-4 rounded-xl bg-risk-critical/5 border border-risk-critical/20 max-w-full overflow-auto">
+ <p className="text-xs text-risk-critical break-words">
+ {isAppError(error) ? `${error.code}: ${error.message}` : error.message}
+ </p>
+ </div>
+ )}
+ </main>
+ </div>
+ );
 }

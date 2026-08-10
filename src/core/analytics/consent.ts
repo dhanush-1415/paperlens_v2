@@ -18,43 +18,43 @@ import type { StorageDriver, StorageEntry } from '../storage/types';
 export const CONSENT_VERSION = 1;
 
 function isConsentValue(value: unknown): value is ConsentValue {
-  return value === 'granted' || value === 'denied' || value === 'unknown';
+ return value === 'granted' || value === 'denied' || value === 'unknown';
 }
 
 function isConsentState(value: unknown): value is ConsentState {
-  if (typeof value !== 'object' || value === null) return false;
-  const candidate = value as Record<string, unknown>;
-  return (
-    candidate.essential === true &&
-    isConsentValue(candidate.analytics) &&
-    isConsentValue(candidate.marketing) &&
-    (candidate.decidedAt === null || typeof candidate.decidedAt === 'number')
-  );
+ if (typeof value !== 'object' || value === null) return false;
+ const candidate = value as Record<string, unknown>;
+ return (
+ candidate.essential === true &&
+ isConsentValue(candidate.analytics) &&
+ isConsentValue(candidate.marketing) &&
+ (candidate.decidedAt === null || typeof candidate.decidedAt === 'number')
+ );
 }
 
 export function createConsentStore(driver: StorageDriver): StorageEntry<ConsentState> {
-  return createStorageEntry<ConsentState>(
-    {
-      key: STORAGE_KEYS.consent,
-      version: CONSENT_VERSION,
-      fallback: DEFAULT_CONSENT,
-      validate: isConsentState,
-    },
-    { driver },
-  );
+ return createStorageEntry<ConsentState>(
+ {
+ key: STORAGE_KEYS.consent,
+ version: CONSENT_VERSION,
+ fallback: DEFAULT_CONSENT,
+ validate: isConsentState,
+ },
+ { driver },
+ );
 }
 
 /** True when the banner should be shown. */
 export function needsConsentDecision(consent: ConsentState): boolean {
-  return consent.analytics === 'unknown' || consent.marketing === 'unknown';
+ return consent.analytics === 'unknown' || consent.marketing === 'unknown';
 }
 
 export function grantAll(now: number): ConsentState {
-  return { essential: true, analytics: 'granted', marketing: 'granted', decidedAt: now };
+ return { essential: true, analytics: 'granted', marketing: 'granted', decidedAt: now };
 }
 
 export function denyAll(now: number): ConsentState {
-  return { essential: true, analytics: 'denied', marketing: 'denied', decidedAt: now };
+ return { essential: true, analytics: 'denied', marketing: 'denied', decidedAt: now };
 }
 
 /**
@@ -65,13 +65,13 @@ export function denyAll(now: number): ConsentState {
  * just answered.
  */
 export function customConsent(
-  choices: { analytics?: boolean; marketing?: boolean },
-  now: number,
+ choices: { analytics?: boolean; marketing?: boolean },
+ now: number,
 ): ConsentState {
-  return {
-    essential: true,
-    analytics: choices.analytics ? 'granted' : 'denied',
-    marketing: choices.marketing ? 'granted' : 'denied',
-    decidedAt: now,
-  };
+ return {
+ essential: true,
+ analytics: choices.analytics ? 'granted' : 'denied',
+ marketing: choices.marketing ? 'granted' : 'denied',
+ decidedAt: now,
+ };
 }

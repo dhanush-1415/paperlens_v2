@@ -23,30 +23,30 @@ import { RiskFlagCard } from './risk-flag-card';
  */
 
 export interface AnalysisReportProps {
-  readonly analysis: AnalysisDto;
-  readonly labels: AnalysisReportLabels;
+ readonly analysis: AnalysisDto;
+ readonly labels: AnalysisReportLabels;
 }
 
 export interface AnalysisReportLabels {
-  readonly scoreLabel: string;
-  readonly criticalLabel: string;
-  readonly cautionLabel: string;
-  readonly findingsHeading: string;
-  readonly cleanTitle: string;
-  readonly cleanDescription: string;
-  /** `${n} characters` — a template, because the noun and its position are translatable. */
-  readonly charCount: (count: number) => string;
-  /**
-   * Takes the raw ISO timestamp and returns a formatted one.
-   *
-   * The formatting happens at the call site, where the locale is known, rather than here —
-   * `toLocaleString()` called inside a Server Component uses the *server's* locale and time
-   * zone, which is how a user in Berlin ends up being told their document was analysed at
-   * four in the morning.
-   */
-  readonly analyzedAt: (iso: string) => string;
-  /** The "this is not legal advice" line. Product copy, not a component's opinion. */
-  readonly disclaimer: string;
+ readonly scoreLabel: string;
+ readonly criticalLabel: string;
+ readonly cautionLabel: string;
+ readonly findingsHeading: string;
+ readonly cleanTitle: string;
+ readonly cleanDescription: string;
+ /** `${n} characters` — a template, because the noun and its position are translatable. */
+ readonly charCount: (count: number) => string;
+ /**
+ * Takes the raw ISO timestamp and returns a formatted one.
+ *
+ * The formatting happens at the call site, where the locale is known, rather than here —
+ * `toLocaleString()` called inside a Server Component uses the *server's* locale and time
+ * zone, which is how a user in Berlin ends up being told their document was analysed at
+ * four in the morning.
+ */
+ readonly analyzedAt: (iso: string) => string;
+ /** The "this is not legal advice" line. Product copy, not a component's opinion. */
+ readonly disclaimer: string;
 }
 
 /**
@@ -60,87 +60,87 @@ export interface AnalysisReportLabels {
  * compile error here instead of a wrong colour in production.
  */
 const SCORE_TONE = {
-  critical: 'critical',
-  caution: 'caution',
-  safe: 'safe',
+ critical: 'critical',
+ caution: 'caution',
+ safe: 'safe',
 } as const satisfies Record<AnalysisDto['score']['level'], string>;
 
 export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
-  return (
-    <div className="flex flex-col gap-8">
-      {/*
-       * `StatTile` is already a card, so these sit directly in the grid. Wrapping them in
-       * another `Card` would nest two surfaces and produce the double-border look that makes
-       * a dashboard feel assembled rather than designed.
-       */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile
-          label={labels.scoreLabel}
-          /*
-           * The headline number, toned. The tile takes the tone rather than deriving it from
-           * the value: the thresholds live in `domain/risk.ts`, and a component that
-           * re-derived "is 61 bad?" would be a second opinion on a question the domain has
-           * already answered — and the two would drift the first time the weighting changed.
-           */
-          value={String(analysis.score.value)}
-          tone={SCORE_TONE[analysis.score.level]}
-          description={`${DOCUMENT_TYPE_LABEL[analysis.documentType]} · ${labels.charCount(analysis.charCount)}`}
-        />
-        <StatTile
-          label={labels.criticalLabel}
-          value={String(analysis.score.criticalCount)}
-          /*
-           * Toned only when non-zero. A red "0" is a contradiction: the colour says danger and
-           * the number says none, and a user resolves that by learning to ignore the colour.
-           */
-          tone={analysis.score.criticalCount > 0 ? 'critical' : undefined}
-        />
-        <StatTile
-          label={labels.cautionLabel}
-          value={String(analysis.score.cautionCount)}
-          tone={analysis.score.cautionCount > 0 ? 'caution' : undefined}
-        />
-      </div>
+ return (
+ <div className="flex flex-col gap-8">
+ {/*
+ * `StatTile` is already a card, so these sit directly in the grid. Wrapping them in
+ * another `Card` would nest two surfaces and produce the double-border look that makes
+ * a dashboard feel assembled rather than designed.
+ */}
+ <div className="grid gap-4 sm:grid-cols-3">
+ <StatTile
+ label={labels.scoreLabel}
+ /*
+ * The headline number, toned. The tile takes the tone rather than deriving it from
+ * the value: the thresholds live in `domain/risk.ts`, and a component that
+ * re-derived "is 61 bad?" would be a second opinion on a question the domain has
+ * already answered — and the two would drift the first time the weighting changed.
+ */
+ value={String(analysis.score.value)}
+ tone={SCORE_TONE[analysis.score.level]}
+ description={`${DOCUMENT_TYPE_LABEL[analysis.documentType]} · ${labels.charCount(analysis.charCount)}`}
+ />
+ <StatTile
+ label={labels.criticalLabel}
+ value={String(analysis.score.criticalCount)}
+ /*
+ * Toned only when non-zero. A red "0" is a contradiction: the colour says danger and
+ * the number says none, and a user resolves that by learning to ignore the colour.
+ */
+ tone={analysis.score.criticalCount > 0 ? 'critical' : undefined}
+ />
+ <StatTile
+ label={labels.cautionLabel}
+ value={String(analysis.score.cautionCount)}
+ tone={analysis.score.cautionCount > 0 ? 'caution' : undefined}
+ />
+ </div>
 
-      <section className="flex flex-col gap-4">
-        <Heading level={2} size="md">
-          {labels.findingsHeading}
-        </Heading>
+ <section className="flex flex-col gap-4">
+ <Heading level={2} size="md">
+ {labels.findingsHeading}
+ </Heading>
 
-        {analysis.flags.length === 0 ? (
-          /*
-           * A clean document gets a real answer, not an absence. "We read it and found
-           * nothing" is a finding; an empty region reads as a failed analysis.
-           */
-          <EmptyState title={labels.cleanTitle} description={labels.cleanDescription} />
-        ) : (
-          <Accordion variant="separated">
-            {analysis.flags.map((flag) => (
-              <RiskFlagCard key={flag.id} documentId={analysis.id} flag={flag} />
-            ))}
-          </Accordion>
-        )}
-      </section>
+ {analysis.flags.length === 0 ? (
+ /*
+ * A clean document gets a real answer, not an absence. "We read it and found
+ * nothing" is a finding; an empty region reads as a failed analysis.
+ */
+ <EmptyState title={labels.cleanTitle} description={labels.cleanDescription} />
+ ) : (
+ <Accordion variant="separated">
+ {analysis.flags.map((flag) => (
+ <RiskFlagCard key={flag.id} documentId={analysis.id} flag={flag} />
+ ))}
+ </Accordion>
+ )}
+ </section>
 
-      <footer className="flex flex-col gap-2 border-t border-border-subtle pt-6">
-        {/*
-         * `<time dateTime>` carries the machine-readable instant alongside the human string,
-         * so the value survives copy-paste, feed readers and anything else that parses the
-         * page. The visible text is whatever the caller's locale formatter produced.
-         */}
-        <Text as="span" size="xs" tone="tertiary">
-          <time dateTime={analysis.analyzedAt}>{labels.analyzedAt(analysis.analyzedAt)}</time>
-        </Text>
+ <footer className="flex flex-col gap-2 border-t border-border-subtle pt-6">
+ {/*
+ * `<time dateTime>` carries the machine-readable instant alongside the human string,
+ * so the value survives copy-paste, feed readers and anything else that parses the
+ * page. The visible text is whatever the caller's locale formatter produced.
+ */}
+ <Text as="span" size="xs" tone="tertiary">
+ <time dateTime={analysis.analyzedAt}>{labels.analyzedAt(analysis.analyzedAt)}</time>
+ </Text>
 
-        {/*
-         * Not legal advice — small, permanent, and on the page rather than in a modal nobody
-         * reads. A product that tells people what their contract says has to be unambiguous
-         * about what it is not.
-         */}
-        <Text size="xs" tone="tertiary" measure>
-          {labels.disclaimer}
-        </Text>
-      </footer>
-    </div>
-  );
+ {/*
+ * Not legal advice — small, permanent, and on the page rather than in a modal nobody
+ * reads. A product that tells people what their contract says has to be unambiguous
+ * about what it is not.
+ */}
+ <Text size="xs" tone="tertiary" measure>
+ {labels.disclaimer}
+ </Text>
+ </footer>
+ </div>
+ );
 }

@@ -47,7 +47,9 @@ test.describe('authentication', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('signing out clears the session, and the protected route bounces again', async ({ page }) => {
+  test('signing out clears the session, and the protected route bounces again', async ({
+    page,
+  }) => {
     await signIn(page);
 
     await signOut(page);
@@ -147,7 +149,10 @@ test.describe('document analysis', () => {
       await signIn(otherUser, 'pro@paperlens.test');
       await otherUser.goto(url);
 
-      const notFoundHeading = otherUser.getByText("We couldn't find that page");
+      // Typographic apostrophe — the page sets `&rsquo;`, so a straight `'` never matches.
+      const notFoundHeading = otherUser.getByRole('heading', {
+        name: 'We couldn’t find that page',
+      });
       await expect(notFoundHeading).toBeVisible();
 
       // No trace of the owner's document: not the findings, not the score, not the source text.
@@ -176,9 +181,11 @@ test.describe('the proxy is not the authorization check', () => {
      * reachable without ever passing through a page. If this test ever went green by
      * *redirecting* instead, the proxy would have become load-bearing for security.
      */
-    await page.context().addCookies([
-      { name: 'pl_session', value: 'not-a-real-session', url: 'http://localhost:3000' },
-    ]);
+    await page
+      .context()
+      .addCookies([
+        { name: 'pl_session', value: 'not-a-real-session', url: 'http://localhost:3000' },
+      ]);
 
     await page.goto('/scan');
 

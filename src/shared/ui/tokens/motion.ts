@@ -12,12 +12,12 @@
  */
 
 export const DURATION = {
-  /** Hover, toggle, colour change. Fast enough to feel like a direct response. */
-  micro: 150,
-  /** Cards, popovers, drawers — anything that moves or changes size. */
-  standard: 240,
-  /** Entrance and scroll reveal. Long enough to be noticed, short enough to not be waited on. */
-  entrance: 480,
+ /** Hover, toggle, colour change. Fast enough to feel like a direct response. */
+ micro: 150,
+ /** Cards, popovers, drawers — anything that moves or changes size. */
+ standard: 240,
+ /** Entrance and scroll reveal. Long enough to be noticed, short enough to not be waited on. */
+ entrance: 480,
 } as const;
 
 export type DurationName = keyof typeof DURATION;
@@ -46,8 +46,8 @@ export const EASE_STANDARD = 'cubic-bezier(0.16, 1, 0.3, 1)';
  * everyone than the reverse.
  */
 export function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+ return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 /**
@@ -58,6 +58,6 @@ export function prefersReducedMotion(): boolean {
  * last item arrive 1.2 seconds after the first, which is a bug that looks like a design.
  */
 export function staggerDelay(index: number, step: number = STAGGER_STEP): number {
-  if (prefersReducedMotion()) return 0;
-  return Math.min(index, 8) * step;
+ if (prefersReducedMotion()) return 0;
+ return Math.min(index, 8) * step;
 }

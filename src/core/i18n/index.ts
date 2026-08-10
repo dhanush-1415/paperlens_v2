@@ -2,9 +2,9 @@
  * i18n — public API (requirement 29).
  *
  * ```ts
- * t('validation.email')                       // compile error if the key does not exist
+ * t('validation.email') // compile error if the key does not exist
  * t('errors.rateLimited', { seconds: 30 })
- * plural('quota.scansRemaining', remaining)   // correct form in every locale
+ * plural('quota.scansRemaining', remaining) // correct form in every locale
  * ```
  *
  * The translator is injected, never imported as a singleton: it is per-request on the server
@@ -19,16 +19,16 @@ export { createKeyTranslator, createTranslator, type TranslatorOptions } from '.
 export { en } from './dictionaries/en';
 
 export {
-  DEFAULT_LOCALE,
-  LOCALES,
-  SUPPORTED_LOCALES,
-  isSupportedLocale,
-  localeMeta,
-  negotiateLocale,
-  resolveLocale,
-  type Locale,
-  type LocaleMeta,
-  type LocaleResolutionInput,
+ DEFAULT_LOCALE,
+ LOCALES,
+ SUPPORTED_LOCALES,
+ isSupportedLocale,
+ localeMeta,
+ negotiateLocale,
+ resolveLocale,
+ type Locale,
+ type LocaleMeta,
+ type LocaleResolutionInput,
 } from './locales';
 
 export type { Dictionary, DictionaryLoader, MessageKey, MessageParams, Translator } from './types';

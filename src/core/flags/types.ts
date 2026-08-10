@@ -22,40 +22,40 @@ import type { FlagName, FlagValue, FlagValueOf } from './registry';
  * written against fields nobody intended to expose to a flag vendor.
  */
 export interface FlagContext {
-  readonly userId?: string;
-  readonly plan?: string;
-  readonly tenantId?: string;
-  readonly environment: string;
-  /** Stable per-device value for consistent bucketing of signed-out users. */
-  readonly anonymousId?: string;
+ readonly userId?: string;
+ readonly plan?: string;
+ readonly tenantId?: string;
+ readonly environment: string;
+ /** Stable per-device value for consistent bucketing of signed-out users. */
+ readonly anonymousId?: string;
 }
 
 export interface FlagProvider {
-  readonly name: string;
-  /**
-   * Resolve one flag by its wire key.
-   *
-   * Returns `undefined` to mean "no opinion", which lets providers be layered: an override
-   * provider answers for the two flags a developer is toggling and defers on the rest.
-   * Returning the default here instead would make every provider authoritative for every
-   * flag and break that composition.
-   */
-  evaluate(key: string, context: FlagContext): FlagValue | undefined;
-  /** Re-fetch the snapshot. Called at bootstrap and on an interval, never on a stream. */
-  refresh?(context: FlagContext): Promise<void>;
+ readonly name: string;
+ /**
+ * Resolve one flag by its wire key.
+ *
+ * Returns `undefined` to mean "no opinion", which lets providers be layered: an override
+ * provider answers for the two flags a developer is toggling and defers on the rest.
+ * Returning the default here instead would make every provider authoritative for every
+ * flag and break that composition.
+ */
+ evaluate(key: string, context: FlagContext): FlagValue | undefined;
+ /** Re-fetch the snapshot. Called at bootstrap and on an interval, never on a stream. */
+ refresh?(context: FlagContext): Promise<void>;
 }
 
 export interface Flags {
-  get<TName extends FlagName>(name: TName): FlagValueOf<TName>;
-  /** Typed so it can only be called with a boolean flag. */
-  isEnabled(name: BooleanFlagNameOf): boolean;
-  /** Every flag's current value. For the debug panel and for `feature_flag.evaluated`. */
-  snapshot(): Record<FlagName, FlagValue>;
-  /** Replace the evaluation context — after sign-in, or on a plan change. */
-  setContext(context: FlagContext): void;
-  refresh(): Promise<void>;
+ get<TName extends FlagName>(name: TName): FlagValueOf<TName>;
+ /** Typed so it can only be called with a boolean flag. */
+ isEnabled(name: BooleanFlagNameOf): boolean;
+ /** Every flag's current value. For the debug panel and for `feature_flag.evaluated`. */
+ snapshot(): Record<FlagName, FlagValue>;
+ /** Replace the evaluation context — after sign-in, or on a plan change. */
+ setContext(context: FlagContext): void;
+ refresh(): Promise<void>;
 }
 
 type BooleanFlagNameOf = {
-  [TName in FlagName]: FlagValueOf<TName> extends boolean ? TName : never;
+ [TName in FlagName]: FlagValueOf<TName> extends boolean ? TName : never;
 }[FlagName];

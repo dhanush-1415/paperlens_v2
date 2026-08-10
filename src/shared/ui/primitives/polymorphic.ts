@@ -6,15 +6,15 @@
  * and this is the third.
  *
  * 1. **Fully generic `as`** (`<Stack as="a" href="…">`, with props inferred from the tag).
- *    Correct, and the type machinery costs ~40 lines of conditional types per component,
- *    produces error messages that are genuinely hard to read, and slows the language server
- *    down measurably once a few hundred call sites reference it.
+ * Correct, and the type machinery costs ~40 lines of conditional types per component,
+ * produces error messages that are genuinely hard to read, and slows the language server
+ * down measurably once a few hundred call sites reference it.
  * 2. **`asChild` + `Slot`**, which the interactive components use. Right when the caller
- *    supplies a complete element that should *become* the component (a `Button` that is
- *    really a `Link`). Wrong here: a `Stack` exists to produce a wrapper, so making the
- *    caller hand one in inverts the whole point.
+ * supplies a complete element that should *become* the component (a `Button` that is
+ * really a `Link`). Wrong here: a `Stack` exists to produce a wrapper, so making the
+ * caller hand one in inverts the whole point.
  * 3. **A closed union of tags**, below. The component's props stay a single flat interface
- *    (`HTMLAttributes<HTMLElement>`), and the `as` prop only chooses semantics.
+ * (`HTMLAttributes<HTMLElement>`), and the `as` prop only chooses semantics.
  *
  * The trade-off is explicit: you cannot say `<Stack as="a" href="…">`, because `href` is not
  * in `HTMLAttributes`. That is the intended limit — a layout box that takes an `href` is a
@@ -30,8 +30,8 @@
  * `HTMLAttributes<HTMLUListElement>` do not intersect to anything a caller can satisfy. Each
  * consumer therefore widens it on the way in:
  *
- *     const Component: ElementType = as;
- *     return <Component className={…} {...props} />;
+ * const Component: ElementType = as;
+ * return <Component className={…} {...props} />;
  *
  * A widening *annotation*, not a cast and not a helper function. `as ElementType` would be a
  * cast where none is needed — the assignment is legal — and a `toElementType(as)` helper
@@ -42,37 +42,37 @@
 
 /** Tags a layout box may be. All block-level, all semantic, none with unique attributes. */
 export const LAYOUT_ELEMENTS = [
-  'div',
-  'section',
-  'article',
-  'aside',
-  'header',
-  'footer',
-  'main',
-  'nav',
-  'ul',
-  'ol',
-  'li',
-  'dl',
-  'figure',
+ 'div',
+ 'section',
+ 'article',
+ 'aside',
+ 'header',
+ 'footer',
+ 'main',
+ 'nav',
+ 'ul',
+ 'ol',
+ 'li',
+ 'dl',
+ 'figure',
 ] as const;
 
 export type LayoutElement = (typeof LAYOUT_ELEMENTS)[number];
 
 /** Tags a run of text may be. `strong`/`em` carry meaning; the rest are containers. */
 export const TEXT_ELEMENTS = [
-  'p',
-  'span',
-  'div',
-  'strong',
-  'em',
-  'li',
-  'dd',
-  'dt',
-  'figcaption',
-  'address',
-  'blockquote',
-  'legend',
+ 'p',
+ 'span',
+ 'div',
+ 'strong',
+ 'em',
+ 'li',
+ 'dd',
+ 'dt',
+ 'figcaption',
+ 'address',
+ 'blockquote',
+ 'legend',
 ] as const;
 
 export type TextElement = (typeof TEXT_ELEMENTS)[number];

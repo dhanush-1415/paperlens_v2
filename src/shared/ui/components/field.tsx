@@ -18,7 +18,7 @@
  *
  * ```tsx
  * <Field label="Work email" description="We never share it." error={state.errors?.email?.[0]} required>
- *   {(field) => <Input {...field} name="email" type="email" autoComplete="email" />}
+ * {(field) => <Input {...field} name="email" type="email" autoComplete="email" />}
  * </Field>
  * ```
  *
@@ -34,81 +34,81 @@ import { Label } from './label';
 
 /** Exactly what a control must spread onto itself. */
 export interface FieldControlProps {
-  id: string;
-  'aria-describedby': string | undefined;
-  'aria-invalid': true | undefined;
-  required: boolean | undefined;
+ id: string;
+ 'aria-describedby': string | undefined;
+ 'aria-invalid': true | undefined;
+ required: boolean | undefined;
 }
 
 export interface FieldProps {
-  /** Visible label text. Never omit it — a placeholder is not a label. */
-  label: ReactNode;
-  /** Static helper text. Shown whether or not there is an error. */
-  description?: ReactNode;
-  /**
-   * The error message, or `undefined` when valid.
-   *
-   * Typically `state.errors?.fieldName?.[0]` from a `useActionState` result — see
-   * `shared/validation`, which maps a zod `flatten()` into exactly that shape.
-   */
-  error?: string;
-  required?: boolean;
-  className?: string;
-  children: (field: FieldControlProps) => ReactNode;
+ /** Visible label text. Never omit it — a placeholder is not a label. */
+ label: ReactNode;
+ /** Static helper text. Shown whether or not there is an error. */
+ description?: ReactNode;
+ /**
+ * The error message, or `undefined` when valid.
+ *
+ * Typically `state.errors?.fieldName?.[0]` from a `useActionState` result — see
+ * `shared/validation`, which maps a zod `flatten()` into exactly that shape.
+ */
+ error?: string;
+ required?: boolean;
+ className?: string;
+ children: (field: FieldControlProps) => ReactNode;
 }
 
 export function Field({
-  label,
-  description,
-  error,
-  required = false,
-  className,
-  children,
+ label,
+ description,
+ error,
+ required = false,
+ className,
+ children,
 }: FieldProps) {
-  const id = useId();
-  const descriptionId = `${id}-description`;
-  const errorId = `${id}-error`;
+ const id = useId();
+ const descriptionId = `${id}-description`;
+ const errorId = `${id}-error`;
 
-  /**
-   * Both ids, in visual order, filtered for what is actually rendered.
-   *
-   * Order matters: assistive technology reads `aria-describedby` in the order given, so the
-   * description ("we never share it") is announced before the error ("invalid address"),
-   * which is the order they appear on screen.
-   */
-  const describedBy =
-    [description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(' ') ||
-    undefined;
+ /**
+ * Both ids, in visual order, filtered for what is actually rendered.
+ *
+ * Order matters: assistive technology reads `aria-describedby` in the order given, so the
+ * description ("we never share it") is announced before the error ("invalid address"),
+ * which is the order they appear on screen.
+ */
+ const describedBy =
+ [description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(' ') ||
+ undefined;
 
-  return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
-      <Label htmlFor={id} required={required}>
-        {label}
-      </Label>
+ return (
+ <div className={cn('flex flex-col gap-1.5', className)}>
+ <Label htmlFor={id} required={required}>
+ {label}
+ </Label>
 
-      {children({
-        id,
-        'aria-describedby': describedBy,
-        'aria-invalid': error ? true : undefined,
-        required: required || undefined,
-      })}
+ {children({
+ id,
+ 'aria-describedby': describedBy,
+ 'aria-invalid': error ? true : undefined,
+ required: required || undefined,
+ })}
 
-      {description ? (
-        <p id={descriptionId} className="text-2xs text-text-tertiary">
-          {description}
-        </p>
-      ) : null}
+ {description ? (
+ <p id={descriptionId} className="text-2xs text-text-tertiary">
+ {description}
+ </p>
+ ) : null}
 
-      {error ? (
-        /**
-         * `role="alert"` rather than `aria-live="polite"`: a validation failure is the direct
-         * result of the user's own submit, so interrupting is correct — waiting for a pause
-         * means they have already moved focus somewhere else by the time it is read.
-         */
-        <p id={errorId} role="alert" className="text-2xs font-medium text-risk-critical-fg">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
+ {error ? (
+ /**
+ * `role="alert"` rather than `aria-live="polite"`: a validation failure is the direct
+ * result of the user's own submit, so interrupting is correct — waiting for a pause
+ * means they have already moved focus somewhere else by the time it is read.
+ */
+ <p id={errorId} role="alert" className="text-2xs font-medium text-risk-critical-fg">
+ {error}
+ </p>
+ ) : null}
+ </div>
+ );
 }

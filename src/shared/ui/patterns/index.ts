@@ -15,6 +15,9 @@
  * this system would inherit contract clauses.
  */
 
+export { CookieConsent } from './cookie-consent';
+export type { CookieConsentLabels, CookieConsentProps } from './cookie-consent';
+
 export { DeadlineCountdown } from './deadline-countdown';
 export type { DeadlineCountdownProps } from './deadline-countdown';
 
@@ -36,8 +39,17 @@ export type { PageHeaderProps } from './page-header';
 export { compareRisk, RISK_LABEL, RISK_ORDER, RiskBadge, RiskDot } from './risk-badge';
 export type { RiskBadgeProps, RiskDotProps } from './risk-badge';
 
+export { SiteFooter } from './site-footer';
+export type { FooterGroup, FooterLink, SiteFooterProps } from './site-footer';
+
+export { SiteHeader } from './site-header';
+export type { SiteHeaderLabels, SiteHeaderProps, SiteNavItem } from './site-header';
+
 export { StatTile } from './stat-tile';
 export type { DeltaDirection, DeltaIntent, StatDelta, StatTileProps } from './stat-tile';
 
 export { StatusBlock } from './status-block';
 export type { StatusBlockProps } from './status-block';
+
+export { StickyCta } from './sticky-cta';
+export type { StickyCtaProps } from './sticky-cta';

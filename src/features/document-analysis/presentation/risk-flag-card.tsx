@@ -47,67 +47,67 @@ import { CLAUSE_CATEGORY_LABEL } from '../constants';
  */
 
 export interface RiskFlagCardProps {
-  readonly documentId: string;
-  readonly flag: RiskFlagDto;
+ readonly documentId: string;
+ readonly flag: RiskFlagDto;
 }
 
 export function RiskFlagCard({ documentId, flag }: RiskFlagCardProps) {
-  const analytics = useService(ANALYTICS);
+ const analytics = useService(ANALYTICS);
 
-  return (
-    <AccordionItem
-      variant="separated"
-      /*
-       * No `group`. `AccordionItem`'s group prop maps onto the native `name` attribute, which
-       * makes the items *mutually exclusive* — opening one closes the rest. That is right for
-       * an FAQ and wrong here: comparing two clauses is the main thing a user does with this
-       * list, and it would also mean only the last of several critical findings could honour
-       * `defaultOpen`. Independent disclosure is the correct behaviour, and it is the default.
-       */
-      /*
-       * Critical findings start open. A user who scrolls past a collapsed row has not been
-       * warned — and "we told you, it was behind the chevron" is not a defence when the
-       * clause costs them a deposit.
-       */
-      defaultOpen={flag.level === 'critical'}
-      onToggle={(event) => {
-        if (!event.currentTarget.open) return;
-        analytics.track('risk_flag.expanded', { documentId, severity: flag.level });
-      }}
-      title={
-        <span className="flex min-w-0 flex-1 items-center gap-3">
-          <RiskBadge level={flag.level} size="sm" />
-          <span className="min-w-0 flex-1">
-            <Text as="span" size="sm" weight="medium" tone="primary" truncate>
-              {flag.title}
-            </Text>
-          </span>
-          <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
-            {CLAUSE_CATEGORY_LABEL[flag.category]}
-          </Text>
-        </span>
-      }
-    >
-      <div className="flex flex-col gap-4 pt-1">
-        {/*
-         * The user's own words, quoted, before our interpretation of them. Order matters: a
-         * verdict shown above its evidence asks to be taken on trust, and this product's whole
-         * proposition is that it does not have to be.
-         */}
-        <DocumentExcerpt level={flag.level} clamp="long">
-          {flag.excerpt}
-        </DocumentExcerpt>
+ return (
+ <AccordionItem
+ variant="separated"
+ /*
+ * No `group`. `AccordionItem`'s group prop maps onto the native `name` attribute, which
+ * makes the items *mutually exclusive* — opening one closes the rest. That is right for
+ * an FAQ and wrong here: comparing two clauses is the main thing a user does with this
+ * list, and it would also mean only the last of several critical findings could honour
+ * `defaultOpen`. Independent disclosure is the correct behaviour, and it is the default.
+ */
+ /*
+ * Critical findings start open. A user who scrolls past a collapsed row has not been
+ * warned — and "we told you, it was behind the chevron" is not a defence when the
+ * clause costs them a deposit.
+ */
+ defaultOpen={flag.level === 'critical'}
+ onToggle={(event) => {
+ if (!event.currentTarget.open) return;
+ analytics.track('risk_flag.expanded', { documentId, severity: flag.level });
+ }}
+ title={
+ <span className="flex min-w-0 flex-1 items-center gap-3">
+ <RiskBadge level={flag.level} size="sm" />
+ <span className="min-w-0 flex-1">
+ <Text as="span" size="sm" weight="medium" tone="primary" truncate>
+ {flag.title}
+ </Text>
+ </span>
+ <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
+ {CLAUSE_CATEGORY_LABEL[flag.category]}
+ </Text>
+ </span>
+ }
+ >
+ <div className="flex flex-col gap-4 pt-1">
+ {/*
+ * The user's own words, quoted, before our interpretation of them. Order matters: a
+ * verdict shown above its evidence asks to be taken on trust, and this product's whole
+ * proposition is that it does not have to be.
+ */}
+ <DocumentExcerpt level={flag.level} clamp="long">
+ {flag.excerpt}
+ </DocumentExcerpt>
 
-        <Text size="sm" tone="secondary" editorial measure>
-          {flag.explanation}
-        </Text>
+ <Text size="sm" tone="secondary" editorial measure>
+ {flag.explanation}
+ </Text>
 
-        {flag.recommendation ? (
-          <Text size="sm" tone="primary" weight="medium" measure>
-            {flag.recommendation}
-          </Text>
-        ) : null}
-      </div>
-    </AccordionItem>
-  );
+ {flag.recommendation ? (
+ <Text size="sm" tone="primary" weight="medium" measure>
+ {flag.recommendation}
+ </Text>
+ ) : null}
+ </div>
+ </AccordionItem>
+ );
 }

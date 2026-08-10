@@ -31,156 +31,156 @@ import { Toaster } from './toaster';
  * through `useSyncExternalStore` and no wrapper exists or is needed.
  */
 function push(announce: () => string | void): void {
-  act(() => {
-    announce();
-  });
+ act(() => {
+ announce();
+ });
 }
 
 beforeEach(() => {
-  useToastStore.getState().clear();
+ useToastStore.getState().clear();
 });
 
 afterEach(() => {
-  useToastStore.getState().clear();
+ useToastStore.getState().clear();
 });
 
 describe('the live region', () => {
-  it('is in the DOM before the first toast exists', () => {
-    // Insert the region and the content in the same tick and the announcement is lost. This
-    // is the whole reason the list renders unconditionally.
-    render(<Toaster />);
+ it('is in the DOM before the first toast exists', () => {
+ // Insert the region and the content in the same tick and the announcement is lost. This
+ // is the whole reason the list renders unconditionally.
+ render(<Toaster />);
 
-    expect(screen.getByRole('list', { name: 'Notifications' })).toBeInTheDocument();
-  });
+ expect(screen.getByRole('list', { name: 'Notifications' })).toBeInTheDocument();
+ });
 
-  it('announces politely, never assertively', () => {
-    render(<Toaster />);
-    const list = screen.getByRole('list', { name: 'Notifications' });
+ it('announces politely, never assertively', () => {
+ render(<Toaster />);
+ const list = screen.getByRole('list', { name: 'Notifications' });
 
-    expect(list).toHaveAttribute('aria-live', 'polite');
-    expect(list).not.toHaveAttribute('role', 'alert');
-  });
+ expect(list).toHaveAttribute('aria-live', 'polite');
+ expect(list).not.toHaveAttribute('role', 'alert');
+ });
 
-  it('announces only what changed', () => {
-    // With `aria-atomic="true"`, adding a second toast re-reads the first one as well.
-    render(<Toaster />);
+ it('announces only what changed', () => {
+ // With `aria-atomic="true"`, adding a second toast re-reads the first one as well.
+ render(<Toaster />);
 
-    expect(screen.getByRole('list', { name: 'Notifications' })).toHaveAttribute(
-      'aria-atomic',
-      'false',
-    );
-  });
+ expect(screen.getByRole('list', { name: 'Notifications' })).toHaveAttribute(
+ 'aria-atomic',
+ 'false',
+ );
+ });
 
-  it('keeps a critical toast on screen indefinitely, which is what makes polite safe', () => {
-    render(<Toaster />);
-    push(() => toast.error('Analysis failed'));
+ it('keeps a critical toast on screen indefinitely, which is what makes polite safe', () => {
+ render(<Toaster />);
+ push(() => toast.error('Analysis failed'));
 
-    expect(useToastStore.getState().toasts[0]?.duration).toBeNull();
-  });
+ expect(useToastStore.getState().toasts[0]?.duration).toBeNull();
+ });
 });
 
 describe('rendering', () => {
-  it('renders each toast as a list item, so the count is announced', () => {
-    render(<Toaster />);
+ it('renders each toast as a list item, so the count is announced', () => {
+ render(<Toaster />);
 
-    push(() => toast.success('Saved'));
-    push(() => toast.info('Synced'));
+ push(() => toast.success('Saved'));
+ push(() => toast.info('Synced'));
 
-    expect(screen.getAllByRole('listitem')).toHaveLength(2);
-  });
+ expect(screen.getAllByRole('listitem')).toHaveLength(2);
+ });
 
-  it('shows the title and the description', () => {
-    render(<Toaster />);
+ it('shows the title and the description', () => {
+ render(<Toaster />);
 
-    push(() => toast.error('Upload failed', { description: 'The file could not be read.' }));
+ push(() => toast.error('Upload failed', { description: 'The file could not be read.' }));
 
-    expect(screen.getByText('Upload failed')).toBeInTheDocument();
-    expect(screen.getByText('The file could not be read.')).toBeInTheDocument();
-  });
+ expect(screen.getByText('Upload failed')).toBeInTheDocument();
+ expect(screen.getByText('The file could not be read.')).toBeInTheDocument();
+ });
 
-  it('renders no description element when there is none', () => {
-    render(<Toaster />);
-    push(() => toast.success('Saved'));
+ it('renders no description element when there is none', () => {
+ render(<Toaster />);
+ push(() => toast.success('Saved'));
 
-    expect(screen.getByRole('listitem').querySelectorAll('p')).toHaveLength(1);
-  });
+ expect(screen.getByRole('listitem').querySelectorAll('p')).toHaveLength(1);
+ });
 
-  it('drops a toast from the DOM as soon as it leaves the store', () => {
-    // There is deliberately no exit animation: keeping the element mounted for the length of
-    // its own transition means a duration in JS that has to agree with one in CSS.
-    render(<Toaster />);
-    let id = '';
-    push(() => {
-      id = toast.success('Saved');
-    });
+ it('drops a toast from the DOM as soon as it leaves the store', () => {
+ // There is deliberately no exit animation: keeping the element mounted for the length of
+ // its own transition means a duration in JS that has to agree with one in CSS.
+ render(<Toaster />);
+ let id = '';
+ push(() => {
+ id = toast.success('Saved');
+ });
 
-    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+ expect(screen.getAllByRole('listitem')).toHaveLength(1);
 
-    act(() => {
-      useToastStore.getState().dismiss(id);
-    });
+ act(() => {
+ useToastStore.getState().dismiss(id);
+ });
 
-    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
-  });
+ expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+ });
 });
 
 describe('interaction', () => {
-  it('dismisses through the close button', async () => {
-    render(<Toaster />);
-    push(() => toast.success('Saved'));
+ it('dismisses through the close button', async () => {
+ render(<Toaster />);
+ push(() => toast.success('Saved'));
 
-    await userEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
+ await userEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
 
-    expect(useToastStore.getState().toasts).toHaveLength(0);
-  });
+ expect(useToastStore.getState().toasts).toHaveLength(0);
+ });
 
-  it('runs the action and then dismisses', async () => {
-    // Leaving the toast up after the user has responded turns a notification into a stale
-    // control they can click a second time.
-    const onClick = vi.fn();
-    render(<Toaster />);
-    push(() => toast.error('Upload failed', { action: { label: 'Retry', onClick } }));
+ it('runs the action and then dismisses', async () => {
+ // Leaving the toast up after the user has responded turns a notification into a stale
+ // control they can click a second time.
+ const onClick = vi.fn();
+ render(<Toaster />);
+ push(() => toast.error('Upload failed', { action: { label: 'Retry', onClick } }));
 
-    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+ await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
 
-    expect(onClick).toHaveBeenCalledOnce();
-    expect(useToastStore.getState().toasts).toHaveLength(0);
-  });
+ expect(onClick).toHaveBeenCalledOnce();
+ expect(useToastStore.getState().toasts).toHaveLength(0);
+ });
 
-  it('pauses every countdown while the pointer is over the stack', async () => {
-    // WCAG 2.2.1. A toast that vanishes mid-sentence is a failure and, more simply, rude.
-    const pauseAll = vi.spyOn(useToastStore.getState(), 'pauseAll');
-    render(<Toaster />);
-    push(() => toast.success('Saved'));
+ it('pauses every countdown while the pointer is over the stack', async () => {
+ // WCAG 2.2.1. A toast that vanishes mid-sentence is a failure and, more simply, rude.
+ const pauseAll = vi.spyOn(useToastStore.getState(), 'pauseAll');
+ render(<Toaster />);
+ push(() => toast.success('Saved'));
 
-    await userEvent.hover(screen.getByRole('list', { name: 'Notifications' }));
+ await userEvent.hover(screen.getByRole('list', { name: 'Notifications' }));
 
-    expect(pauseAll).toHaveBeenCalled();
-    pauseAll.mockRestore();
-  });
+ expect(pauseAll).toHaveBeenCalled();
+ pauseAll.mockRestore();
+ });
 
-  it('pauses when focus lands inside, which is the keyboard equivalent of hover', async () => {
-    // React's `onFocus` bubbles, so focus reaching the dismiss button pauses the stack. A
-    // keyboard user tabbing to the action must get the same protection a mouse user gets.
-    const pauseAll = vi.spyOn(useToastStore.getState(), 'pauseAll');
-    render(<Toaster />);
-    push(() => toast.success('Saved'));
+ it('pauses when focus lands inside, which is the keyboard equivalent of hover', async () => {
+ // React's `onFocus` bubbles, so focus reaching the dismiss button pauses the stack. A
+ // keyboard user tabbing to the action must get the same protection a mouse user gets.
+ const pauseAll = vi.spyOn(useToastStore.getState(), 'pauseAll');
+ render(<Toaster />);
+ push(() => toast.success('Saved'));
 
-    await userEvent.tab();
+ await userEvent.tab();
 
-    expect(pauseAll).toHaveBeenCalled();
-    pauseAll.mockRestore();
-  });
+ expect(pauseAll).toHaveBeenCalled();
+ pauseAll.mockRestore();
+ });
 });
 
 describe('placement', () => {
-  it('accepts a position without changing the markup contract', () => {
-    // Position is presentation. Moving the stack must not move the live region or its name.
-    render(<Toaster position="top-center" />);
+ it('accepts a position without changing the markup contract', () => {
+ // Position is presentation. Moving the stack must not move the live region or its name.
+ render(<Toaster position="top-center" />);
 
-    expect(screen.getByRole('list', { name: 'Notifications' })).toHaveAttribute(
-      'aria-live',
-      'polite',
-    );
-  });
+ expect(screen.getByRole('list', { name: 'Notifications' })).toHaveAttribute(
+ 'aria-live',
+ 'polite',
+ );
+ });
 });

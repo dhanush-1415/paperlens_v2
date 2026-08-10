@@ -35,13 +35,13 @@ import type { Token } from './token';
 const ContainerContext = createContext<Container | null>(null);
 
 export interface ContainerProviderProps {
-  /**
-   * The browser composition root's container. Built once per page load in
-   * `app/providers.tsx`, never constructed inline here — a provider that built its own
-   * container would be a second composition root, and the two would drift.
-   */
-  container: Container;
-  children: ReactNode;
+ /**
+ * The browser composition root's container. Built once per page load in
+ * `app/providers.tsx`, never constructed inline here — a provider that built its own
+ * container would be a second composition root, and the two would drift.
+ */
+ container: Container;
+ children: ReactNode;
 }
 
 /**
@@ -51,7 +51,7 @@ export interface ContainerProviderProps {
  * client provider (network, theme, toast) resolves its dependencies from it.
  */
 export function ContainerProvider({ container, children }: ContainerProviderProps) {
-  return <ContainerContext value={container}>{children}</ContainerContext>;
+ return <ContainerContext value={container}>{children}</ContainerContext>;
 }
 
 /**
@@ -63,15 +63,15 @@ export function ContainerProvider({ container, children }: ContainerProviderProp
  * track, and does not honour feature flags.
  */
 export function useContainer(): Container {
-  const container = useContext(ContainerContext);
+ const container = useContext(ContainerContext);
 
-  if (!container) {
-    throw configurationError(
-      'useContainer: no <ContainerProvider> in the tree. Mount <Providers> in the root layout.',
-    );
-  }
+ if (!container) {
+ throw configurationError(
+ 'useContainer: no <ContainerProvider> in the tree. Mount <Providers> in the root layout.',
+ );
+ }
 
-  return container;
+ return container;
 }
 
 /**
@@ -84,7 +84,7 @@ export function useContainer(): Container {
  * page. Anywhere else, use {@link useContainer}.
  */
 export function useOptionalContainer(): Container | null {
-  return useContext(ContainerContext);
+ return useContext(ContainerContext);
 }
 
 /**
@@ -100,7 +100,7 @@ export function useOptionalContainer(): Container | null {
  * of that lifetime, not a bug in this hook.
  */
 export function useService<T>(token: Token<T>): T {
-  return useContainer().resolve(token);
+ return useContainer().resolve(token);
 }
 
 /**
@@ -112,5 +112,5 @@ export function useService<T>(token: Token<T>): T {
  * runs on both sides uses this to degrade instead of throwing.
  */
 export function useOptionalService<T>(token: Token<T>): T | null {
-  return useContainer().resolveOptional(token) ?? null;
+ return useContainer().resolveOptional(token) ?? null;
 }

@@ -37,9 +37,28 @@
    * surfaces behind it do. `-hover` is a real token rather than an opacity shift
    * because a translucent brand colour over two different canvases is two different
    * colours, and only one of them passes contrast.
+   *
+   * Split three ways for the same reason the risk palette is split four ways: one
+   * colour cannot do three jobs at AA.
+   *
+   *   primary  the identity — gradients, the lens rim, hairlines, the focus ring, a
+   *            20px icon. Everything the WCAG non-text rule governs at 3:1, which
+   *            `#5b8cff` clears comfortably on both canvases.
+   *   solid    the fill under `--text-on-brand`. `#5b8cff` with white is **3.16:1**,
+   *            which fails AA on the one element the entire funnel runs through — the
+   *            primary button. One step down the same ramp is 5.23:1.
+   *   ink      the brand *as text*, on a canvas or on a brand-tinted chip. `#5b8cff`
+   *            on the light chip fill is 2.79:1; these are the same two values the
+   *            risk-info level already uses for exactly this job.
+   *
+   * The identity is not diluted by this: the vivid blue still carries the wordmark, the
+   * gradient and every rim. It simply stops being asked to be legible under white text.
    */
   --brand-primary: #5b8cff;
   --brand-primary-hover: #3b6fe8;
+  --brand-solid: #3565de;
+  --brand-solid-hover: #2a51b8;
+  --brand-ink: #a3bfff;
   --brand-secondary: #a78bfa;
   --brand-tertiary: #22d3ee;
 
@@ -53,27 +72,33 @@
    * Components pick by depth, never by lightness, which is what lets the light theme
    * invert the lightness order without a single component changing.
    */
-  --canvas: #08090b;
-  --surface-1: #0e1013;
-  --surface-2: #14171b;
-  --surface-raised: #191d22;
-  --surface-overlay: #191d22;
+  --canvas: #0b0f19;
+  --surface-1: #111827;
+  --surface-2: #1f2937;
+  --surface-raised: #374151;
+  --surface-overlay: #1e293b;
 
   /* ═══ Borders ═════════════════════════════════════════════════════════════════════
    * Hairlines do the heavy lifting in both themes. `strong` is for interactive edges
    * (inputs, focused cards); `subtle` is for structural division.
    */
-  --border-subtle: #1e2329;
-  --border-strong: #2b3138;
+  --border-subtle: #1f2937;
+  --border-strong: #374151;
 
   /* ═══ Text ════════════════════════════════════════════════════════════════════════
    * Three levels only. A fourth always turns out to be a contrast failure wearing a
-   * token name. `on-brand` is the colour that sits on a filled brand button and is
-   * fixed across themes because the button's fill is fixed across themes.
+   * token name. `on-brand` is the colour that sits on `--brand-solid` and is fixed
+   * across themes because that fill is fixed across themes.
+   *
+   * `tertiary` is set against `--surface-overlay`, the *lightest* dark surface it can
+   * land on, not against the canvas. Tuning it on the canvas is what produced the
+   * previous value: 4.20:1 on the page and 3.79:1 the moment the same caption appeared
+   * inside a card, which is where captions mostly appear. It now clears 4.5:1 on every
+   * surface in the ladder.
    */
   --text-primary: #f5f7fa;
   --text-secondary: #a0a8b4;
-  --text-tertiary: #6b7480;
+  --text-tertiary: #7f8896;
   --text-inverse: #0a0c0f;
   --text-on-brand: #ffffff;
 
@@ -184,18 +209,21 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --canvas: #fcfcfd;
-  --surface-1: #ffffff;
-  --surface-2: #f7f8fa;
-  --surface-raised: #f1f3f6;
+  --canvas: #ffffff;
+  --surface-1: #fafafa;
+  --surface-2: #f4f4f5;
+  --surface-raised: #ffffff;
   --surface-overlay: #ffffff;
 
-  --border-subtle: #e7eaef;
-  --border-strong: #d3d8e0;
+  --border-subtle: #e4e4e7;
+  --border-strong: #d4d4d8;
+
+  --brand-ink: #2e5bd6;
+  --brand-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 45%, #9333ea 100%);
 
   --text-primary: #0a0c0f;
   --text-secondary: #4a525e;
-  --text-tertiary: #79828f;
+  --text-tertiary: #666f7b;
   --text-inverse: #f5f7fa;
 
   --risk-critical-fg: #b42318;
@@ -214,9 +242,53 @@
   --risk-info-bg: #eef3ff;
   --risk-info-border: #c7d7fe;
 
-  --elevation-card:
-    0 1px 2px rgb(10 12 15 / 0.04), 0 8px 24px rgb(10 12 15 / 0.06);
+  --elevation-card: 0 1px 2px rgb(10 12 15 / 0.04), 0 8px 24px rgb(10 12 15 / 0.06);
   --elevation-inset-highlight: none;
 
   --overlay-scrim: rgb(10 12 15 / 0.48);
+}
+
+/**
+ * Force dark mode on specific sections, regardless of the active theme.
+ */
+.force-dark {
+  color-scheme: dark;
+
+  --canvas: #0b0f19;
+  --surface-1: #111827;
+  --surface-2: #1f2937;
+  --surface-raised: #374151;
+  --surface-overlay: #1e293b;
+
+  --border-subtle: #1f2937;
+  --border-strong: #374151;
+
+  --brand-ink: #a3bfff;
+  --brand-gradient: linear-gradient(135deg, #22d3ee 0%, #5b8cff 45%, #a78bfa 100%);
+
+  --text-primary: #f5f7fa;
+  --text-secondary: #a0a8b4;
+  --text-tertiary: #7f8896;
+  --text-inverse: #0a0c0f;
+
+  --risk-critical-fg: #fda29b;
+  --risk-critical-bg: #2b1513;
+  --risk-critical-border: #55211c;
+
+  --risk-caution-fg: #fec84b;
+  --risk-caution-bg: #2b1d0a;
+  --risk-caution-border: #57340c;
+
+  --risk-safe-fg: #6ce9a6;
+  --risk-safe-bg: #0c2618;
+  --risk-safe-border: #12492c;
+
+  --risk-info-fg: #a3bfff;
+  --risk-info-bg: #131c33;
+  --risk-info-border: #22345e;
+
+  --elevation-card: none;
+  --elevation-inset-highlight: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+
+  --overlay-scrim: rgb(8 9 11 / 0.72);
 }

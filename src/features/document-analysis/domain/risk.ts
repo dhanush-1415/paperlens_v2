@@ -23,9 +23,9 @@ import { type RiskFlag, type RiskLevel, type RiskScore } from './document';
  * would point the wrong way.
  */
 export const RISK_SEVERITY: Readonly<Record<RiskLevel, number>> = {
-  critical: 3,
-  caution: 2,
-  safe: 1,
+ critical: 3,
+ caution: 2,
+ safe: 1,
 };
 
 /**
@@ -37,9 +37,9 @@ export const RISK_SEVERITY: Readonly<Record<RiskLevel, number>> = {
  * one named constant instead of being spelled out inside a reduce.
  */
 const PENALTY: Readonly<Record<RiskLevel, number>> = {
-  critical: 28,
-  caution: 9,
-  safe: 0,
+ critical: 28,
+ caution: 9,
+ safe: 0,
 };
 
 /**
@@ -49,29 +49,29 @@ const PENALTY: Readonly<Record<RiskLevel, number>> = {
  * component — is how a dashboard and a PDF export end up disagreeing about the same document.
  */
 const THRESHOLD = {
-  critical: 55,
-  caution: 82,
+ critical: 55,
+ caution: 82,
 } as const;
 
 export function countByLevel(flags: readonly RiskFlag[]): Readonly<Record<RiskLevel, number>> {
-  const counts: Record<RiskLevel, number> = { critical: 0, caution: 0, safe: 0 };
-  for (const flag of flags) counts[flag.level] += 1;
-  return counts;
+ const counts: Record<RiskLevel, number> = { critical: 0, caution: 0, safe: 0 };
+ for (const flag of flags) counts[flag.level] += 1;
+ return counts;
 }
 
 /** The worst level present, or `safe` for a document with no findings. */
 export function highestLevel(flags: readonly RiskFlag[]): RiskLevel {
-  return flags.reduce<RiskLevel>(
-    (worst, flag) => (RISK_SEVERITY[flag.level] > RISK_SEVERITY[worst] ? flag.level : worst),
-    'safe',
-  );
+ return flags.reduce<RiskLevel>(
+ (worst, flag) => (RISK_SEVERITY[flag.level] > RISK_SEVERITY[worst] ? flag.level : worst),
+ 'safe',
+ );
 }
 
 /** Worst first, then by position in the document, so the reading order is stable. */
 export function sortFlags(flags: readonly RiskFlag[]): readonly RiskFlag[] {
-  return [...flags].sort(
-    (a, b) => RISK_SEVERITY[b.level] - RISK_SEVERITY[a.level] || a.charStart - b.charStart,
-  );
+ return [...flags].sort(
+ (a, b) => RISK_SEVERITY[b.level] - RISK_SEVERITY[a.level] || a.charStart - b.charStart,
+ );
 }
 
 /**
@@ -84,12 +84,12 @@ export function sortFlags(flags: readonly RiskFlag[]): readonly RiskFlag[] {
  * the score is what carries that distinction.
  */
 export function scoreOf(flags: readonly RiskFlag[]): RiskScore {
-  const counts = countByLevel(flags);
-  const penalty = flags.reduce((total, flag) => total + PENALTY[flag.level], 0);
-  const value = Math.max(0, Math.min(100, 100 - penalty));
+ const counts = countByLevel(flags);
+ const penalty = flags.reduce((total, flag) => total + PENALTY[flag.level], 0);
+ const value = Math.max(0, Math.min(100, 100 - penalty));
 
-  const level: RiskLevel =
-    value < THRESHOLD.critical ? 'critical' : value < THRESHOLD.caution ? 'caution' : 'safe';
+ const level: RiskLevel =
+ value < THRESHOLD.critical ? 'critical' : value < THRESHOLD.caution ? 'caution' : 'safe';
 
-  return { value, level, counts };
+ return { value, level, counts };
 }

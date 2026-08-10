@@ -9,10 +9,10 @@ import { getServerContainer, route } from '@/server/bootstrap';
  * Three consumers, all of which want the same cheap answer:
  *
  * 1. **The browser network monitor.** `createBrowserNetworkMonitor` probes this URL to
- *    distinguish "the device has no connection" from "the connection is up but our server
- *    is not answering" — a distinction `navigator.onLine` cannot make, since it reports the
- *    state of the network interface and nothing else. Same-origin on purpose: probing a
- *    third party tells you the internet is up, which is not the question.
+ * distinguish "the device has no connection" from "the connection is up but our server
+ * is not answering" — a distinction `navigator.onLine` cannot make, since it reports the
+ * state of the network interface and nothing else. Same-origin on purpose: probing a
+ * third party tells you the internet is up, which is not the question.
  * 2. **The platform's health check**, whatever it turns out to be.
  * 3. **A human**, checking a deployment shipped the commit they think it did.
  *
@@ -37,25 +37,25 @@ import { getServerContainer, route } from '@/server/bootstrap';
  * actually matters, and it survives whatever the framework decides about prerendering.
  */
 export const GET = route('health.get', async () => {
-  const clock = getServerContainer().resolve(CLOCK);
+ const clock = getServerContainer().resolve(CLOCK);
 
-  return Response.json(
-    {
-      status: 'ok',
-      environment: appConfig.environment,
-      commit: appConfig.commitSha,
-      time: clock().toISOString(),
-    },
-    {
-      headers: {
-        [HTTP_HEADERS.contentType]: CONTENT_TYPES.json,
-        /**
-         * Never cached, anywhere. A cached health check is a lie told at line rate: the
-         * probe would keep reporting `ok` from a CDN long after the instance behind it
-         * stopped answering.
-         */
-        [HTTP_HEADERS.cacheControl]: 'no-store, max-age=0',
-      },
-    },
-  );
+ return Response.json(
+ {
+ status: 'ok',
+ environment: appConfig.environment,
+ commit: appConfig.commitSha,
+ time: clock().toISOString(),
+ },
+ {
+ headers: {
+ [HTTP_HEADERS.contentType]: CONTENT_TYPES.json,
+ /**
+ * Never cached, anywhere. A cached health check is a lie told at line rate: the
+ * probe would keep reporting `ok` from a CDN long after the instance behind it
+ * stopped answering.
+ */
+ [HTTP_HEADERS.cacheControl]: 'no-store, max-age=0',
+ },
+ },
+ );
 });

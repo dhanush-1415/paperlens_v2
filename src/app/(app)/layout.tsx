@@ -39,66 +39,66 @@ import Link from 'next/link';
 const tenant = resolveTenant(serverEnv.TENANT_ID);
 
 async function SessionChip() {
-  const session = await getPublicSession();
+ const session = await getPublicSession();
 
-  if (!session) {
-    return (
-      <Button asChild size="sm" variant="ghost">
-        <Link href={ROUTES.login}>Sign in</Link>
-      </Button>
-    );
-  }
+ if (!session) {
+ return (
+ <Button asChild size="sm" variant="ghost">
+ <Link href={ROUTES.login}>Sign in</Link>
+ </Button>
+ );
+ }
 
-  return (
-    <form action={signOutFormAction} className="flex items-center gap-3">
-      {/*
-       * The plan, not the email. A header is the most-screenshotted surface in any product,
-       * and `PublicSession` deliberately carries no address for it to leak — see
-       * `toPublicSession`, which is the only sanctioned way a session reaches a client.
-       */}
-      <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
-        {session.plan}
-      </Text>
-      <Button type="submit" size="sm" variant="ghost">
-        Sign out
-      </Button>
-    </form>
-  );
+ return (
+ <form action={signOutFormAction} className="flex items-center gap-3">
+ {/*
+ * The plan, not the email. A header is the most-screenshotted surface in any product,
+ * and `PublicSession` deliberately carries no address for it to leak — see
+ * `toPublicSession`, which is the only sanctioned way a session reaches a client.
+ */}
+ <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
+ {session.plan}
+ </Text>
+ <Button type="submit" size="sm" variant="ghost">
+ Sign out
+ </Button>
+ </form>
+ );
 }
 
 export default function AppLayout({ children }: LayoutProps<'/'>) {
-  const t = getRequestScope().resolve(TRANSLATOR);
+ const t = getRequestScope().resolve(TRANSLATOR);
 
-  return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-border-subtle">
-        <Container className="flex h-14 items-center justify-between gap-4">
-          <Link href={ROUTES.scan} className="font-display text-lg text-text-primary">
-            {tenant.productName}
-          </Link>
+ return (
+ <div className="flex min-h-full flex-1 flex-col">
+ <header className="border-b border-border-subtle">
+ <Container className="flex h-14 items-center justify-between gap-4">
+ <Link href={ROUTES.scan} className=" text-lg text-text-primary">
+ {tenant.productName}
+ </Link>
 
-          <div className="flex items-center gap-2">
-            <ThemeToggle
-              label={t.t('theme.label')}
-              optionLabels={{
-                light: t.t('theme.light'),
-                dark: t.t('theme.dark'),
-                system: t.t('theme.system'),
-              }}
-            />
-            {/*
-             * The fallback is the same size as the resolved chip. A skeleton that is a
-             * different height than what replaces it produces a layout shift in the header on
-             * every single page load — the most visible CLS a product can ship.
-             */}
-            <Suspense fallback={<Skeleton className="h-8 w-24" />}>
-              <SessionChip />
-            </Suspense>
-          </div>
-        </Container>
-      </header>
+ <div className="flex items-center gap-2">
+ <ThemeToggle
+ label={t.t('theme.label')}
+ optionLabels={{
+ light: t.t('theme.light'),
+ dark: t.t('theme.dark'),
+ system: t.t('theme.system'),
+ }}
+ />
+ {/*
+ * The fallback is the same size as the resolved chip. A skeleton that is a
+ * different height than what replaces it produces a layout shift in the header on
+ * every single page load — the most visible CLS a product can ship.
+ */}
+ <Suspense fallback={<Skeleton className="h-8 w-24" />}>
+ <SessionChip />
+ </Suspense>
+ </div>
+ </Container>
+ </header>
 
-      <main className="flex-1">{children}</main>
-    </div>
-  );
+ <main className="flex-1">{children}</main>
+ </div>
+ );
 }

@@ -21,13 +21,13 @@
  * ### What is deliberately not here
  *
  * · **`./fonts`** — it calls `next/font` at module scope, which registers a font for the
- *   build. It has exactly one legitimate consumer, the root layout, and re-exporting it here
- *   would pull that registration into every module that wants a `Button`.
+ * build. It has exactly one legitimate consumer, the root layout, and re-exporting it here
+ * would pull that registration into every module that wants a `Button`.
  * · **`./tokens`** — imported as `@/shared/ui/tokens` when genuinely needed. Components use
- *   Tailwind utilities; a component importing `cssVar()` is nearly always a component that
- *   should have used a class.
+ * Tailwind utilities; a component importing `cssVar()` is nearly always a component that
+ * should have used a class.
  * · **`./primitives`** — `@/shared/ui/primitives`, and only when building a new component.
- *   Kept out of the front door so that reaching for `Slot` is a deliberate act.
+ * Kept out of the front door so that reaching for `Slot` is a deliberate act.
  */
 
 export { cn, type ClassValue } from './cn';
@@ -40,24 +40,24 @@ export { Toaster, toast, useToastStore } from './toast';
 export type { Toast, ToastAction, ToastInput, ToasterProps } from './toast';
 
 export {
-  ThemeProvider,
-  ThemeScript,
-  ThemeToggle,
-  TenantTokens,
-  useTheme,
-  DEFAULT_THEME_PREFERENCE,
-  THEME_PREFERENCES,
-  isThemePreference,
+ ThemeProvider,
+ ThemeScript,
+ ThemeToggle,
+ TenantTokens,
+ useTheme,
+ DEFAULT_THEME_PREFERENCE,
+ THEME_PREFERENCES,
+ isThemePreference,
 } from './theme';
 export type {
-  ResolvedTheme,
-  ThemeController,
-  ThemePreference,
-  ThemeProviderProps,
-  ThemeScriptProps,
-  ThemeState,
-  ThemeToggleProps,
-  TenantTokensProps,
+ ResolvedTheme,
+ ThemeController,
+ ThemePreference,
+ ThemeProviderProps,
+ ThemeScriptProps,
+ ThemeState,
+ ThemeToggleProps,
+ TenantTokensProps,
 } from './theme';
 
 /**
@@ -66,15 +66,15 @@ export type {
  * must agree.
  */
 export {
-  TONES,
-  RISK_TONES,
-  TONE_ICON,
-  TONE_SOFT,
-  TONE_SOLID,
-  TONE_TEXT,
-  isRiskTone,
-  type RiskTone,
-  type Tone,
+ TONES,
+ RISK_TONES,
+ TONE_ICON,
+ TONE_SOFT,
+ TONE_SOLID,
+ TONE_TEXT,
+ isRiskTone,
+ type RiskTone,
+ type Tone,
 } from './tone';
 
 export * from './icons';

@@ -9,16 +9,16 @@
  */
 
 export {
-  createFakeAnalysisDataSource,
-  type AnalysisRecord,
-  type FakeAnalysisDataSource,
-  type FakeAnalysisDataSourceOptions,
-  type FlagRecord,
+ createFakeAnalysisDataSource,
+ type AnalysisRecord,
+ type FakeAnalysisDataSource,
+ type FakeAnalysisDataSourceOptions,
+ type FlagRecord,
 } from './fake-analysis-data-source';
 
 export {
-  createDocumentAnalysisRepository,
-  type DocumentAnalysisRepositoryDeps,
+ createDocumentAnalysisRepository,
+ type DocumentAnalysisRepositoryDeps,
 } from './document-analysis-repository';
 
 export { createHeuristicAnalyzer } from './heuristic-analyzer';

@@ -38,9 +38,9 @@ import { Badge } from '../components/badge';
 import { TONE_ICON, TONE_SOLID, type RiskTone } from '../tone';
 
 export const RISK_LABEL = {
-  critical: 'Critical',
-  caution: 'Caution',
-  safe: 'Standard',
+ critical: 'Critical',
+ caution: 'Caution',
+ safe: 'Standard',
 } as const satisfies Record<RiskTone, string>;
 
 /**
@@ -53,42 +53,42 @@ export const RISK_LABEL = {
 export const RISK_ORDER = ['critical', 'caution', 'safe'] as const satisfies readonly RiskTone[];
 
 export function compareRisk(a: RiskTone, b: RiskTone): number {
-  return RISK_ORDER.indexOf(a) - RISK_ORDER.indexOf(b);
+ return RISK_ORDER.indexOf(a) - RISK_ORDER.indexOf(b);
 }
 
 export interface RiskBadgeProps {
-  level: RiskTone;
-  /** Overrides the default wording. Cannot be empty — see the header. */
-  label?: ReactNode;
-  /**
-   * Renders as a count: `3 Critical`. Omit for a single clause's own badge.
-   *
-   * The number leads because a scanning user reads left to right and the magnitude is what
-   * they are scanning for.
-   */
-  count?: number;
-  size?: 'sm' | 'md';
-  className?: string;
+ level: RiskTone;
+ /** Overrides the default wording. Cannot be empty — see the header. */
+ label?: ReactNode;
+ /**
+ * Renders as a count: `3 Critical`. Omit for a single clause's own badge.
+ *
+ * The number leads because a scanning user reads left to right and the magnitude is what
+ * they are scanning for.
+ */
+ count?: number;
+ size?: 'sm' | 'md';
+ className?: string;
 }
 
 export function RiskBadge({ level, label, count, size = 'sm', className }: RiskBadgeProps) {
-  const Icon = TONE_ICON[level];
-  const text = label ?? RISK_LABEL[level];
+ const Icon = TONE_ICON[level];
+ const text = label ?? RISK_LABEL[level];
 
-  return (
-    <Badge tone={level} size={size} className={className}>
-      <Icon aria-hidden className={size === 'md' ? 'size-4' : 'size-3.5'} />
-      {count === undefined ? null : <span className="tabular-nums">{count}</span>}
-      {text}
-    </Badge>
-  );
+ return (
+ <Badge tone={level} size={size} className={className}>
+ <Icon aria-hidden className={size === 'md' ? 'size-4' : 'size-3.5'} />
+ {count === undefined ? null : <span className="tabular-nums">{count}</span>}
+ {text}
+ </Badge>
+ );
 }
 
 export interface RiskDotProps {
-  level: RiskTone;
-  /** The label the dot stands in for. Announced, and shown on hover. */
-  label?: string;
-  className?: string;
+ level: RiskTone;
+ /** The label the dot stands in for. Announced, and shown on hover. */
+ label?: string;
+ className?: string;
 }
 
 /**
@@ -101,14 +101,14 @@ export interface RiskDotProps {
  * `RiskBadge` anywhere there is room for it.
  */
 export function RiskDot({ level, label, className }: RiskDotProps) {
-  const text = label ?? RISK_LABEL[level];
+ const text = label ?? RISK_LABEL[level];
 
-  return (
-    <span
-      role="img"
-      aria-label={text}
-      title={text}
-      className={cn('inline-block size-2.5 shrink-0 rounded-full', TONE_SOLID[level], className)}
-    />
-  );
+ return (
+ <span
+ role="img"
+ aria-label={text}
+ title={text}
+ className={cn('inline-block size-2.5 shrink-0 rounded-full', TONE_SOLID[level], className)}
+ />
+ );
 }

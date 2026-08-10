@@ -47,26 +47,26 @@ import { analyzeDocumentAction } from './actions';
  */
 
 export interface AnalysisFormLabels {
-  readonly documentLabel: string;
-  readonly documentDescription: string;
-  readonly documentPlaceholder: string;
-  readonly typeLabel: string;
-  readonly titleLabel: string;
-  readonly titleDescription: string;
-  readonly titlePlaceholder: string;
-  readonly submit: string;
-  readonly submitting: string;
-  readonly errorTitle: string;
-  /**
-   * A template, not a formatted string and not a formatter. Understands `{count}` and `{max}`,
-   * so word order and separator are the translator's decision rather than this file's.
-   */
-  readonly counter: string;
+ readonly documentLabel: string;
+ readonly documentDescription: string;
+ readonly documentPlaceholder: string;
+ readonly typeLabel: string;
+ readonly titleLabel: string;
+ readonly titleDescription: string;
+ readonly titlePlaceholder: string;
+ readonly submit: string;
+ readonly submitting: string;
+ readonly errorTitle: string;
+ /**
+ * A template, not a formatted string and not a formatter. Understands `{count}` and `{max}`,
+ * so word order and separator are the translator's decision rather than this file's.
+ */
+ readonly counter: string;
 }
 
 export interface AnalysisFormProps {
-  readonly labels: AnalysisFormLabels;
-  readonly defaultDocumentType?: DocumentType;
+ readonly labels: AnalysisFormLabels;
+ readonly defaultDocumentType?: DocumentType;
 }
 
 /**
@@ -76,121 +76,121 @@ export interface AnalysisFormProps {
 type FormState = Result<never, SerializedAppError> | null;
 
 function fieldError(state: FormState, field: string): string | undefined {
-  if (state === null || state.ok) return undefined;
-  return state.error.fieldErrors?.[field]?.[0];
+ if (state === null || state.ok) return undefined;
+ return state.error.fieldErrors?.[field]?.[0];
 }
 
 export function AnalysisForm({ labels, defaultDocumentType = 'other' }: AnalysisFormProps) {
-  const [state, formAction, isPending] = useActionState<FormState, FormData>(
-    analyzeDocumentAction,
-    null,
-  );
+ const [state, formAction, isPending] = useActionState<FormState, FormData>(
+ analyzeDocumentAction,
+ null,
+ );
 
-  const [charCount, setCharCount] = useState(0);
-  const counterId = useId();
+ const [charCount, setCharCount] = useState(0);
+ const counterId = useId();
 
-  /**
-   * A non-field error — rate limited, upstream down, unauthenticated. Field errors already
-   * render against their inputs; showing them twice would be noise, so this is only for the
-   * failures that belong to the submission as a whole.
-   */
-  const generalError =
-    state !== null && !state.ok && state.error.fieldErrors === undefined ? state.error : null;
+ /**
+ * A non-field error — rate limited, upstream down, unauthenticated. Field errors already
+ * render against their inputs; showing them twice would be noise, so this is only for the
+ * failures that belong to the submission as a whole.
+ */
+ const generalError =
+ state !== null && !state.ok && state.error.fieldErrors === undefined ? state.error : null;
 
-  const overLimit = charCount > INPUT_LIMITS.maxDocumentChars;
+ const overLimit = charCount > INPUT_LIMITS.maxDocumentChars;
 
-  return (
-    <form action={formAction} className="flex flex-col gap-6">
-      {generalError ? (
-        <Alert tone="critical" title={labels.errorTitle}>
-          <Text size="sm">{generalError.messageKey}</Text>
-          {/*
-           * The correlation id, shown deliberately. It is the only thing that connects what
-           * the user saw to the line in the server log that explains it — without it a support
-           * conversation is "it broke yesterday, around lunchtime". It identifies a request,
-           * not a person, so there is nothing to leak.
-           */}
-          {generalError.correlationId ? (
-            <Text size="xs" tone="tertiary" className="mt-2 font-mono">
-              {generalError.correlationId}
-            </Text>
-          ) : null}
-        </Alert>
-      ) : null}
+ return (
+ <form action={formAction} className="flex flex-col gap-6">
+ {generalError ? (
+ <Alert tone="critical" title={labels.errorTitle}>
+ <Text size="sm">{generalError.messageKey}</Text>
+ {/*
+ * The correlation id, shown deliberately. It is the only thing that connects what
+ * the user saw to the line in the server log that explains it — without it a support
+ * conversation is "it broke yesterday, around lunchtime". It identifies a request,
+ * not a person, so there is nothing to leak.
+ */}
+ {generalError.correlationId ? (
+ <Text size="xs" tone="tertiary" className="mt-2 ">
+ {generalError.correlationId}
+ </Text>
+ ) : null}
+ </Alert>
+ ) : null}
 
-      <Field
-        label={labels.documentLabel}
-        description={labels.documentDescription}
-        error={fieldError(state, ANALYZE_FIELDS.text)}
-        required
-      >
-        {(field) => (
-          <Textarea
-            {...field}
-            name={ANALYZE_FIELDS.text}
-            variant="document"
-            rows={14}
-            placeholder={labels.documentPlaceholder}
-            /*
-             * `maxLength` is not set. Truncating a pasted contract at 200,000 characters
-             * without saying so would silently analyse a partial document and report it as
-             * complete — a wrong answer presented confidently. The counter warns instead, and
-             * the server rejects.
-             */
-            aria-describedby={[field['aria-describedby'], counterId].filter(Boolean).join(' ')}
-            onChange={(event) => setCharCount(event.currentTarget.value.length)}
-          />
-        )}
-      </Field>
+ <Field
+ label={labels.documentLabel}
+ description={labels.documentDescription}
+ error={fieldError(state, ANALYZE_FIELDS.text)}
+ required
+ >
+ {(field) => (
+ <Textarea
+ {...field}
+ name={ANALYZE_FIELDS.text}
+ variant="document"
+ rows={14}
+ placeholder={labels.documentPlaceholder}
+ /*
+ * `maxLength` is not set. Truncating a pasted contract at 200,000 characters
+ * without saying so would silently analyse a partial document and report it as
+ * complete — a wrong answer presented confidently. The counter warns instead, and
+ * the server rejects.
+ */
+ aria-describedby={[field['aria-describedby'], counterId].filter(Boolean).join(' ')}
+ onChange={(event) => setCharCount(event.currentTarget.value.length)}
+ />
+ )}
+ </Field>
 
-      {/*
-       * `aria-live="polite"` rather than `assertive`: a character counter that interrupts a
-       * screen reader on every keystroke is unusable. Polite queues the announcement until
-       * the user pauses, which is when the number is worth hearing.
-       */}
-      <Text
-        id={counterId}
-        as="span"
-        size="xs"
-        tone="tertiary"
-        className={overLimit ? TONE_TEXT.critical : undefined}
-        aria-live="polite"
-      >
-        {interpolate(labels.counter, {
-          count: charCount.toLocaleString(),
-          max: INPUT_LIMITS.maxDocumentChars.toLocaleString(),
-        })}
-      </Text>
+ {/*
+ * `aria-live="polite"` rather than `assertive`: a character counter that interrupts a
+ * screen reader on every keystroke is unusable. Polite queues the announcement until
+ * the user pauses, which is when the number is worth hearing.
+ */}
+ <Text
+ id={counterId}
+ as="span"
+ size="xs"
+ tone="tertiary"
+ className={overLimit ? TONE_TEXT.critical : undefined}
+ aria-live="polite"
+ >
+ {interpolate(labels.counter, {
+ count: charCount.toLocaleString(),
+ max: INPUT_LIMITS.maxDocumentChars.toLocaleString(),
+ })}
+ </Text>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Field label={labels.typeLabel} error={fieldError(state, ANALYZE_FIELDS.documentType)}>
-          {(field) => (
-            <Select {...field} name={ANALYZE_FIELDS.documentType} defaultValue={defaultDocumentType}>
-              {DOCUMENT_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {DOCUMENT_TYPE_LABEL[type]}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
+ <div className="grid gap-6 sm:grid-cols-2">
+ <Field label={labels.typeLabel} error={fieldError(state, ANALYZE_FIELDS.documentType)}>
+ {(field) => (
+ <Select {...field} name={ANALYZE_FIELDS.documentType} defaultValue={defaultDocumentType}>
+ {DOCUMENT_TYPES.map((type) => (
+ <option key={type} value={type}>
+ {DOCUMENT_TYPE_LABEL[type]}
+ </option>
+ ))}
+ </Select>
+ )}
+ </Field>
 
-        <Field
-          label={labels.titleLabel}
-          description={labels.titleDescription}
-          error={fieldError(state, ANALYZE_FIELDS.title)}
-        >
-          {(field) => (
-            <Input {...field} name={ANALYZE_FIELDS.title} placeholder={labels.titlePlaceholder} />
-          )}
-        </Field>
-      </div>
+ <Field
+ label={labels.titleLabel}
+ description={labels.titleDescription}
+ error={fieldError(state, ANALYZE_FIELDS.title)}
+ >
+ {(field) => (
+ <Input {...field} name={ANALYZE_FIELDS.title} placeholder={labels.titlePlaceholder} />
+ )}
+ </Field>
+ </div>
 
-      <div>
-        <Button type="submit" size="lg" loading={isPending} disabled={overLimit}>
-          {isPending ? labels.submitting : labels.submit}
-        </Button>
-      </div>
-    </form>
-  );
+ <div>
+ <Button type="submit" size="lg" loading={isPending} disabled={overLimit}>
+ {isPending ? labels.submitting : labels.submit}
+ </Button>
+ </div>
+ </form>
+ );
 }

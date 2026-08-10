@@ -28,12 +28,12 @@ const CONTROL_CHARS = /[\u0000-\u001f]/g;
  * practice this is for server-generated markup.
  */
 export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+ return value
+ .replace(/&/g, '&amp;')
+ .replace(/</g, '&lt;')
+ .replace(/>/g, '&gt;')
+ .replace(/"/g, '&quot;')
+ .replace(/'/g, '&#39;');
 }
 
 /**
@@ -47,15 +47,15 @@ export function escapeHtml(value: string): string {
  * Used by the inline no-flash theme script, which is the only inline script this app ships.
  */
 export function escapeScriptContent(value: string): string {
-  return (
-    value
-      .replace(/<\/(script)/gi, '<\\/$1')
-      .replace(/<!--/g, '<\\!--')
-      // U+2028 and U+2029 are legal inside a JSON string but count as line terminators in
-      // JavaScript, so an unescaped one turns a serialized payload into a syntax error.
-      .replace(/\u2028/g, '\\u2028')
-      .replace(/\u2029/g, '\\u2029')
-  );
+ return (
+ value
+ .replace(/<\/(script)/gi, '<\\/$1')
+ .replace(/<!--/g, '<\\!--')
+ // U+2028 and U+2029 are legal inside a JSON string but count as line terminators in
+ // JavaScript, so an unescaped one turns a serialized payload into a syntax error.
+ .replace(/\u2028/g, '\\u2028')
+ .replace(/\u2029/g, '\\u2029')
+ );
 }
 
 /**
@@ -67,24 +67,24 @@ export function escapeScriptContent(value: string): string {
  * render as plain text rather than as a link.
  */
 export function safeHref(value: string | null | undefined): string | null {
-  if (!value) return null;
+ if (!value) return null;
 
-  // Control characters are stripped first: `java\tscript:` is parsed as `javascript:` by
-  // browsers but slips past a naive prefix check.
-  const cleaned = value.trim().replace(CONTROL_CHARS, '');
-  if (cleaned.length === 0) return null;
+ // Control characters are stripped first: `java\tscript:` is parsed as `javascript:` by
+ // browsers but slips past a naive prefix check.
+ const cleaned = value.trim().replace(CONTROL_CHARS, '');
+ if (cleaned.length === 0) return null;
 
-  // Relative URLs and fragments carry no scheme and are safe by construction.
-  if (cleaned.startsWith('/') || cleaned.startsWith('#') || cleaned.startsWith('?')) {
-    // Except protocol-relative `//evil.com`, which is an absolute URL wearing a disguise.
-    return cleaned.startsWith('//') ? null : cleaned;
-  }
+ // Relative URLs and fragments carry no scheme and are safe by construction.
+ if (cleaned.startsWith('/') || cleaned.startsWith('#') || cleaned.startsWith('?')) {
+ // Except protocol-relative `//evil.com`, which is an absolute URL wearing a disguise.
+ return cleaned.startsWith('//') ? null : cleaned;
+ }
 
-  const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(cleaned);
-  if (!schemeMatch) return cleaned;
+ const schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(cleaned);
+ if (!schemeMatch) return cleaned;
 
-  // The allowlist is matched against the bare scheme, which is what the capture holds.
-  return SAFE_URL_SCHEME.test(schemeMatch[1] ?? '') ? cleaned : null;
+ // The allowlist is matched against the bare scheme, which is what the capture holds.
+ return SAFE_URL_SCHEME.test(schemeMatch[1] ?? '') ? cleaned : null;
 }
 
 /**
@@ -96,18 +96,18 @@ export function safeHref(value: string | null | undefined): string | null {
  * stop at 255 bytes and a truncated extension breaks the file association.
  */
 export function safeFilename(value: string, fallback = 'download'): string {
-  const base = value
-    .replace(/[/\\]+/g, '-')
-    .replace(UNSAFE_FILENAME_CHARS, '')
-    .replace(/^\.+/, '')
-    .trim();
+ const base = value
+ .replace(/[/\\]+/g, '-')
+ .replace(UNSAFE_FILENAME_CHARS, '')
+ .replace(/^\.+/, '')
+ .trim();
 
-  if (base.length === 0) return fallback;
+ if (base.length === 0) return fallback;
 
-  const reserved = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i;
-  const safe = reserved.test(base) ? `_${base}` : base;
+ const reserved = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i;
+ const safe = reserved.test(base) ? `_${base}` : base;
 
-  return safe.length > 200 ? safe.slice(0, 200) : safe;
+ return safe.length > 200 ? safe.slice(0, 200) : safe;
 }
 
 /**
@@ -118,9 +118,9 @@ export function safeFilename(value: string, fallback = 'download'): string {
  * link in the recipient's Excel. A leading single quote disarms it.
  */
 export function safeCsvCell(value: string): string {
-  const needsGuard = /^[=+\-@\t\r]/.test(value);
-  const escaped = value.replace(/"/g, '""');
-  return needsGuard ? `'${escaped}` : escaped;
+ const needsGuard = /^[=+\-@\t\r]/.test(value);
+ const escaped = value.replace(/"/g, '""');
+ return needsGuard ? `'${escaped}` : escaped;
 }
 
 /**
@@ -131,8 +131,8 @@ export function safeCsvCell(value: string): string {
  * serializing to JSON; this is for the boundaries that do not.
  */
 export function safeLogValue(value: string, maxLength = 512): string {
-  const flattened = value.replace(CONTROL_CHARS, ' ').replace(/\s+/g, ' ').trim();
-  return flattened.length > maxLength ? `${flattened.slice(0, maxLength)}...` : flattened;
+ const flattened = value.replace(CONTROL_CHARS, ' ').replace(/\s+/g, ' ').trim();
+ return flattened.length > maxLength ? `${flattened.slice(0, maxLength)}...` : flattened;
 }
 
 /**
@@ -142,5 +142,5 @@ export function safeLogValue(value: string, maxLength = 512): string {
  * splitting — rather than merely looking untidy.
  */
 export function safeHeaderValue(value: string, maxLength = 256): string {
-  return value.replace(/[\r\n]+/g, '').slice(0, maxLength);
+ return value.replace(/[\r\n]+/g, '').slice(0, maxLength);
 }

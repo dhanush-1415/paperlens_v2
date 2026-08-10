@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 import { INPUT_LIMITS } from '../constants/limits';
 import {
-  E164_PHONE,
-  PASSWORD_DIGIT,
-  PASSWORD_LOWERCASE,
-  PASSWORD_UPPERCASE,
-  SHARE_TOKEN,
-  SLUG,
+ E164_PHONE,
+ PASSWORD_DIGIT,
+ PASSWORD_LOWERCASE,
+ PASSWORD_UPPERCASE,
+ SHARE_TOKEN,
+ SLUG,
 } from '../constants/regex';
 
 /**
@@ -41,35 +41,35 @@ export const uuidSchema = z.uuid({ message: 'validation.uuid' });
  * is a support ticket, not a validation.
  */
 export const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .pipe(
-    z
-      .email({ message: 'validation.email' })
-      .max(254, { message: 'validation.email.tooLong' }), // RFC 5321 maximum
-  );
+ .string()
+ .trim()
+ .toLowerCase()
+ .pipe(
+ z
+ .email({ message: 'validation.email' })
+ .max(254, { message: 'validation.email.tooLong' }), // RFC 5321 maximum
+ );
 
 export const slugSchema = z
-  .string()
-  .min(1, { message: 'validation.required' })
-  .max(80, { message: 'validation.tooLong' })
-  .regex(SLUG, { message: 'validation.slug' });
+ .string()
+ .min(1, { message: 'validation.required' })
+ .max(80, { message: 'validation.tooLong' })
+ .regex(SLUG, { message: 'validation.slug' });
 
 export const shareTokenSchema = z
-  .string()
-  .regex(SHARE_TOKEN, { message: 'validation.shareToken' });
+ .string()
+ .regex(SHARE_TOKEN, { message: 'validation.shareToken' });
 
 export const phoneSchema = z
-  .string()
-  .trim()
-  .regex(E164_PHONE, { message: 'validation.phone' });
+ .string()
+ .trim()
+ .regex(E164_PHONE, { message: 'validation.phone' });
 
 export const urlSchema = z
-  .url({ message: 'validation.url' })
-  .refine((value) => value.startsWith('http://') || value.startsWith('https://'), {
-    message: 'validation.url.protocol',
-  });
+ .url({ message: 'validation.url' })
+ .refine((value) => value.startsWith('http://') || value.startsWith('https://'), {
+ message: 'validation.url.protocol',
+ });
 
 export const isoDateSchema = z.iso.date({ message: 'validation.date' });
 export const isoDateTimeSchema = z.iso.datetime({ message: 'validation.dateTime' });
@@ -82,45 +82,45 @@ export const isoDateTimeSchema = z.iso.datetime({ message: 'validation.dateTime'
  * guessing. Length before composition — length is the one that actually matters.
  */
 export const passwordSchema = z
-  .string()
-  .min(12, { message: 'validation.password.tooShort' })
-  .max(128, { message: 'validation.password.tooLong' })
-  .refine((value) => PASSWORD_LOWERCASE.test(value), { message: 'validation.password.lowercase' })
-  .refine((value) => PASSWORD_UPPERCASE.test(value), { message: 'validation.password.uppercase' })
-  .refine((value) => PASSWORD_DIGIT.test(value), { message: 'validation.password.digit' });
+ .string()
+ .min(12, { message: 'validation.password.tooShort' })
+ .max(128, { message: 'validation.password.tooLong' })
+ .refine((value) => PASSWORD_LOWERCASE.test(value), { message: 'validation.password.lowercase' })
+ .refine((value) => PASSWORD_UPPERCASE.test(value), { message: 'validation.password.uppercase' })
+ .refine((value) => PASSWORD_DIGIT.test(value), { message: 'validation.password.digit' });
 
 // ── Text ──────────────────────────────────────────────────────────────────────────────────
 
-/** Required free text with a length ceiling. Trimmed first, so "   " is empty. */
+/** Required free text with a length ceiling. Trimmed first, so " " is empty. */
 export function textSchema(options: { min?: number; max: number; label?: string }) {
-  const { min = 1, max } = options;
-  return z
-    .string()
-    .trim()
-    .min(min, { message: min === 1 ? 'validation.required' : 'validation.tooShort' })
-    .max(max, { message: 'validation.tooLong' });
+ const { min = 1, max } = options;
+ return z
+ .string()
+ .trim()
+ .min(min, { message: min === 1 ? 'validation.required' : 'validation.tooShort' })
+ .max(max, { message: 'validation.tooLong' });
 }
 
 /** Optional free text. Empty string normalises to `undefined`, never to `''`. */
 export function optionalTextSchema(max: number) {
-  return z
-    .string()
-    .trim()
-    .max(max, { message: 'validation.tooLong' })
-    .optional()
-    .transform((value) => (value === '' ? undefined : value));
+ return z
+ .string()
+ .trim()
+ .max(max, { message: 'validation.tooLong' })
+ .optional()
+ .transform((value) => (value === '' ? undefined : value));
 }
 
 export const documentTextSchema = z
-  .string()
-  .trim()
-  .min(INPUT_LIMITS.minDocumentChars, { message: 'validation.document.tooShort' })
-  .max(INPUT_LIMITS.maxDocumentChars, { message: 'validation.document.tooLong' });
+ .string()
+ .trim()
+ .min(INPUT_LIMITS.minDocumentChars, { message: 'validation.document.tooShort' })
+ .max(INPUT_LIMITS.maxDocumentChars, { message: 'validation.document.tooLong' });
 
 export const searchQuerySchema = z
-  .string()
-  .trim()
-  .max(INPUT_LIMITS.maxSearchQueryLength, { message: 'validation.tooLong' });
+ .string()
+ .trim()
+ .max(INPUT_LIMITS.maxSearchQueryLength, { message: 'validation.tooLong' });
 
 // ── Pagination and sorting ────────────────────────────────────────────────────────────────
 
@@ -133,13 +133,13 @@ export const searchQuerySchema = z
  * can type.
  */
 export const paginationSchema = z.object({
-  page: z.coerce.number().int().min(1).catch(1),
-  pageSize: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .catch(20),
+ page: z.coerce.number().int().min(1).catch(1),
+ pageSize: z.coerce
+ .number()
+ .int()
+ .min(1)
+ .max(100)
+ .catch(20),
 });
 
 export const sortOrderSchema = z.enum(['asc', 'desc']).catch('desc');
@@ -154,32 +154,32 @@ export const sortOrderSchema = z.enum(['asc', 'desc']).catch('desc');
  * server must sniff the actual content before trusting it.
  */
 export const ALLOWED_UPLOAD_TYPES = [
-  'application/pdf',
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/heic',
-  'text/plain',
+ 'application/pdf',
+ 'image/png',
+ 'image/jpeg',
+ 'image/webp',
+ 'image/heic',
+ 'text/plain',
 ] as const;
 
 export const uploadFileSchema = z
-  .instanceof(File, { message: 'validation.file.required' })
-  .refine((file) => file.size > 0, { message: 'validation.file.empty' })
-  .refine((file) => file.size <= INPUT_LIMITS.maxUploadBytes, {
-    message: 'validation.file.tooLarge',
-  })
-  .refine((file) => (ALLOWED_UPLOAD_TYPES as readonly string[]).includes(file.type), {
-    message: 'validation.file.unsupportedType',
-  });
+ .instanceof(File, { message: 'validation.file.required' })
+ .refine((file) => file.size > 0, { message: 'validation.file.empty' })
+ .refine((file) => file.size <= INPUT_LIMITS.maxUploadBytes, {
+ message: 'validation.file.tooLarge',
+ })
+ .refine((file) => (ALLOWED_UPLOAD_TYPES as readonly string[]).includes(file.type), {
+ message: 'validation.file.unsupportedType',
+ });
 
 // ── Form helpers ──────────────────────────────────────────────────────────────────────────
 
 /** An HTML checkbox submits `"on"` or nothing at all. */
 export const checkboxSchema = z
-  .union([z.literal('on'), z.literal('true'), z.boolean(), z.undefined()])
-  .transform((value) => value === 'on' || value === 'true' || value === true);
+ .union([z.literal('on'), z.literal('true'), z.boolean(), z.undefined()])
+ .transform((value) => value === 'on' || value === 'true' || value === true);
 
 /** Terms acceptance — a checkbox that must be true. */
 export const acceptedSchema = checkboxSchema.refine((value) => value, {
-  message: 'validation.mustAccept',
+ message: 'validation.mustAccept',
 });

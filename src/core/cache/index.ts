@@ -19,9 +19,9 @@
 export { CACHE_PROFILES, type CacheProfile, type CacheProfileName } from './profiles';
 
 export {
-  CACHE_TAGS,
-  documentTags,
-  usageTags,
-  vaultTags,
-  type CacheTagBuilders,
+ CACHE_TAGS,
+ documentTags,
+ usageTags,
+ vaultTags,
+ type CacheTagBuilders,
 } from './tags';

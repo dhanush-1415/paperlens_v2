@@ -7,43 +7,43 @@
  *
  * ```ts
  * analytics.track('document.analyzed', { documentId, durationMs, flagCount });
- * //              ^ compile error if the name or any property is wrong
+ * // ^ compile error if the name or any property is wrong
  * ```
  */
 
 export { createAnalytics, createNoopAnalytics, type AnalyticsOptions } from './analytics';
 
 export {
-  ANALYTICS_EVENTS,
-  CONSENT_EXEMPT_EVENTS,
-  type AnalyticsEventMap,
-  type AnalyticsEventName,
-  type DocumentSource,
-  type UpgradeSurface,
+ ANALYTICS_EVENTS,
+ CONSENT_EXEMPT_EVENTS,
+ type AnalyticsEventMap,
+ type AnalyticsEventName,
+ type DocumentSource,
+ type UpgradeSurface,
 } from './events';
 
 export {
-  CONSENT_VERSION,
-  createConsentStore,
-  customConsent,
-  denyAll,
-  grantAll,
-  needsConsentDecision,
+ CONSENT_VERSION,
+ createConsentStore,
+ customConsent,
+ denyAll,
+ grantAll,
+ needsConsentDecision,
 } from './consent';
 
 export {
-  createLoggerAnalyticsProvider,
-  createMemoryAnalyticsProvider,
-  createNoopAnalyticsProvider,
-  type MemoryAnalyticsProvider,
+ createLoggerAnalyticsProvider,
+ createMemoryAnalyticsProvider,
+ createNoopAnalyticsProvider,
+ type MemoryAnalyticsProvider,
 } from './providers';
 
 export {
-  DEFAULT_CONSENT,
-  type Analytics,
-  type AnalyticsIdentity,
-  type AnalyticsProvider,
-  type ConsentState,
-  type ConsentValue,
-  type SuperProperties,
+ DEFAULT_CONSENT,
+ type Analytics,
+ type AnalyticsIdentity,
+ type AnalyticsProvider,
+ type ConsentState,
+ type ConsentValue,
+ type SuperProperties,
 } from './types';

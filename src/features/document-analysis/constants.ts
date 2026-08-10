@@ -25,13 +25,13 @@ export const ANALYZE_RATE_SCOPE = 'document.analyze' as const;
 
 /** Human-readable document type labels. Keyed by the domain union, so a new type won't compile until it is named. */
 export const DOCUMENT_TYPE_LABEL: Readonly<Record<DocumentType, string>> = {
-  rental_agreement: 'Rental agreement',
-  employment_contract: 'Employment contract',
-  terms_of_service: 'Terms of service',
-  loan_agreement: 'Loan agreement',
-  insurance_policy: 'Insurance policy',
-  service_contract: 'Service contract',
-  other: 'Other',
+ rental_agreement: 'Rental agreement',
+ employment_contract: 'Employment contract',
+ terms_of_service: 'Terms of service',
+ loan_agreement: 'Loan agreement',
+ insurance_policy: 'Insurance policy',
+ service_contract: 'Service contract',
+ other: 'Other',
 };
 
 /**
@@ -43,14 +43,14 @@ export const DOCUMENT_TYPE_LABEL: Readonly<Record<DocumentType, string>> = {
  * swapping this record for `t(\`clause.${category}\`)` touches this file and nothing else.
  */
 export const CLAUSE_CATEGORY_LABEL: Readonly<Record<ClauseCategory, string>> = {
-  auto_renewal: 'Automatic renewal',
-  arbitration: 'Forced arbitration',
-  liability_cap: 'Limited liability',
-  unilateral_change: 'One-sided changes',
-  termination_penalty: 'Termination penalty',
-  data_sharing: 'Data sharing',
-  late_fee: 'Late fees',
-  indemnity: 'Indemnification',
-  non_compete: 'Non-compete',
-  jurisdiction: 'Governing law',
+ auto_renewal: 'Automatic renewal',
+ arbitration: 'Forced arbitration',
+ liability_cap: 'Limited liability',
+ unilateral_change: 'One-sided changes',
+ termination_penalty: 'Termination penalty',
+ data_sharing: 'Data sharing',
+ late_fee: 'Late fees',
+ indemnity: 'Indemnification',
+ non_compete: 'Non-compete',
+ jurisdiction: 'Governing law',
 };

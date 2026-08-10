@@ -10,25 +10,25 @@
  *
  * ```ts
  * const sidebarEntry = createStorageEntry(
- *   { key: STORAGE_KEYS.sidebarCollapsed, version: 1, fallback: false },
- *   { driver: defaultStorageDriver() },
+ * { key: STORAGE_KEYS.sidebarCollapsed, version: 1, fallback: false },
+ * { driver: defaultStorageDriver() },
  * );
  * ```
  */
 
 export {
-  createLocalStorageDriver,
-  createMemoryStorageDriver,
-  createNoopStorageDriver,
-  createSessionStorageDriver,
-  defaultStorageDriver,
+ createLocalStorageDriver,
+ createMemoryStorageDriver,
+ createNoopStorageDriver,
+ createSessionStorageDriver,
+ defaultStorageDriver,
 } from './drivers';
 
 export { createStorageEntry, type EntryDeps } from './entry';
 
 export type {
-  StorageDriver,
-  StorageEntry,
-  StorageEntryOptions,
-  StoredEnvelope,
+ StorageDriver,
+ StorageEntry,
+ StorageEntryOptions,
+ StoredEnvelope,
 } from './types';

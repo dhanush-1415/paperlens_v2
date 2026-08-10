@@ -20,11 +20,11 @@ import { systemClock } from '@/core/time';
  * it rests on two facts:
  *
  * 1. **The container does not exist yet.** `app/providers.tsx` builds it during React's first
- *    render, which has not happened. A file whose job is to catch pre-hydration failures
- *    cannot depend on something that only exists post-hydration.
+ * render, which has not happened. A file whose job is to catch pre-hydration failures
+ * cannot depend on something that only exists post-hydration.
  * 2. **Next warns when this file takes longer than 16ms.** Importing the composition root
- *    would pull the HTTP client, the flag service, the analytics facade and their transitive
- *    graph into the critical path, to log an error that may never occur.
+ * would pull the HTTP client, the flag service, the analytics facade and their transitive
+ * graph into the critical path, to log an error that may never occur.
  *
  * So it builds its own logger from the same factory the container uses. That is a second
  * *instance*, not a second owner — `core/logging` still defines what a log record is, how it
@@ -33,11 +33,11 @@ import { systemClock } from '@/core/time';
  */
 
 const logger = createLogger({
-  scope: 'client.instrumentation',
-  level: isDevelopment ? 'debug' : 'warn',
-  transports: [createConsoleTransport({ colour: false })],
-  bindings: { environment: appConfig.environment, commit: appConfig.commitSha, phase: 'pre-hydration' },
-  now: systemClock,
+ scope: 'client.instrumentation',
+ level: isDevelopment ? 'debug' : 'warn',
+ transports: [createConsoleTransport({ colour: false })],
+ bindings: { environment: appConfig.environment, commit: appConfig.commitSha, phase: 'pre-hydration' },
+ now: systemClock,
 });
 
 const reporter = createLoggerErrorReporter(logger);
@@ -50,39 +50,39 @@ const reporter = createLoggerErrorReporter(logger);
  * thing that would have told you about it.
  */
 function safely(label: string, install: () => void): void {
-  try {
-    install();
-  } catch (error) {
-    logger.warn(`Instrumentation "${label}" failed to install`, { error: String(error) });
-  }
+ try {
+ install();
+ } catch (error) {
+ logger.warn(`Instrumentation "${label}" failed to install`, { error: String(error) });
+ }
 }
 
 safely('window.error', () => {
-  /**
-   * Errors React never sees.
-   *
-   * Error boundaries catch failures during *render*. A throw inside a `click` handler, a
-   * `setTimeout`, or a promise chain unwinds to the global handler instead — which is why an
-   * app with error boundaries on every route can still have an entire class of failures
-   * nobody hears about.
-   */
-  window.addEventListener('error', (event) => {
-    reporter.report(event.error ?? event.message, {
-      boundary: 'client-runtime',
-      route: window.location.pathname,
-      extra: { source: event.filename, line: event.lineno, column: event.colno },
-    });
-  });
+ /**
+ * Errors React never sees.
+ *
+ * Error boundaries catch failures during *render*. A throw inside a `click` handler, a
+ * `setTimeout`, or a promise chain unwinds to the global handler instead — which is why an
+ * app with error boundaries on every route can still have an entire class of failures
+ * nobody hears about.
+ */
+ window.addEventListener('error', (event) => {
+ reporter.report(event.error ?? event.message, {
+ boundary: 'client-runtime',
+ route: window.location.pathname,
+ extra: { source: event.filename, line: event.lineno, column: event.colno },
+ });
+ });
 });
 
 safely('unhandledrejection', () => {
-  window.addEventListener('unhandledrejection', (event) => {
-    reporter.report(event.reason, {
-      boundary: 'client-runtime',
-      route: window.location.pathname,
-      extra: { kind: 'unhandled-rejection' },
-    });
-  });
+ window.addEventListener('unhandledrejection', (event) => {
+ reporter.report(event.reason, {
+ boundary: 'client-runtime',
+ route: window.location.pathname,
+ extra: { kind: 'unhandled-rejection' },
+ });
+ });
 });
 
 /**
@@ -98,15 +98,15 @@ safely('unhandledrejection', () => {
  * additional tooling.
  */
 export function onRouterTransitionStart(
-  url: string,
-  navigationType: 'push' | 'replace' | 'traverse',
+ url: string,
+ navigationType: 'push' | 'replace' | 'traverse',
 ): void {
-  reporter.addTrail({
-    category: 'navigation',
-    message: url,
-    level: 'info',
-    data: { navigationType, from: window.location.pathname },
-  });
+ reporter.addTrail({
+ category: 'navigation',
+ message: url,
+ level: 'info',
+ data: { navigationType, from: window.location.pathname },
+ });
 
-  performance.mark(`route:${navigationType}`, { detail: url });
+ performance.mark(`route:${navigationType}`, { detail: url });
 }

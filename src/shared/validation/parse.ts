@@ -18,23 +18,23 @@ import { err, ok, type Result } from '@/core/result/result';
  */
 
 export function parse<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: unknown,
+ schema: TSchema,
+ input: unknown,
 ): Result<z.output<TSchema>, AppError> {
-  const result = schema.safeParse(input);
-  return result.success
-    ? ok(result.data)
-    : err(validationError(toFieldErrors(result.error), { cause: result.error }));
+ const result = schema.safeParse(input);
+ return result.success
+ ? ok(result.data)
+ : err(validationError(toFieldErrors(result.error), { cause: result.error }));
 }
 
 export async function parseAsync<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: unknown,
+ schema: TSchema,
+ input: unknown,
 ): Promise<Result<z.output<TSchema>, AppError>> {
-  const result = await schema.safeParseAsync(input);
-  return result.success
-    ? ok(result.data)
-    : err(validationError(toFieldErrors(result.error), { cause: result.error }));
+ const result = await schema.safeParseAsync(input);
+ return result.success
+ ? ok(result.data)
+ : err(validationError(toFieldErrors(result.error), { cause: result.error }));
 }
 
 /**
@@ -45,27 +45,27 @@ export async function parseAsync<TSchema extends z.ZodType>(
  * happens, and `File` entries pass through untouched for `uploadFileSchema`.
  */
 export function parseFormData<TSchema extends z.ZodType>(
-  schema: TSchema,
-  formData: FormData,
+ schema: TSchema,
+ formData: FormData,
 ): Result<z.output<TSchema>, AppError> {
-  return parse(schema, formDataToObject(formData));
+ return parse(schema, formDataToObject(formData));
 }
 
 export function formDataToObject(formData: FormData): Record<string, unknown> {
-  const output: Record<string, unknown> = {};
+ const output: Record<string, unknown> = {};
 
-  for (const [key, value] of formData.entries()) {
-    const existing = output[key];
-    if (existing === undefined) {
-      output[key] = value;
-    } else if (Array.isArray(existing)) {
-      existing.push(value);
-    } else {
-      output[key] = [existing, value];
-    }
-  }
+ for (const [key, value] of formData.entries()) {
+ const existing = output[key];
+ if (existing === undefined) {
+ output[key] = value;
+ } else if (Array.isArray(existing)) {
+ existing.push(value);
+ } else {
+ output[key] = [existing, value];
+ }
+ }
 
-  return output;
+ return output;
 }
 
 /**
@@ -77,10 +77,10 @@ export function formDataToObject(formData: FormData): Record<string, unknown> {
  * default instead of erroring; see `paginationSchema`.
  */
 export function parseSearchParams<TSchema extends z.ZodType>(
-  schema: TSchema,
-  searchParams: Record<string, string | string[] | undefined>,
+ schema: TSchema,
+ searchParams: Record<string, string | string[] | undefined>,
 ): z.output<TSchema> {
-  return schema.parse(searchParams) as z.output<TSchema>;
+ return schema.parse(searchParams) as z.output<TSchema>;
 }
 
 /**
@@ -91,18 +91,18 @@ export function parseSearchParams<TSchema extends z.ZodType>(
  * worth reporting, not a red label under a text input.
  */
 export function parseContract<TSchema extends z.ZodType>(
-  schema: TSchema,
-  input: unknown,
-  source: string,
+ schema: TSchema,
+ input: unknown,
+ source: string,
 ): Result<z.output<TSchema>, AppError> {
-  const result = schema.safeParse(input);
-  if (result.success) return ok(result.data);
+ const result = schema.safeParse(input);
+ if (result.success) return ok(result.data);
 
-  return err(
-    new AppError('UPSTREAM_CONTRACT_VIOLATION', {
-      message: `Contract violation from "${source}"`,
-      cause: result.error,
-      context: { source, issues: toFieldErrors(result.error) },
-    }),
-  );
+ return err(
+ new AppError('UPSTREAM_CONTRACT_VIOLATION', {
+ message: `Contract violation from "${source}"`,
+ cause: result.error,
+ context: { source, issues: toFieldErrors(result.error) },
+ }),
+ );
 }

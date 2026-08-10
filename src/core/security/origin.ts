@@ -16,9 +16,9 @@ import { HTTP_HEADERS } from '@/shared/constants/http';
  */
 
 export interface OriginCheckInput {
-  headers: Headers;
-  /** From `env.server.HTTP_ALLOWED_ORIGINS`, plus the app's own origin. */
-  allowedOrigins: readonly string[];
+ headers: Headers;
+ /** From `env.server.HTTP_ALLOWED_ORIGINS`, plus the app's own origin. */
+ allowedOrigins: readonly string[];
 }
 
 /**
@@ -30,10 +30,10 @@ export interface OriginCheckInput {
  * permissive reading is how this check gets bypassed.
  */
 export function isTrustedOrigin({ headers, allowedOrigins }: OriginCheckInput): boolean {
-  const origin = headers.get(HTTP_HEADERS.origin);
-  if (!origin) return false;
+ const origin = headers.get(HTTP_HEADERS.origin);
+ if (!origin) return false;
 
-  return allowedOrigins.some((allowed) => allowed === origin);
+ return allowedOrigins.some((allowed) => allowed === origin);
 }
 
 /**
@@ -43,14 +43,14 @@ export function isTrustedOrigin({ headers, allowedOrigins }: OriginCheckInput): 
  * so it keeps working across preview deployments where the hostname is generated per branch.
  */
 export function isSameOriginRequest(headers: Headers): boolean {
-  const origin = headers.get(HTTP_HEADERS.origin);
-  const host = headers.get(HTTP_HEADERS.host);
-  if (!origin || !host) return false;
+ const origin = headers.get(HTTP_HEADERS.origin);
+ const host = headers.get(HTTP_HEADERS.host);
+ if (!origin || !host) return false;
 
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    // A malformed Origin is not a trusted one.
-    return false;
-  }
+ try {
+ return new URL(origin).host === host;
+ } catch {
+ // A malformed Origin is not a trusted one.
+ return false;
+ }
 }

@@ -22,8 +22,8 @@
  * theme and classifies anything outside it as an unknown class, which it then passes through
  * untouched. That is a silent failure, not a loud one:
  *
- *     cn('text-text-secondary', 'text-text-primary')
- *     // unconfigured → "text-text-secondary text-text-primary"  ← both emitted
+ * cn('text-text-secondary', 'text-text-primary')
+ * // unconfigured → "text-text-secondary text-text-primary" ← both emitted
  *
  * Both classes survive and the winner is decided by CSS source order, so a component's
  * `className` override works or doesn't depending on which utility Tailwind happened to
@@ -48,39 +48,39 @@ import { THEME_TOKENS } from './tokens/contract';
  * `.bg-gradient-brand` utility rather than through `bg-*`.
  */
 const COLOR_TOKENS: readonly string[] = [
-  ...THEME_TOKENS.surface,
-  ...THEME_TOKENS.border,
-  ...THEME_TOKENS.text,
-  ...THEME_TOKENS.brand.filter((token) => token !== 'brand-gradient'),
-  ...THEME_TOKENS.risk,
-  'focus-ring',
+ ...THEME_TOKENS.surface,
+ ...THEME_TOKENS.border,
+ ...THEME_TOKENS.text,
+ ...THEME_TOKENS.brand.filter((token) => token !== 'brand-gradient'),
+ ...THEME_TOKENS.risk,
+ 'focus-ring',
 ];
 
 const twMerge = extendTailwindMerge({
-  extend: {
-    theme: {
-      color: COLOR_TOKENS,
-      /**
-       * The remaining scales live in the static `@theme` block of `globals.css` rather than
-       * in `tokens.css`, because Tailwind needs their literal values at build time. They are
-       * few enough to restate; `tokens.test.ts` asserts this list against the stylesheet so
-       * a new radius cannot be added in one place and forgotten in the other.
-       */
-      radius: ['selection', 'control', 'card', 'panel', 'modal'],
-      text: ['2xs'],
-      font: ['display'],
-      tracking: ['display'],
-      leading: ['display', 'editorial'],
-      ease: ['brand'],
-      container: ['content', 'shell', 'measure'],
-      shadow: ['card'],
-      'inset-shadow': ['highlight'],
-    },
-  },
+ extend: {
+ theme: {
+ color: COLOR_TOKENS,
+ /**
+ * The remaining scales live in the static `@theme` block of `globals.css` rather than
+ * in `tokens.css`, because Tailwind needs their literal values at build time. They are
+ * few enough to restate; `tokens.test.ts` asserts this list against the stylesheet so
+ * a new radius cannot be added in one place and forgotten in the other.
+ */
+ radius: ['selection', 'control', 'card', 'panel', 'modal'],
+ text: ['2xs'],
+ font: ['display'],
+ tracking: ['display'],
+ leading: ['display', 'editorial'],
+ ease: ['brand'],
+ container: ['content', 'shell', 'measure'],
+ shadow: ['card'],
+ 'inset-shadow': ['highlight'],
+ },
+ },
 });
 
 export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs));
+ return twMerge(clsx(inputs));
 }
 
 export type { ClassValue };

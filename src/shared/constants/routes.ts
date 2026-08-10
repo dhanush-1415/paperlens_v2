@@ -18,44 +18,50 @@
 const segment = (value: string): string => encodeURIComponent(value);
 
 export const ROUTES = {
-  // ── Marketing ─────────────────────────────────────────────────────────────────────────
-  home: '/',
-  howItWorks: '/how-it-works',
-  useCases: '/use-cases',
-  useCase: (slug: string) => `/for/${segment(slug)}`,
-  pricing: '/pricing',
-  security: '/security',
-  about: '/about',
-  faq: '/faq',
-  support: '/support',
-  blog: '/blog',
-  blogPost: (slug: string) => `/blog/${segment(slug)}`,
+ // ── Marketing ─────────────────────────────────────────────────────────────────────────
+ home: '/',
+ howItWorks: '/how-it-works',
+ useCases: '/use-cases',
+ /**
+ * A single document guide. Named `guide`, not `useCase`, deliberately: a member called
+ * `useCase` is indistinguishable from a React Hook to `react-hooks/rules-of-hooks`, which
+ * then rejects every call inside a `.map()` callback. The lint rule is right to be strict —
+ * the fix is to stop naming a pure function `useSomething`.
+ */
+ guide: (slug: string) => `/for/${segment(slug)}`,
+ pricing: '/pricing',
+ security: '/security',
+ about: '/about',
+ faq: '/faq',
+ support: '/support',
+ blog: '/blog',
+ blogPost: (slug: string) => `/blog/${segment(slug)}`,
 
-  // ── Legal ─────────────────────────────────────────────────────────────────────────────
-  terms: '/terms',
-  privacy: '/privacy',
-  cookies: '/cookies',
+ // ── Legal ─────────────────────────────────────────────────────────────────────────────
+ terms: '/terms',
+ privacy: '/privacy',
+ cookies: '/cookies',
 
-  // ── Authentication ────────────────────────────────────────────────────────────────────
-  login: '/login',
-  register: '/register',
-  forgotPassword: '/forgot-password',
-  verifyEmail: '/verify-email',
+ // ── Authentication ────────────────────────────────────────────────────────────────────
+ login: '/login',
+ register: '/register',
+ forgotPassword: '/forgot-password',
+ verifyEmail: '/verify-email',
 
-  // ── Application ───────────────────────────────────────────────────────────────────────
-  welcome: '/welcome',
-  scan: '/scan',
-  vault: '/vault',
-  vaultFolder: (folderId: string) => `/vault/folder/${segment(folderId)}`,
-  document: (id: string) => `/document/${segment(id)}`,
-  usage: '/usage',
-  settings: '/settings',
+ // ── Application ───────────────────────────────────────────────────────────────────────
+ welcome: '/welcome',
+ scan: '/scan',
+ vault: '/vault',
+ vaultFolder: (folderId: string) => `/vault/folder/${segment(folderId)}`,
+ document: (id: string) => `/document/${segment(id)}`,
+ usage: '/usage',
+ settings: '/settings',
 
-  // ── Public sharing ────────────────────────────────────────────────────────────────────
-  share: (shareToken: string) => `/share/${segment(shareToken)}`,
+ // ── Public sharing ────────────────────────────────────────────────────────────────────
+ share: (shareToken: string) => `/share/${segment(shareToken)}`,
 
-  // ── Transactional ─────────────────────────────────────────────────────────────────────
-  orderFailed: '/order-failed',
+ // ── Transactional ─────────────────────────────────────────────────────────────────────
+ orderFailed: '/order-failed',
 } as const;
 
 /**
@@ -66,24 +72,39 @@ export const ROUTES = {
  * protect it; it only avoids a pointless render for a visitor who is clearly signed out.
  */
 export const ROUTE_ACCESS = {
-  /** Requires a session. Prefix match. */
-  protected: ['/welcome', '/scan', '/vault', '/document', '/usage', '/settings'],
-  /** Signed-in users are bounced away from these. */
-  authOnly: ['/login', '/register', '/forgot-password'],
-  /** Never redirected, never gated. */
-  public: ['/', '/how-it-works', '/use-cases', '/for', '/pricing', '/security', '/about', '/faq', '/support', '/blog', '/terms', '/privacy', '/cookies', '/share'],
+ /** Requires a session. Prefix match. */
+ protected: ['/welcome', '/scan', '/vault', '/document', '/usage', '/settings'],
+ /** Signed-in users are bounced away from these. */
+ authOnly: ['/login', '/register', '/forgot-password'],
+ /** Never redirected, never gated. */
+ public: [
+ '/',
+ '/how-it-works',
+ '/use-cases',
+ '/for',
+ '/pricing',
+ '/security',
+ '/about',
+ '/faq',
+ '/support',
+ '/blog',
+ '/terms',
+ '/privacy',
+ '/cookies',
+ '/share',
+ ],
 } as const;
 
 export function isProtectedPath(pathname: string): boolean {
-  return ROUTE_ACCESS.protected.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
+ return ROUTE_ACCESS.protected.some(
+ (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+ );
 }
 
 export function isAuthOnlyPath(pathname: string): boolean {
-  return ROUTE_ACCESS.authOnly.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
+ return ROUTE_ACCESS.authOnly.some(
+ (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+ );
 }
 
 /** Where to land after signing in, when no `redirectTo` was captured. */

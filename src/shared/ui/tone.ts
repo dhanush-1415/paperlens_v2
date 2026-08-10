@@ -24,11 +24,11 @@
 import type { ComponentType } from 'react';
 
 import {
-  AlertCircleIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
-  InfoIcon,
-  type IconProps,
+ AlertCircleIcon,
+ AlertTriangleIcon,
+ CheckCircleIcon,
+ InfoIcon,
+ type IconProps,
 } from './icons';
 
 export const TONES = ['neutral', 'brand', 'critical', 'caution', 'safe', 'info'] as const;
@@ -41,7 +41,7 @@ export const RISK_TONES = ['critical', 'caution', 'safe'] as const;
 export type RiskTone = (typeof RISK_TONES)[number];
 
 export function isRiskTone(tone: Tone): tone is RiskTone {
-  return (RISK_TONES as readonly Tone[]).includes(tone);
+ return (RISK_TONES as readonly Tone[]).includes(tone);
 }
 
 /**
@@ -51,14 +51,17 @@ export function isRiskTone(tone: Tone): tone is RiskTone {
  * outshout the content around it. The risk tones use their dedicated `-bg`/`-border`/`-fg`
  * slots, which are tuned per theme; `neutral` and `brand` mix from a single colour because
  * they have no safety requirement to meet.
+ *
+ * `brand` reads its foreground from `brand-ink` for the same reason the risk tones read
+ * theirs from `-fg`: the identity blue on its own 10% tint is 2.79:1 in the light theme.
  */
 export const TONE_SOFT = {
-  neutral: 'border-border-subtle bg-surface-2 text-text-secondary',
-  brand: 'border-brand-primary/25 bg-brand-primary/10 text-brand-primary',
-  critical: 'border-risk-critical-border bg-risk-critical-bg text-risk-critical-fg',
-  caution: 'border-risk-caution-border bg-risk-caution-bg text-risk-caution-fg',
-  safe: 'border-risk-safe-border bg-risk-safe-bg text-risk-safe-fg',
-  info: 'border-risk-info-border bg-risk-info-bg text-risk-info-fg',
+ neutral: 'border-border-subtle bg-surface-2 text-text-secondary',
+ brand: 'border-brand-primary/25 bg-brand-primary/10 text-brand-ink',
+ critical: 'border-risk-critical-border bg-risk-critical-bg text-risk-critical-fg',
+ caution: 'border-risk-caution-border bg-risk-caution-bg text-risk-caution-fg',
+ safe: 'border-risk-safe-border bg-risk-safe-bg text-risk-safe-fg',
+ info: 'border-risk-info-border bg-risk-info-bg text-risk-info-fg',
 } as const satisfies Record<Tone, string>;
 
 /**
@@ -68,22 +71,24 @@ export const TONE_SOFT = {
  * text on a canvas, and the two need different contrast to land in the same place.
  */
 export const TONE_SOLID = {
-  neutral: 'bg-text-tertiary',
-  brand: 'bg-brand-primary',
-  critical: 'bg-risk-critical',
-  caution: 'bg-risk-caution',
-  safe: 'bg-risk-safe',
-  info: 'bg-risk-info',
+ neutral: 'bg-text-tertiary',
+ brand: 'bg-brand-primary',
+ critical: 'bg-risk-critical',
+ caution: 'bg-risk-caution',
+ safe: 'bg-risk-safe',
+ info: 'bg-risk-info',
 } as const satisfies Record<Tone, string>;
 
 /** The same tones as a foreground colour, for standalone icons and inline text. */
 export const TONE_TEXT = {
-  neutral: 'text-text-secondary',
-  brand: 'text-brand-primary',
-  critical: 'text-risk-critical-fg',
-  caution: 'text-risk-caution-fg',
-  safe: 'text-risk-safe-fg',
-  info: 'text-risk-info-fg',
+ neutral: 'text-text-secondary',
+ // `ink`, not `primary` — this slot can land on text, and the risk tones opposite it all
+ // resolve to their text-tuned `-fg` for the same reason.
+ brand: 'text-brand-ink',
+ critical: 'text-risk-critical-fg',
+ caution: 'text-risk-caution-fg',
+ safe: 'text-risk-safe-fg',
+ info: 'text-risk-info-fg',
 } as const satisfies Record<Tone, string>;
 
 /**
@@ -94,10 +99,10 @@ export const TONE_TEXT = {
  * monochrome printout, and a user who cannot distinguish red from green.
  */
 export const TONE_ICON = {
-  neutral: InfoIcon,
-  brand: InfoIcon,
-  critical: AlertTriangleIcon,
-  caution: AlertCircleIcon,
-  safe: CheckCircleIcon,
-  info: InfoIcon,
+ neutral: InfoIcon,
+ brand: InfoIcon,
+ critical: AlertTriangleIcon,
+ caution: AlertCircleIcon,
+ safe: CheckCircleIcon,
+ info: InfoIcon,
 } as const satisfies Record<Tone, ComponentType<IconProps>>;

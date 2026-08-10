@@ -11,12 +11,12 @@ import type { Logger } from '../logging/types';
 
 /** Discards everything. The production default until a vendor is chosen. */
 export function createNoopAnalyticsProvider(): AnalyticsProvider {
-  return {
-    name: 'noop',
-    track: () => undefined,
-    identify: () => undefined,
-    reset: () => undefined,
-  };
+ return {
+ name: 'noop',
+ track: () => undefined,
+ identify: () => undefined,
+ reset: () => undefined,
+ };
 }
 
 /**
@@ -27,41 +27,41 @@ export function createNoopAnalyticsProvider(): AnalyticsProvider {
  * discovered on the dashboard, weeks later.
  */
 export function createLoggerAnalyticsProvider(logger: Logger): AnalyticsProvider {
-  const scoped = logger.child('analytics');
+ const scoped = logger.child('analytics');
 
-  return {
-    name: 'logger',
-    track: (event, properties) => scoped.info('track', { event, properties }),
-    identify: (identity) => scoped.info('identify', { ...identity }),
-    reset: () => scoped.info('reset'),
-  };
+ return {
+ name: 'logger',
+ track: (event, properties) => scoped.info('track', { event, properties }),
+ identify: (identity) => scoped.info('identify', { ...identity }),
+ reset: () => scoped.info('reset'),
+ };
 }
 
 /** Records calls in arrays. The test double — assertions read directly off these. */
 export interface MemoryAnalyticsProvider extends AnalyticsProvider {
-  readonly events: Array<{ event: string; properties: Record<string, unknown> }>;
-  readonly identities: AnalyticsIdentity[];
-  resetCount(): number;
+ readonly events: Array<{ event: string; properties: Record<string, unknown> }>;
+ readonly identities: AnalyticsIdentity[];
+ resetCount(): number;
 }
 
 export function createMemoryAnalyticsProvider(): MemoryAnalyticsProvider {
-  const events: Array<{ event: string; properties: Record<string, unknown> }> = [];
-  const identities: AnalyticsIdentity[] = [];
-  let resets = 0;
+ const events: Array<{ event: string; properties: Record<string, unknown> }> = [];
+ const identities: AnalyticsIdentity[] = [];
+ let resets = 0;
 
-  return {
-    name: 'memory',
-    events,
-    identities,
-    track: (event, properties) => {
-      events.push({ event, properties });
-    },
-    identify: (identity) => {
-      identities.push(identity);
-    },
-    reset: () => {
-      resets += 1;
-    },
-    resetCount: () => resets,
-  };
+ return {
+ name: 'memory',
+ events,
+ identities,
+ track: (event, properties) => {
+ events.push({ event, properties });
+ },
+ identify: (identity) => {
+ identities.push(identity);
+ },
+ reset: () => {
+ resets += 1;
+ },
+ resetCount: () => resets,
+ };
 }

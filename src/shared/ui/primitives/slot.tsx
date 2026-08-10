@@ -24,53 +24,53 @@ import { cn } from '@/shared/ui/cn';
 type AnyProps = Record<string, unknown>;
 
 export interface SlotProps {
-  children?: ReactNode;
-  [key: string]: unknown;
+ children?: ReactNode;
+ [key: string]: unknown;
 }
 
 /**
  * Merge order is deliberate and asymmetric:
  *
- *   · **Event handlers** — both run, slot first then child. The child's handler is the
- *     specific one and must be able to observe anything the slot's handler did.
- *   · **`className`** — merged through `cn`, so the child can override a Tailwind utility
- *     the slot set rather than having both emitted and losing to source order.
- *   · **`style`** — child wins per-property.
- *   · **Everything else** — child wins outright. The child is the concrete element; if it
- *     says `type="submit"`, it means it.
+ * · **Event handlers** — both run, slot first then child. The child's handler is the
+ * specific one and must be able to observe anything the slot's handler did.
+ * · **`className`** — merged through `cn`, so the child can override a Tailwind utility
+ * the slot set rather than having both emitted and losing to source order.
+ * · **`style`** — child wins per-property.
+ * · **Everything else** — child wins outright. The child is the concrete element; if it
+ * says `type="submit"`, it means it.
  */
 function mergeProps(slotProps: AnyProps, childProps: AnyProps): AnyProps {
-  const merged: AnyProps = { ...slotProps, ...childProps };
+ const merged: AnyProps = { ...slotProps, ...childProps };
 
-  for (const key of Object.keys(slotProps)) {
-    const slotValue = slotProps[key];
-    const childValue = childProps[key];
+ for (const key of Object.keys(slotProps)) {
+ const slotValue = slotProps[key];
+ const childValue = childProps[key];
 
-    const isEventHandler = /^on[A-Z]/.test(key);
+ const isEventHandler = /^on[A-Z]/.test(key);
 
-    if (isEventHandler) {
-      if (typeof slotValue === 'function' && typeof childValue === 'function') {
-        merged[key] = (...args: unknown[]) => {
-          (childValue as (...a: unknown[]) => unknown)(...args);
-          (slotValue as (...a: unknown[]) => unknown)(...args);
-        };
-      } else if (typeof slotValue === 'function') {
-        merged[key] = slotValue;
-      }
-      continue;
-    }
+ if (isEventHandler) {
+ if (typeof slotValue === 'function' && typeof childValue === 'function') {
+ merged[key] = (...args: unknown[]) => {
+ (childValue as (...a: unknown[]) => unknown)(...args);
+ (slotValue as (...a: unknown[]) => unknown)(...args);
+ };
+ } else if (typeof slotValue === 'function') {
+ merged[key] = slotValue;
+ }
+ continue;
+ }
 
-    if (key === 'className') {
-      merged[key] = cn(slotValue as string, childValue as string);
-      continue;
-    }
+ if (key === 'className') {
+ merged[key] = cn(slotValue as string, childValue as string);
+ continue;
+ }
 
-    if (key === 'style') {
-      merged[key] = { ...(slotValue as object), ...(childValue as object) };
-    }
-  }
+ if (key === 'style') {
+ merged[key] = { ...(slotValue as object), ...(childValue as object) };
+ }
+ }
 
-  return merged;
+ return merged;
 }
 
 /**
@@ -83,9 +83,9 @@ function mergeProps(slotProps: AnyProps, childProps: AnyProps): AnyProps {
  *
  * ```tsx
  * <Slot className="…">
- *   {startIcon}
- *   <Slottable>{children}</Slottable>   ← this is the element to render as
- *   {endIcon}
+ * {startIcon}
+ * <Slottable>{children}</Slottable> ← this is the element to render as
+ * {endIcon}
  * </Slot>
  * ```
  *
@@ -98,48 +98,48 @@ function mergeProps(slotProps: AnyProps, childProps: AnyProps): AnyProps {
  * component is used without `asChild`.
  */
 export function Slottable({ children }: { children?: ReactNode }) {
-  return <>{children}</>;
+ return <>{children}</>;
 }
 
 function isSlottable(child: ReactNode): child is ReactElement<{ children?: ReactNode }> {
-  return isValidElement(child) && child.type === Slottable;
+ return isValidElement(child) && child.type === Slottable;
 }
 
 export function Slot({ children, ...slotProps }: SlotProps) {
-  const childArray = Children.toArray(children);
-  const slottable = childArray.find(isSlottable);
+ const childArray = Children.toArray(children);
+ const slottable = childArray.find(isSlottable);
 
-  /**
-   * The decorated case: one child is marked, the rest are decorations that must move inside
-   * it. Their order relative to the marker is preserved, which is what keeps a `startIcon`
-   * before the label and an `endIcon` after it.
-   */
-  if (slottable) {
-    const target = Children.only(slottable.props.children) as ReactElement<AnyProps>;
+ /**
+ * The decorated case: one child is marked, the rest are decorations that must move inside
+ * it. Their order relative to the marker is preserved, which is what keeps a `startIcon`
+ * before the label and an `endIcon` after it.
+ */
+ if (slottable) {
+ const target = Children.only(slottable.props.children) as ReactElement<AnyProps>;
 
-    if (!isValidElement(target)) {
-      throw new Error('`asChild` requires a single React element child.');
-    }
+ if (!isValidElement(target)) {
+ throw new Error('`asChild` requires a single React element child.');
+ }
 
-    const inner = childArray.map((child) =>
-      child === slottable ? (target.props as { children?: ReactNode }).children : child,
-    );
+ const inner = childArray.map((child) =>
+ child === slottable ? (target.props as { children?: ReactNode }).children : child,
+ );
 
-    return cloneElement(target, mergeProps(slotProps, target.props), ...inner);
-  }
+ return cloneElement(target, mergeProps(slotProps, target.props), ...inner);
+ }
 
-  /**
-   * The plain case: exactly one child, and it must be an element.
-   *
-   * `Children.only` throws a clear error for the two mistakes people make — passing a text
-   * node, or passing a fragment with two children. Both would otherwise fail later and much
-   * further from the cause, as a missing `href` or a button with no styles.
-   */
-  const child = Children.only(children) as ReactElement<AnyProps>;
+ /**
+ * The plain case: exactly one child, and it must be an element.
+ *
+ * `Children.only` throws a clear error for the two mistakes people make — passing a text
+ * node, or passing a fragment with two children. Both would otherwise fail later and much
+ * further from the cause, as a missing `href` or a button with no styles.
+ */
+ const child = Children.only(children) as ReactElement<AnyProps>;
 
-  if (!isValidElement(child)) {
-    throw new Error('`asChild` requires a single React element child.');
-  }
+ if (!isValidElement(child)) {
+ throw new Error('`asChild` requires a single React element child.');
+ }
 
-  return cloneElement(child, mergeProps(slotProps, child.props));
+ return cloneElement(child, mergeProps(slotProps, child.props));
 }

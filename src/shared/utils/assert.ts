@@ -13,22 +13,22 @@
  */
 
 export function assert(condition: unknown, message: string): asserts condition {
-  if (!condition) throw new Error(`Invariant failed: ${message}`);
+ if (!condition) throw new Error(`Invariant failed: ${message}`);
 }
 
 export function assertDefined<T>(
-  value: T | null | undefined,
-  message: string,
+ value: T | null | undefined,
+ message: string,
 ): asserts value is T {
-  if (value === null || value === undefined) {
-    throw new Error(`Invariant failed: ${message} (received ${value === null ? 'null' : 'undefined'})`);
-  }
+ if (value === null || value === undefined) {
+ throw new Error(`Invariant failed: ${message} (received ${value === null ? 'null' : 'undefined'})`);
+ }
 }
 
 /** Narrow and return in one expression, for use inside an expression position. */
 export function required<T>(value: T | null | undefined, message: string): T {
-  assertDefined(value, message);
-  return value;
+ assertDefined(value, message);
+ return value;
 }
 
 /**
@@ -40,12 +40,12 @@ export function required<T>(value: T | null | undefined, message: string): T {
  *
  * ```ts
  * switch (severity) {
- *   case 'low':  return …
- *   case 'high': return …
- *   default: return assertNever(severity)
+ * case 'low': return …
+ * case 'high': return …
+ * default: return assertNever(severity)
  * }
  * ```
  */
 export function assertNever(value: never, message = 'Unhandled case'): never {
-  throw new Error(`${message}: ${JSON.stringify(value)}`);
+ throw new Error(`${message}: ${JSON.stringify(value)}`);
 }

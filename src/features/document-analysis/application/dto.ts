@@ -26,58 +26,58 @@
  */
 
 import {
-  sortFlags,
-  type ClauseCategory,
-  type DocumentAnalysis,
-  type DocumentAnalysisSummary,
-  type DocumentType,
-  type RiskFlag,
-  type RiskLevel,
-  type RiskScore,
+ sortFlags,
+ type ClauseCategory,
+ type DocumentAnalysis,
+ type DocumentAnalysisSummary,
+ type DocumentType,
+ type RiskFlag,
+ type RiskLevel,
+ type RiskScore,
 } from '../domain';
 
 export interface RiskFlagDto {
-  readonly id: string;
-  /**
-   * Kept as the domain union rather than widened to `string`.
-   *
-   * A DTO usually loosens types on the way out; this one does not, because the union is the
-   * thing that makes `CLAUSE_CATEGORY_LABEL[flag.category]` a total lookup. Widen it and every
-   * consumer needs a fallback for a category that cannot occur — and the compiler stops
-   * catching the label that was never added.
-   */
-  readonly category: ClauseCategory;
-  readonly level: RiskLevel;
-  readonly title: string;
-  readonly excerpt: string;
-  readonly explanation: string;
-  readonly recommendation?: string;
+ readonly id: string;
+ /**
+ * Kept as the domain union rather than widened to `string`.
+ *
+ * A DTO usually loosens types on the way out; this one does not, because the union is the
+ * thing that makes `CLAUSE_CATEGORY_LABEL[flag.category]` a total lookup. Widen it and every
+ * consumer needs a fallback for a category that cannot occur — and the compiler stops
+ * catching the label that was never added.
+ */
+ readonly category: ClauseCategory;
+ readonly level: RiskLevel;
+ readonly title: string;
+ readonly excerpt: string;
+ readonly explanation: string;
+ readonly recommendation?: string;
 }
 
 export interface RiskScoreDto {
-  readonly value: number;
-  readonly level: RiskLevel;
-  readonly criticalCount: number;
-  readonly cautionCount: number;
-  readonly safeCount: number;
+ readonly value: number;
+ readonly level: RiskLevel;
+ readonly criticalCount: number;
+ readonly cautionCount: number;
+ readonly safeCount: number;
 }
 
 export interface AnalysisDto {
-  readonly id: string;
-  readonly title: string;
-  readonly documentType: DocumentType;
-  readonly charCount: number;
-  readonly analyzedAt: string;
-  readonly score: RiskScoreDto;
-  readonly flags: readonly RiskFlagDto[];
+ readonly id: string;
+ readonly title: string;
+ readonly documentType: DocumentType;
+ readonly charCount: number;
+ readonly analyzedAt: string;
+ readonly score: RiskScoreDto;
+ readonly flags: readonly RiskFlagDto[];
 }
 
 export interface AnalysisSummaryDto {
-  readonly id: string;
-  readonly title: string;
-  readonly documentType: DocumentType;
-  readonly analyzedAt: string;
-  readonly score: RiskScoreDto;
+ readonly id: string;
+ readonly title: string;
+ readonly documentType: DocumentType;
+ readonly analyzedAt: string;
+ readonly score: RiskScoreDto;
 }
 
 /**
@@ -88,15 +88,15 @@ export interface AnalysisSummaryDto {
  * is one line, at the moment there is a component that uses them.
  */
 function toFlagDto(flag: RiskFlag): RiskFlagDto {
-  return {
-    id: flag.id,
-    category: flag.category,
-    level: flag.level,
-    title: flag.title,
-    excerpt: flag.excerpt,
-    explanation: flag.explanation,
-    ...(flag.recommendation === undefined ? {} : { recommendation: flag.recommendation }),
-  };
+ return {
+ id: flag.id,
+ category: flag.category,
+ level: flag.level,
+ title: flag.title,
+ excerpt: flag.excerpt,
+ explanation: flag.explanation,
+ ...(flag.recommendation === undefined ? {} : { recommendation: flag.recommendation }),
+ };
 }
 
 /**
@@ -108,35 +108,35 @@ function toFlagDto(flag: RiskFlag): RiskFlagDto {
  * the boundary instead of at every use.
  */
 function toScoreDto(score: RiskScore): RiskScoreDto {
-  return {
-    value: score.value,
-    level: score.level,
-    criticalCount: score.counts.critical,
-    cautionCount: score.counts.caution,
-    safeCount: score.counts.safe,
-  };
+ return {
+ value: score.value,
+ level: score.level,
+ criticalCount: score.counts.critical,
+ cautionCount: score.counts.caution,
+ safeCount: score.counts.safe,
+ };
 }
 
 export function toAnalysisDto(analysis: DocumentAnalysis): AnalysisDto {
-  return {
-    id: analysis.id,
-    title: analysis.title,
-    documentType: analysis.documentType,
-    charCount: analysis.charCount,
-    analyzedAt: analysis.analyzedAt,
-    score: toScoreDto(analysis.score),
-    // Sorted here, once, rather than in whichever component happens to render them. Two
-    // surfaces sorting independently is how a list and its summary end up disagreeing.
-    flags: sortFlags(analysis.flags).map(toFlagDto),
-  };
+ return {
+ id: analysis.id,
+ title: analysis.title,
+ documentType: analysis.documentType,
+ charCount: analysis.charCount,
+ analyzedAt: analysis.analyzedAt,
+ score: toScoreDto(analysis.score),
+ // Sorted here, once, rather than in whichever component happens to render them. Two
+ // surfaces sorting independently is how a list and its summary end up disagreeing.
+ flags: sortFlags(analysis.flags).map(toFlagDto),
+ };
 }
 
 export function toSummaryDto(summary: DocumentAnalysisSummary): AnalysisSummaryDto {
-  return {
-    id: summary.id,
-    title: summary.title,
-    documentType: summary.documentType,
-    analyzedAt: summary.analyzedAt,
-    score: toScoreDto(summary.score),
-  };
+ return {
+ id: summary.id,
+ title: summary.title,
+ documentType: summary.documentType,
+ analyzedAt: summary.analyzedAt,
+ score: toScoreDto(summary.score),
+ };
 }

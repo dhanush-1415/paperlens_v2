@@ -62,8 +62,9 @@ test('an unknown route renders the not-found page rather than an error', async (
   const response = await page.goto('/definitely-not-a-route');
 
   expect(response?.status()).toBe(404);
-  // The 404 page is the design system's `EmptyState`, so it offers a way out rather than a
-  // dead end — a 404 with no navigation is how a broken link becomes a lost session.
-  await expect(page.getByText("We couldn't find that page")).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Back to home' })).toBeVisible();
+  // The 404 offers a way out rather than a dead end — a 404 with no navigation is how a
+  // broken link becomes a lost session. Matched by role, and with a typographic apostrophe,
+  // because the page sets one: asserting on a straight `'` fails on correct copy.
+  await expect(page.getByRole('heading', { name: 'We couldn’t find that page' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Analyze a document' }).first()).toBeVisible();
 });

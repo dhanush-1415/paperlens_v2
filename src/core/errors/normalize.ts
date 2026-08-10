@@ -3,10 +3,10 @@ import { z } from 'zod';
 import { encodeMessageRef } from '@/shared/utils/string';
 
 import {
-  AppError,
-  isAppError,
-  isSerializedAppError,
-  validationError,
+ AppError,
+ isAppError,
+ isSerializedAppError,
+ validationError,
 } from './app-error';
 import { isErrorCode } from './codes';
 import { rethrowIfFrameworkError } from './rethrow';
@@ -22,53 +22,53 @@ import { rethrowIfFrameworkError } from './rethrow';
  * structurally impossible to swallow a `redirect()`.
  */
 export function normalizeError(error: unknown): AppError {
-  rethrowIfFrameworkError(error);
+ rethrowIfFrameworkError(error);
 
-  if (isAppError(error)) return error;
+ if (isAppError(error)) return error;
 
-  // An AppError that has crossed a serialization boundary and lost its prototype.
-  if (isSerializedAppError(error)) {
-    const code = isErrorCode(error.code) ? error.code : 'INTERNAL_ERROR';
-    return new AppError(code, {
-      message: `Deserialized: ${error.code}`,
-      ...(error.correlationId ? { correlationId: error.correlationId } : {}),
-      ...(error.fieldErrors ? { fieldErrors: error.fieldErrors } : {}),
-      ...(error.retryAfterSeconds !== undefined
-        ? { retryAfterSeconds: error.retryAfterSeconds }
-        : {}),
-    });
-  }
+ // An AppError that has crossed a serialization boundary and lost its prototype.
+ if (isSerializedAppError(error)) {
+ const code = isErrorCode(error.code) ? error.code : 'INTERNAL_ERROR';
+ return new AppError(code, {
+ message: `Deserialized: ${error.code}`,
+ ...(error.correlationId ? { correlationId: error.correlationId } : {}),
+ ...(error.fieldErrors ? { fieldErrors: error.fieldErrors } : {}),
+ ...(error.retryAfterSeconds !== undefined
+ ? { retryAfterSeconds: error.retryAfterSeconds }
+ : {}),
+ });
+ }
 
-  if (error instanceof z.ZodError) {
-    return validationError(toFieldErrors(error), { cause: error });
-  }
+ if (error instanceof z.ZodError) {
+ return validationError(toFieldErrors(error), { cause: error });
+ }
 
-  // Both names, and by name rather than by `instanceof`.
-  //
-  // Two separate traps. First, `controller.abort()` produces an `AbortError` but
-  // `AbortSignal.timeout()` — which is how the HTTP client enforces its own budget —
-  // produces a `TimeoutError`; matching only the first classifies every timed-out request as
-  // `INTERNAL_ERROR`, which is neither retryable nor honest to whoever reads the crash
-  // report. Second, `instanceof DOMException` is a *realm* check: the exception undici
-  // attaches to an aborted signal is constructed in a different realm from the ambient
-  // `DOMException` binding, so the test is false even though the constructor's name is
-  // `DOMException`. Verified — not theoretical. The `name` property is the portable signal.
-  if (isErrorNamed(error, 'AbortError') || isErrorNamed(error, 'TimeoutError')) {
-    return new AppError('TIMEOUT', { message: 'Request aborted', cause: error });
-  }
+ // Both names, and by name rather than by `instanceof`.
+ //
+ // Two separate traps. First, `controller.abort()` produces an `AbortError` but
+ // `AbortSignal.timeout()` — which is how the HTTP client enforces its own budget —
+ // produces a `TimeoutError`; matching only the first classifies every timed-out request as
+ // `INTERNAL_ERROR`, which is neither retryable nor honest to whoever reads the crash
+ // report. Second, `instanceof DOMException` is a *realm* check: the exception undici
+ // attaches to an aborted signal is constructed in a different realm from the ambient
+ // `DOMException` binding, so the test is false even though the constructor's name is
+ // `DOMException`. Verified — not theoretical. The `name` property is the portable signal.
+ if (isErrorNamed(error, 'AbortError') || isErrorNamed(error, 'TimeoutError')) {
+ return new AppError('TIMEOUT', { message: 'Request aborted', cause: error });
+ }
 
-  if (error instanceof Error) {
-    // Node and undici surface a dead connection as a plain TypeError.
-    if (error.name === 'TypeError' && /fetch failed|network|ECONN|ENOTFOUND/i.test(error.message)) {
-      return new AppError('NETWORK_UNAVAILABLE', { message: error.message, cause: error });
-    }
-    return new AppError('INTERNAL_ERROR', { message: error.message, cause: error });
-  }
+ if (error instanceof Error) {
+ // Node and undici surface a dead connection as a plain TypeError.
+ if (error.name === 'TypeError' && /fetch failed|network|ECONN|ENOTFOUND/i.test(error.message)) {
+ return new AppError('NETWORK_UNAVAILABLE', { message: error.message, cause: error });
+ }
+ return new AppError('INTERNAL_ERROR', { message: error.message, cause: error });
+ }
 
-  return new AppError('INTERNAL_ERROR', {
-    message: `Non-Error thrown: ${safeStringify(error)}`,
-    cause: error,
-  });
+ return new AppError('INTERNAL_ERROR', {
+ message: `Non-Error thrown: ${safeStringify(error)}`,
+ cause: error,
+ });
 }
 
 /**
@@ -80,7 +80,7 @@ export function normalizeError(error: unknown): AppError {
  * falls through to `INTERNAL_ERROR`. Where the name is part of the platform contract, use it.
  */
 function isErrorNamed(error: unknown, name: string): boolean {
-  return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === name;
+ return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === name;
 }
 
 /**
@@ -96,14 +96,14 @@ function isErrorNamed(error: unknown, name: string): boolean {
  * from there — see `encodeMessageRef` for why it travels as part of the string.
  */
 export function toFieldErrors(error: z.ZodError): Record<string, string[]> {
-  const fieldErrors: Record<string, string[]> = {};
+ const fieldErrors: Record<string, string[]> = {};
 
-  for (const issue of error.issues) {
-    const path = issue.path.length > 0 ? issue.path.join('.') : '_form';
-    (fieldErrors[path] ??= []).push(encodeMessageRef(issue.message, issueParams(issue)));
-  }
+ for (const issue of error.issues) {
+ const path = issue.path.length > 0 ? issue.path.join('.') : '_form';
+ (fieldErrors[path] ??= []).push(encodeMessageRef(issue.message, issueParams(issue)));
+ }
 
-  return fieldErrors;
+ return fieldErrors;
 }
 
 /**
@@ -115,15 +115,15 @@ export function toFieldErrors(error: z.ZodError): Record<string, string[]> {
  * `n` suffix and "at least 200n characters" is not a sentence.
  */
 function issueParams(issue: z.core.$ZodIssue): Record<string, number> | undefined {
-  if (issue.code === 'too_small') return { min: Number(issue.minimum) };
-  if (issue.code === 'too_big') return { max: Number(issue.maximum) };
-  return undefined;
+ if (issue.code === 'too_small') return { min: Number(issue.minimum) };
+ if (issue.code === 'too_big') return { max: Number(issue.maximum) };
+ return undefined;
 }
 
 function safeStringify(value: unknown): string {
-  try {
-    return JSON.stringify(value) ?? String(value);
-  } catch {
-    return String(value);
-  }
+ try {
+ return JSON.stringify(value) ?? String(value);
+ } catch {
+ return String(value);
+ }
 }

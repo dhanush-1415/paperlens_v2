@@ -7,9 +7,9 @@ import { Container, Heading, PageHeader, Section, Skeleton, Text } from '@/share
 import { requireSession } from '@/server/bootstrap';
 
 export const metadata: Metadata = {
-  title: 'Scan a document',
-  description:
-    'Paste a contract, lease or notice and see the clauses that cost you money, ranked by severity.',
+ title: 'Scan a document',
+ description:
+ 'Paste a contract, lease or notice and see the clauses that cost you money, ranked by severity.',
 };
 
 /**
@@ -23,18 +23,18 @@ export const metadata: Metadata = {
  */
 
 const LABELS: AnalysisFormLabels = {
-  documentLabel: 'Your document',
-  documentDescription:
-    'Paste the full text. Nothing is stored until the analysis finishes, and only you can read it.',
-  documentPlaceholder: 'Paste your contract, lease, offer letter or terms of service here…',
-  typeLabel: 'Document type',
-  titleLabel: 'Title',
-  titleDescription: 'Optional. We derive one from the first line if you leave this blank.',
-  titlePlaceholder: 'Flat 3, Kingsway — tenancy agreement',
-  submit: 'Analyse document',
-  submitting: 'Reading your document…',
-  errorTitle: 'We could not analyse that',
-  counter: '{count} / {max} characters',
+ documentLabel: 'Your document',
+ documentDescription:
+ 'Paste the full text. Nothing is stored until the analysis finishes, and only you can read it.',
+ documentPlaceholder: 'Paste your contract, lease, offer letter or terms of service here…',
+ typeLabel: 'Document type',
+ titleLabel: 'Title',
+ titleDescription: 'Optional. We derive one from the first line if you leave this blank.',
+ titlePlaceholder: 'Flat 3, Kingsway — tenancy agreement',
+ submit: 'Analyse document',
+ submitting: 'Reading your document…',
+ errorTitle: 'We could not analyse that',
+ counter: '{count} / {max} characters',
 };
 
 /**
@@ -50,42 +50,42 @@ const LABELS: AnalysisFormLabels = {
  * Action verifies again, because a POST to it never passes through this page at all.
  */
 async function ScanForm() {
-  await requireSession();
-  return <AnalysisForm labels={LABELS} />;
+ await requireSession();
+ return <AnalysisForm labels={LABELS} />;
 }
 
 export default function ScanPage() {
-  return (
-    <Container>
-      <Section spacing="lg">
-        <PageHeader
-          title="Scan a document"
-          description="Paste the text and we will read it the way a lawyer would — worst clause first."
-        />
+ return (
+ <Container>
+ <Section spacing="lg">
+ <PageHeader
+ title="Scan a document"
+ description="Paste the text and we will read it the way a lawyer would — worst clause first."
+ />
 
-        <Suspense
-          fallback={
-            <div className="flex flex-col gap-6">
-              <Skeleton className="h-64 w-full" />
-              <Skeleton className="h-11 w-40" />
-            </div>
-          }
-        >
-          <ScanForm />
-        </Suspense>
+ <Suspense
+ fallback={
+ <div className="flex flex-col gap-6">
+ <Skeleton className="h-64 w-full" />
+ <Skeleton className="h-11 w-40" />
+ </div>
+ }
+ >
+ <ScanForm />
+ </Suspense>
 
-        <div className="mt-10 border-t border-border-subtle pt-6">
-          <Heading level={2} size="eyebrow">
-            What we look for
-          </Heading>
-          <Text size="sm" tone="secondary" measure className="mt-2">
-            Automatic renewal, forced arbitration, one-sided amendment rights, termination
-            penalties, liability caps, indemnities, late fees, data sharing, non-competes and
-            governing law — up to {INPUT_LIMITS.maxDocumentChars.toLocaleString()} characters per
-            document.
-          </Text>
-        </div>
-      </Section>
-    </Container>
-  );
+ <div className="mt-10 border-t border-border-subtle pt-6">
+ <Heading level={2} size="eyebrow">
+ What we look for
+ </Heading>
+ <Text size="sm" tone="secondary" measure className="mt-2">
+ Automatic renewal, forced arbitration, one-sided amendment rights, termination
+ penalties, liability caps, indemnities, late fees, data sharing, non-competes and
+ governing law — up to {INPUT_LIMITS.maxDocumentChars.toLocaleString()} characters per
+ document.
+ </Text>
+ </div>
+ </Section>
+ </Container>
+ );
 }

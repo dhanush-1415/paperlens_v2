@@ -17,7 +17,7 @@ export const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** UUID v4, the ID shape used throughout. Prefer `z.uuid()` in schemas. */
 export const UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+ /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** URL-safe share token: 22+ base64url characters. */
 export const SHARE_TOKEN = /^[A-Za-z0-9_-]{22,64}$/;

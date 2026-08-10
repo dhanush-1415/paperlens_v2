@@ -28,45 +28,45 @@ import { InboxIcon, SearchIcon } from '../icons';
 import { StatusBlock, type StatusBlockProps } from './status-block';
 
 export interface EmptyStateProps extends Pick<StatusBlockProps, 'size' | 'className'> {
-  /** What is missing, as a short phrase — "No documents yet". */
-  title: ReactNode;
-  /** What to do about it, and what they get. One or two sentences. */
-  description?: ReactNode;
-  /** Usually one `Button`. The next step. */
-  action?: ReactNode;
-  /** Override the default icon when the feature has one of its own. */
-  icon?: ReactNode;
-  /** `true` when the list is non-empty but the current filter or query matched nothing. */
-  filtered?: boolean;
+ /** What is missing, as a short phrase — "No documents yet". */
+ title: ReactNode;
+ /** What to do about it, and what they get. One or two sentences. */
+ description?: ReactNode;
+ /** Usually one `Button`. The next step. */
+ action?: ReactNode;
+ /** Override the default icon when the feature has one of its own. */
+ icon?: ReactNode;
+ /** `true` when the list is non-empty but the current filter or query matched nothing. */
+ filtered?: boolean;
 }
 
 export function EmptyState({
-  title,
-  description,
-  action,
-  icon,
-  filtered = false,
-  size,
-  className,
+ title,
+ description,
+ action,
+ icon,
+ filtered = false,
+ size,
+ className,
 }: EmptyStateProps) {
-  const defaultIcon = filtered ? (
-    <SearchIcon className="size-5 text-text-tertiary" />
-  ) : (
-    <InboxIcon className="size-5 text-text-tertiary" />
-  );
+ const defaultIcon = filtered ? (
+ <SearchIcon className="size-5 text-text-tertiary" />
+ ) : (
+ <InboxIcon className="size-5 text-text-tertiary" />
+ );
 
-  return (
-    <StatusBlock
-      // Never a risk tone. An empty list is not a warning, and colouring it amber teaches
-      // users to ignore amber — which is the colour the product needs them to trust on a
-      // contract clause.
-      tone="neutral"
-      icon={icon ?? defaultIcon}
-      title={title}
-      description={description}
-      actions={action}
-      size={size}
-      className={className}
-    />
-  );
+ return (
+ <StatusBlock
+ // Never a risk tone. An empty list is not a warning, and colouring it amber teaches
+ // users to ignore amber — which is the colour the product needs them to trust on a
+ // contract clause.
+ tone="neutral"
+ icon={icon ?? defaultIcon}
+ title={title}
+ description={description}
+ actions={action}
+ size={size}
+ className={className}
+ />
+ );
 }
