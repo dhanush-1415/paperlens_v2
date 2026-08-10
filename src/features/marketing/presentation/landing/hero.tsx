@@ -12,12 +12,12 @@ export interface LandingHeroProps {
 
 export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroProps) {
   return (
-    <section className="force-dark relative w-full pt-12 pb-24 md:pt-16 md:pb-28 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-canvas via-surface-1/30 to-canvas">
+    <section className="relative w-full pt-12 pb-24 md:pt-16 md:pb-28 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-canvas via-surface-1/30 to-canvas">
       {/* Ambient decorative blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-brand-primary/5 blur-[120px] pointer-events-none -z-10" />
       <div className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-brand-secondary/5 blur-[100px] pointer-events-none -z-10" />
 
-      <div className="w-[95%] md:w-[90%] lg:w-[85%] max-w-7xl mx-auto px-6">
+      <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto px-5 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
           {/* Left Column: Copywriting & Actions */}

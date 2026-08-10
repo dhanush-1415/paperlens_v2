@@ -110,8 +110,12 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
  }, []);
 
  return (
- <section id={id} className="force-dark w-full py-24 relative overflow-hidden bg-surface-1/20 border-y border-border-strong/30 scroll-mt-20" ref={sectionRef}>
- <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto px-6 flex flex-col gap-12 relative z-10">
+ <section id={id} className="w-full py-24 md:py-32 relative overflow-hidden bg-canvas border-y border-border-subtle scroll-mt-20" ref={sectionRef}>
+  {/* Premium Decorative Background */}
+  <div className="absolute inset-0 bg-[radial-gradient(var(--color-border-strong)_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+  <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto px-6 flex flex-col gap-16 relative z-10">
  
  <div className="flex flex-col gap-3 max-w-2xl">
  <span className="text-xs uppercase font-bold tracking-widest text-brand-primary">Sample Analysis</span>
@@ -152,7 +156,7 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
  {/* Right Column: What PaperLens Returns */}
  <div className="flex flex-col gap-6">
  <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider">What PaperLens returns</span>
- <ul className="w-full divide-y divide-border-subtle/50 rounded-2xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-6 md:p-8 shadow-2xl" ref={rightColRef}>
+ <ul className="w-full divide-y divide-border-subtle/50 rounded-2xl border border-border-subtle bg-surface-1 shadow-card p-6 md:p-8" ref={rightColRef}>
  {FINDINGS.map((finding) => (
  <FindingRow key={finding.title} {...finding} />
  ))}

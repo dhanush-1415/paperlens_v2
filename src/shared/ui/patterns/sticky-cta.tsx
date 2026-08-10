@@ -140,39 +140,42 @@ export function StickyCta({
  className,
  )}
  >
- <div
- className={cn(
- 'mx-auto flex max-w-content items-center gap-3 rounded-panel border border-border-subtle',
- 'bg-surface-overlay/95 p-3 pl-5 shadow-card',
- 'supports-[backdrop-filter]:bg-surface-overlay/80 supports-[backdrop-filter]:backdrop-blur-xl',
- )}
- >
- {/* Hidden below `sm` — on a 390px screen the message and both controls do not fit,
- and truncating the offer to keep the button is how a bar becomes noise. */}
- <p className="hidden min-w-0 flex-1 truncate text-sm text-text-primary sm:block">
- {message}
- </p>
+      <div
+        className={cn(
+          'mx-auto flex flex-col sm:flex-row w-full max-w-4xl items-start sm:items-center gap-4 sm:gap-6 rounded-2xl border border-border-strong/40',
+          'bg-surface-overlay/95 p-5 sm:py-3 sm:pr-3 sm:pl-6 shadow-2xl relative',
+          'supports-[backdrop-filter]:bg-surface-overlay/80 supports-[backdrop-filter]:backdrop-blur-2xl',
+        )}
+      >
+        <div className="flex-1 pr-8 sm:pr-0">
+          <p className="text-sm font-medium text-text-primary leading-snug">
+            {message}
+          </p>
+        </div>
 
- <Button asChild variant="primary" size="sm" className="flex-1 sm:flex-none">
- <Link href={ctaHref}>{ctaLabel}</Link>
- </Button>
+        <div className="flex w-full sm:w-auto items-center shrink-0">
+          <Button asChild variant="primary" className="w-full sm:w-auto font-bold shadow-lg shadow-brand-primary/20">
+            <Link href={ctaHref}>{ctaLabel}</Link>
+          </Button>
+        </div>
 
- <button
- type="button"
- onClick={() => {
- driver.setItem(storageKey, '1');
- setJustDismissed(true);
- }}
- aria-label={dismissLabel}
- className={cn(
- 'inline-flex size-11 shrink-0 items-center justify-center rounded-control',
- 'text-text-tertiary transition-colors duration-(--duration-micro)',
- 'hover:bg-surface-2 hover:text-text-primary',
- )}
- >
- <CloseIcon className="size-4" />
- </button>
- </div>
+        <button
+          type="button"
+          onClick={() => {
+            driver.setItem(storageKey, '1');
+            setJustDismissed(true);
+          }}
+          aria-label={dismissLabel}
+          className={cn(
+            'absolute top-3 right-3 sm:static sm:top-auto sm:right-auto',
+            'inline-flex size-8 sm:size-11 shrink-0 items-center justify-center rounded-control',
+            'text-text-tertiary transition-colors duration-(--duration-micro)',
+            'hover:bg-surface-2 hover:text-text-primary'
+          )}
+        >
+          <CloseIcon className="size-4" />
+        </button>
+      </div>
  </div>
  );
 }

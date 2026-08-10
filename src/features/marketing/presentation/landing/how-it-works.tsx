@@ -22,7 +22,7 @@ export function LandingHowItWorks() {
       title: 'Upload & Scan',
       description: 'Drag and drop documents or use mobile scanning. Our ingestion engine supports high-resolution scans, multi-page PDFs, and complex image files.',
       visual: (
-        <div className="w-full h-full flex flex-col p-6 bg-canvas/40 backdrop-blur-md rounded-2xl border border-border-strong/40 animate-in fade-in duration-300">
+        <div className="w-full h-full flex flex-col p-6 bg-surface-1 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl border border-border-strong/50 animate-in fade-in duration-500">
           {/* Mock Ingestion Header */}
           <div className="flex justify-between items-center mb-6 pb-3 border-b border-border-subtle">
             <span className="text-xs font-bold text-text-primary">Upload Center</span>
@@ -64,7 +64,7 @@ export function LandingHowItWorks() {
       title: 'AI Processing',
       description: 'Our proprietary AI parses the layout, segments document sections, and flags critical clauses, payment deadlines, and potential liabilities in under a second.',
       visual: (
-        <div className="w-full h-full flex flex-col p-6 bg-canvas/40 backdrop-blur-md rounded-2xl border border-border-strong/40 animate-in fade-in duration-300 relative overflow-hidden">
+        <div className="w-full h-full flex flex-col p-6 bg-surface-1 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl border border-border-strong/50 animate-in fade-in duration-500 relative overflow-hidden">
           {/* Scanline overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-brand-primary/0 via-brand-primary/10 to-brand-primary/0 animate-scan-document pointer-events-none" />
 
@@ -108,7 +108,7 @@ export function LandingHowItWorks() {
       title: 'Structured Output',
       description: 'Instantly view a structured summary of extracted fields, integrated metrics, and risk analysis in a unified, interactive dashboard.',
       visual: (
-        <div className="w-full h-full flex flex-col p-6 bg-canvas/40 backdrop-blur-md rounded-2xl border border-brand-primary/30 animate-in fade-in duration-300">
+        <div className="w-full h-full flex flex-col p-6 bg-surface-1 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl border border-border-strong/50 animate-in fade-in duration-500">
           {/* Output Header */}
           <div className="flex justify-between items-center mb-4.5 pb-2.5 border-b border-border-subtle">
             <div className="flex flex-col">
@@ -162,21 +162,24 @@ export function LandingHowItWorks() {
   const currentStep = steps.find((s) => s.id === activeStep) ?? steps[0]!;
 
   return (
-    <Section id="how-it-works" spacing="lg" divider>
-      <Container width="shell" className="py-8">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-3 mb-16">
-          <Heading level={2} size="eyebrow" className="text-brand-solid dark:text-brand-primary">
+    <Section id="how-it-works" spacing="lg" divider className="relative overflow-hidden">
+      {/* Abstract Background Element */}
+      <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[radial-gradient(ellipse_at_top_right,rgba(var(--brand-primary-rgb),0.05),transparent_70%)] pointer-events-none" />
+      
+      <Container width="shell" className="py-8 relative z-10">
+        <div className="text-center max-w-2xl mx-auto flex flex-col gap-4 mb-20">
+          <Heading level={2} size="eyebrow" className="text-brand-solid dark:text-brand-primary uppercase tracking-widest font-bold">
             How It Works
           </Heading>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-text-primary">
             Zero friction from upload to structured analysis
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
           
           {/* Left Column: Interactive vertical steps */}
-          <div className="lg:col-span-6 flex flex-col gap-4">
+          <div className="lg:col-span-5 flex flex-col gap-4">
             {steps.map((step) => {
               const isActive = step.id === activeStep;
               return (
@@ -184,18 +187,27 @@ export function LandingHowItWorks() {
                   key={step.id}
                   onClick={() => setActiveStep(step.id)}
                   className={cn(
-                    'text-left p-6 rounded-2xl border transition-all duration-300 flex gap-5 group',
+                    'text-left p-6 rounded-2xl transition-all duration-500 flex gap-5 group relative overflow-hidden',
                     isActive
-                      ? 'border-brand-primary/30 bg-surface-1 shadow-lg shadow-brand-primary/5'
-                      : 'border-border-subtle bg-transparent hover:bg-surface-2/30 hover:border-border-strong'
+                      ? 'bg-surface-1 ring-1 ring-border-strong shadow-card'
+                      : 'bg-transparent border border-transparent hover:bg-surface-1/50 hover:border-border-subtle'
                   )}
                 >
+                  {/* Subtle active gradient background */}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/5 to-transparent pointer-events-none" />
+                  )}
+                  {/* Active left indicator bar */}
+                  {isActive && (
+                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-brand-primary rounded-r-full shadow-[0_0_10px_rgba(var(--brand-primary-rgb),0.5)]" />
+                  )}
+
                   {/* Number bubble */}
                   <span
                     className={cn(
-                      'size-9 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 transition-colors duration-300',
+                      'size-10 rounded-xl flex items-center justify-center text-sm font-extrabold shrink-0 transition-colors duration-500 relative z-10',
                       isActive
-                        ? 'bg-brand-primary text-text-on-brand'
+                        ? 'bg-brand-primary text-text-on-brand shadow-lg shadow-brand-primary/30'
                         : 'bg-surface-2 text-text-tertiary group-hover:bg-border-strong group-hover:text-text-primary'
                     )}
                   >
@@ -203,13 +215,13 @@ export function LandingHowItWorks() {
                   </span>
 
                   {/* Title & Description */}
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-2 relative z-10">
                     <Heading
                       level={3}
                       size="sm"
                       className={cn(
-                        'transition-colors duration-300',
-                        isActive ? 'text-brand-solid dark:text-brand-primary' : 'text-text-primary'
+                        'font-bold transition-colors duration-500',
+                        isActive ? 'text-brand-solid dark:text-brand-primary' : 'text-text-primary group-hover:text-text-primary'
                       )}
                     >
                       {step.title}
@@ -224,21 +236,26 @@ export function LandingHowItWorks() {
           </div>
 
           {/* Right Column: Dynamic Visual Demonstration Frame */}
-          <div className="lg:col-span-6 flex justify-center items-center">
-            <div className="w-full max-w-md aspect-[4/3] rounded-2xl bg-surface-2/30 border border-border-strong/50 p-4 shadow-xl flex items-center justify-center relative overflow-hidden group">
+          <div className="lg:col-span-7 flex justify-center items-center relative pl-0 lg:pl-10">
+            {/* Ambient background glow behind the mockup */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-brand-primary/10 blur-[100px] pointer-events-none rounded-full" />
+            
+            <div className="w-full max-w-2xl aspect-[4/3] rounded-[2rem] bg-surface-1/60 backdrop-blur-2xl border border-border-strong shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col relative overflow-hidden group">
               
-              {/* Top bar controls */}
-              <div className="absolute top-3 left-4 right-4 flex items-center gap-1.5">
-                <div className="size-2.5 rounded-full bg-border-strong" />
-                <div className="size-2.5 rounded-full bg-border-strong" />
-                <div className="size-2.5 rounded-full bg-border-strong" />
-                <div className="h-4 w-36 bg-canvas/40 border border-border-subtle rounded mx-auto flex items-center justify-center">
-                  <span className="text-[8px] text-text-tertiary">app.paperlens.io/{activeStep}</span>
+              {/* macOS-style top bar */}
+              <div className="h-14 border-b border-border-strong/40 bg-surface-2/20 flex items-center px-5 gap-2 relative">
+                <div className="flex gap-2 z-10">
+                  <div className="size-3.5 rounded-full bg-[#FF5F56] border border-[#E0443E]/50 shadow-inner" />
+                  <div className="size-3.5 rounded-full bg-[#FFBD2E] border border-[#DEA123]/50 shadow-inner" />
+                  <div className="size-3.5 rounded-full bg-[#27C93F] border border-[#1AAB29]/50 shadow-inner" />
+                </div>
+                <div className="absolute inset-x-0 mx-auto w-56 h-7 bg-canvas/80 border border-border-subtle rounded-md flex items-center justify-center shadow-sm">
+                  <span className="text-[10px] text-text-tertiary font-mono tracking-wider">app.paperlens.io/{activeStep}</span>
                 </div>
               </div>
 
               {/* Injected Active Step Panel */}
-              <div className="w-full h-[85%] mt-6 relative flex items-center justify-center px-4">
+              <div className="flex-1 w-full bg-canvas/30 relative flex items-center justify-center p-6 sm:p-10">
                 {currentStep.visual}
               </div>
 

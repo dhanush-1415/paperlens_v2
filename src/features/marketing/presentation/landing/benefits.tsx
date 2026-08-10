@@ -52,52 +52,65 @@ export function LandingBenefits() {
   ];
 
   return (
-    <Section spacing="lg" divider surface="raised">
-      <Container width="shell" className="py-8">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-3 mb-16">
-          <Heading level={2} size="eyebrow" className="text-brand-solid dark:text-brand-primary">
+    <Section spacing="lg" divider className="relative overflow-hidden bg-surface-1">
+      {/* Ambient glowing orbs */}
+      <div className="absolute top-0 left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(var(--brand-primary-rgb),0.05)_0%,transparent_60%)] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(var(--brand-secondary-rgb),0.05)_0%,transparent_60%)] pointer-events-none" />
+
+      <Container width="shell" className="py-8 relative z-10">
+        <div className="text-center max-w-3xl mx-auto flex flex-col gap-4 mb-20">
+          <Heading level={2} size="eyebrow" className="text-brand-solid dark:text-brand-primary uppercase tracking-widest font-extrabold">
             Built for peace of mind
           </Heading>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
-            Don't sign another contract blind.
+          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-text-primary">
+            Don't sign another contract blind
           </h2>
+          <Text size="lg" tone="secondary" className="leading-relaxed max-w-2xl mx-auto">
+            Our intelligent pipeline extracts the hidden traps in complex legal and financial documents so you can negotiate with absolute confidence.
+          </Text>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {benefits.map((benefit) => (
             <div
               key={benefit.title}
-              className="group relative flex flex-col gap-5 p-8 rounded-2xl border border-border-subtle bg-surface-1/30 hover:bg-surface-2/40 hover:border-brand-primary/40 hover:shadow-xl transition-all duration-300"
+              className="group relative flex flex-col gap-6 p-8 rounded-3xl border border-border-strong/50 bg-canvas shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-surface-1 hover:border-brand-primary/30 hover:shadow-[0_20px_40px_-15px_rgba(var(--brand-primary-rgb),0.2)] hover:-translate-y-1 transition-all duration-500 overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-brand-primary/5 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-primary/10 to-transparent rounded-bl-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-              <div className="size-12 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-solid dark:text-brand-primary group-hover:scale-110 transition-transform duration-300">
+              <div className="size-14 rounded-2xl bg-surface-2 border border-border-subtle flex items-center justify-center text-text-secondary group-hover:text-brand-solid dark:group-hover:text-brand-primary group-hover:border-brand-primary/20 group-hover:bg-brand-primary/5 group-hover:scale-110 transition-all duration-500 relative z-10 shadow-sm">
                 {benefit.icon}
               </div>
 
-              <div className="flex flex-col gap-2.5">
-                <span className="text-2xs font-bold text-brand-solid dark:text-brand-primary uppercase tracking-wider">
+              <div className="flex flex-col gap-3 relative z-10 mt-2">
+                <span className="text-xs font-black text-brand-solid dark:text-brand-primary uppercase tracking-widest">
                   {benefit.title}
                 </span>
-                <Heading level={3} size="sm" className="text-text-primary group-hover:text-brand-solid dark:group-hover:text-brand-primary transition-colors">
+                <Heading level={3} size="sm" className="text-text-primary font-bold group-hover:text-text-primary transition-colors">
                   {benefit.headline}
                 </Heading>
               </div>
 
-              <Text size="sm" tone="secondary" className="leading-relaxed">
+              <Text size="sm" tone="secondary" className="leading-relaxed relative z-10">
                 {benefit.description}
               </Text>
             </div>
           ))}
         </div>
         
-        <div className="flex justify-center">
+        <div className="flex justify-center relative z-10">
           <Link
             href={ROUTES.scan}
-            className="group inline-flex items-center gap-2 rounded-full border-2 border-brand-primary bg-brand-primary/10 hover:bg-brand-primary hover:text-white px-8 py-4 text-sm font-bold text-brand-primary transition-all shadow-lg hover:shadow-brand-primary/30"
+            className="group relative inline-flex items-center gap-3 rounded-full bg-surface-overlay/80 backdrop-blur-xl border border-border-strong px-8 py-4 text-sm font-bold text-text-primary transition-all duration-300 hover:border-brand-primary hover:bg-surface-1 hover:shadow-2xl hover:shadow-brand-primary/20 hover:-translate-y-0.5 overflow-hidden"
           >
+            {/* Subtle glow inside the button */}
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/0 via-brand-primary/10 to-brand-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
+            
+            <svg className="size-5 text-brand-solid dark:text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
             Upload a document to see for yourself
-            <svg className="size-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="size-4.5 text-text-tertiary group-hover:text-brand-primary transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </Link>

@@ -72,18 +72,18 @@
    * Components pick by depth, never by lightness, which is what lets the light theme
    * invert the lightness order without a single component changing.
    */
-  --canvas: #0b0f19;
-  --surface-1: #111827;
-  --surface-2: #1f2937;
-  --surface-raised: #374151;
-  --surface-overlay: #1e293b;
+  --canvas: #0a1224;
+  --surface-1: #101c36;
+  --surface-2: #1a2a47;
+  --surface-raised: #2a3c61;
+  --surface-overlay: #152542;
 
   /* ═══ Borders ═════════════════════════════════════════════════════════════════════
    * Hairlines do the heavy lifting in both themes. `strong` is for interactive edges
    * (inputs, focused cards); `subtle` is for structural division.
    */
-  --border-subtle: #1f2937;
-  --border-strong: #374151;
+  --border-subtle: #1a2a47;
+  --border-strong: #2a3c61;
 
   /* ═══ Text ════════════════════════════════════════════════════════════════════════
    * Three levels only. A fourth always turns out to be a contrast failure wearing a
@@ -254,14 +254,14 @@
 .force-dark {
   color-scheme: dark;
 
-  --canvas: #0b0f19;
-  --surface-1: #111827;
-  --surface-2: #1f2937;
-  --surface-raised: #374151;
-  --surface-overlay: #1e293b;
+  --canvas: #0a1224;
+  --surface-1: #101c36;
+  --surface-2: #1a2a47;
+  --surface-raised: #2a3c61;
+  --surface-overlay: #152542;
 
-  --border-subtle: #1f2937;
-  --border-strong: #374151;
+  --border-subtle: #1a2a47;
+  --border-strong: #2a3c61;
 
   --brand-ink: #a3bfff;
   --brand-gradient: linear-gradient(135deg, #22d3ee 0%, #5b8cff 45%, #a78bfa 100%);
