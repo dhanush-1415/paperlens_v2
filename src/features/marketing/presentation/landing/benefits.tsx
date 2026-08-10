@@ -63,7 +63,7 @@ export function LandingBenefits() {
             Built for peace of mind
           </Heading>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-text-primary">
-            Don't sign another contract blind
+            Don't sign another <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-secondary">contract blind</span>
           </h2>
           <Text size="lg" tone="secondary" className="leading-relaxed max-w-2xl mx-auto">
             Our intelligent pipeline extracts the hidden traps in complex legal and financial documents so you can negotiate with absolute confidence.

@@ -172,7 +172,7 @@ export function LandingHowItWorks() {
             How It Works
           </Heading>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-text-primary">
-            Zero friction from upload to structured analysis
+            Zero friction from <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-secondary">upload to structured analysis</span>
           </h2>
         </div>
 
