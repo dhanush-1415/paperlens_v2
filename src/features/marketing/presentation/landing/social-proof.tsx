@@ -92,7 +92,7 @@ export function LandingSocialProofAndCta() {
             <div className="flex flex-col items-center gap-6 mt-4 p-8 rounded-3xl bg-surface-1 border border-border-strong shadow-card w-full max-w-lg">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="group relative w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary-hover hover:to-brand-primary px-12 py-5.5 text-lg font-bold text-text-on-brand transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-brand-primary/40 cursor-pointer border border-brand-primary/20 hover:border-brand-primary/50 overflow-hidden"
+                className="group relative w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary bg-[length:200%_auto] hover:bg-[position:right_center] px-12 py-5.5 text-lg font-bold text-text-on-brand transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-brand-primary/40 cursor-pointer border border-brand-primary/20 hover:border-brand-primary/50 overflow-hidden"
               >
                 Sign Up for a Free Demo
                 <svg className="size-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
