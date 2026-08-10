@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants/routes';
-import { ArrowRightIcon } from '@/shared/ui';
+import { ArrowRightIcon, Button } from '@/shared/ui';
 
 export interface LandingHeroProps {
   ctaLabel: string;
@@ -45,13 +45,12 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2">
-              <Link
-                href={ROUTES.scan}
-                className="group relative inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary bg-[length:200%_auto] hover:bg-[position:right_center] px-8 py-4 text-sm font-bold text-text-on-brand transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-brand-primary/30"
-              >
-                Start Your Free Trial Today
-                <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              <Button variant="premium" className="group rounded-full px-8 h-14 text-sm font-bold shadow-xl shadow-brand-primary/30" asChild>
+                <Link href={ROUTES.scan}>
+                  Start Your Free Trial Today
+                  <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
               
               <a
                 href="#how-it-works"

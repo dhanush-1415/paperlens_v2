@@ -154,7 +154,7 @@ export function StickyCta({
         </div>
 
         <div className="flex w-full sm:w-auto items-center shrink-0">
-          <Button asChild variant="primary" className="w-full sm:w-auto font-bold shadow-lg shadow-brand-primary/20">
+          <Button asChild variant="premium" className="w-full sm:w-auto font-bold shadow-lg shadow-brand-primary/20">
             <Link href={ctaHref}>{ctaLabel}</Link>
           </Button>
         </div>

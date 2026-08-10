@@ -56,6 +56,12 @@ const buttonVariants = cva(
  'hover:bg-brand-solid-hover',
  'inset-shadow-highlight',
  ],
+ /** Premium high-fidelity button with sliding gradient, used primarily on the marketing site. */
+ premium: [
+ 'bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary bg-[length:200%_auto] text-text-on-brand shadow-xl shadow-brand-primary/30',
+ 'hover:bg-[position:right_center]',
+ 'inset-shadow-highlight',
+ ],
  /** Everything else with real weight. Bordered, reads as an object. */
  secondary: [
  'border border-border-strong bg-surface-1 text-text-primary',

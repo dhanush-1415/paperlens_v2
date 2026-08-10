@@ -213,7 +213,7 @@ export function SiteHeader({
  <Link href={signInHref}>{labels.signIn}</Link>
  </Button>
 
- <Button asChild variant="primary" size="sm" className="hidden sm:inline-flex">
+ <Button asChild variant="premium" size="sm" className="hidden sm:inline-flex">
  <Link href={ctaHref}>{labels.cta}</Link>
  </Button>
 
@@ -250,7 +250,7 @@ export function SiteHeader({
  * drawer is a design that was only ever tested on a desktop.
  */
  <div className="flex flex-col gap-2">
- <Button asChild variant="primary" size="lg" fullWidth>
+ <Button asChild variant="premium" size="lg" fullWidth>
  <Link href={ctaHref}>{labels.cta}</Link>
  </Button>
  <p className="text-center text-2xs text-text-tertiary">{labels.ctaNote}</p>
