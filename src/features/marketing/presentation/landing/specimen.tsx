@@ -125,7 +125,7 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
       <div className="absolute inset-0 bg-[radial-gradient(var(--color-border-strong)_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.15] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="w-[95%] md:w-[90%] lg:w-[85%] mx-auto px-4 md:px-6 flex flex-col gap-16 relative z-10">
+      <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto px-4 md:px-6 flex flex-col gap-16 relative z-10">
         
         <ScrollReveal variant="fade-up" className="flex flex-col gap-4 max-w-3xl">
           <span className="text-xs font-extrabold text-brand-solid dark:text-brand-primary uppercase tracking-widest">

@@ -115,39 +115,39 @@ export function SiteHeader({
  const isMenuOpen = openedAt === pathname;
 
   return (
- <header
- className="sticky top-0 z-50 pt-4 px-4 sm:pt-6 sm:px-6 pointer-events-none"
- >
-  <div
-    className={cn(
-      'mx-auto w-[95%] max-w-7xl pointer-events-auto rounded-[1.25rem] transition-all duration-(--duration-standard) ease-brand flex flex-col',
-      isScrolled
-        ? [
-            'bg-surface-1/80 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border-strong/50',
-            'supports-[backdrop-filter]:bg-surface-1/60 supports-[backdrop-filter]:backdrop-blur-2xl',
-            'dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] dark:border-white/10',
-          ]
-        : 'bg-transparent border border-transparent'
-    )}
+  <header
+    className="sticky top-0 z-50 pt-4 px-4 sm:pt-6 sm:px-6 pointer-events-none"
   >
- {/*
- The skip link. First focusable element in the document, invisible until focused.
- WCAG 2.4.1: without it a keyboard user tabs through every nav item on every page
- before reaching the content. `#main` is provided by the layout, not by this component.
- */}
- <a
- href="#main"
- className={cn(
- 'sr-only focus-visible:not-sr-only',
- 'focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50',
- 'focus-visible:rounded-control focus-visible:bg-surface-raised focus-visible:px-4 focus-visible:py-2',
- 'focus-visible:text-sm focus-visible:text-text-primary focus-visible:shadow-card',
- )}
- >
- Skip to content
- </a>
+    <div
+      className={cn(
+        'mx-auto w-[95%] md:w-[90%] lg:w-[80%] pointer-events-auto rounded-[1.25rem] transition-all duration-(--duration-standard) ease-brand flex flex-col',
+        isScrolled
+          ? [
+              'bg-surface-1/80 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border-strong/50',
+              'supports-[backdrop-filter]:bg-surface-1/60 supports-[backdrop-filter]:backdrop-blur-2xl',
+              'dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] dark:border-white/10',
+            ]
+          : 'bg-transparent border border-transparent'
+      )}
+    >
+      {/*
+      The skip link. First focusable element in the document, invisible until focused.
+      WCAG 2.4.1: without it a keyboard user tabs through every nav item on every page
+      before reaching the content. `#main` is provided by the layout, not by this component.
+      */}
+      <a
+        href="#main"
+        className={cn(
+          'sr-only focus-visible:not-sr-only',
+          'focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50',
+          'focus-visible:rounded-control focus-visible:bg-surface-raised focus-visible:px-4 focus-visible:py-2',
+          'focus-visible:text-sm focus-visible:text-text-primary focus-visible:shadow-card',
+        )}
+      >
+        Skip to content
+      </a>
 
- <div className="mx-auto flex h-16 w-full items-center justify-between gap-6 px-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 w-full items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
  <Link
  href="/"
  className={cn(

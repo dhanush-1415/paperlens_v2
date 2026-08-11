@@ -27,15 +27,14 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
     // Register GSAP plugins
     gsap.registerPlugin(ScrollTrigger);
 
-    // Initialize Lenis scroll with harmonious multiplier & duration so content never lags behind
+    // Initialize Lenis scroll for 120fps ultra-smooth performance
     const lenisInstance = new Lenis({
-      duration: 1.35,
-      easing: (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10.5 * t)),
+      lerp: 0.1, // Linear interpolation for buttery smooth scroll
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 0.82, // Harmonized travel distance
-      touchMultiplier: 1.3,
+      wheelMultiplier: 1, 
+      touchMultiplier: 2,
     });
 
     setLenis(lenisInstance);
@@ -43,18 +42,17 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
     // Synchronize Lenis scroll event with GSAP ScrollTrigger updates
     lenisInstance.on('scroll', ScrollTrigger.update);
 
-    // Bind GSAP ticker to Lenis requestAnimationFrame
-    const updateTicker = (time: number) => {
-      lenisInstance.raf(time * 1000);
-    };
-    gsap.ticker.add(updateTicker);
-
-    // Configure lag smoothing for consistent frame delivery
-    gsap.ticker.lagSmoothing(0);
+    // Use native requestAnimationFrame for maximum 120fps performance
+    let rafId: number;
+    function raf(time: number) {
+      lenisInstance.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
 
     return () => {
       lenisInstance.destroy();
-      gsap.ticker.remove(updateTicker);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 

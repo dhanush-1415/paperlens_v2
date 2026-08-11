@@ -9,6 +9,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { Button, Container, Skeleton, Text, ThemeToggle, AppSidebar, AppTopBar, AppBreadcrumbs } from '@/shared/ui';
 
 import Link from 'next/link';
+import ScrollProvider from '../scroll-provider';
 
 /**
  * The signed-in shell.
@@ -83,7 +84,8 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
   };
 
   return (
-    <div className="flex min-h-screen bg-canvas">
+    <ScrollProvider>
+      <div className="flex min-h-screen bg-canvas">
       <AppSidebar
         role={role as any}
         plan={plan as any}
@@ -96,12 +98,13 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
           sessionChip={<SessionChip />}
         />
         <main className="flex-1 relative">
-          <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto">
+          <div className="p-4 sm:p-6 lg:p-8 w-full">
             <AppBreadcrumbs />
             {children}
           </div>
         </main>
       </div>
     </div>
+    </ScrollProvider>
   );
 }

@@ -92,12 +92,12 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
                 </Link>
               </Button>
               
-              <a
-                href="#how-it-works"
+              <Link
+                href={ROUTES.login}
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-border-strong bg-surface-1/40 hover:bg-surface-2/60 backdrop-blur-md px-8 py-4 text-sm font-semibold text-text-primary transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 Sign Up for a Free Demo
-              </a>
+              </Link>
             </div>
 
             {/* Trust points */}
