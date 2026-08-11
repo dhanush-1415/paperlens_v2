@@ -78,3 +78,4 @@ export {
 } from './tone';
 
 export * from './icons';
+export * from './patterns/scroll-reveal';

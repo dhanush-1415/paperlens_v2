@@ -71,7 +71,7 @@ import { COOKIE_NAMES } from '@/shared/constants';
 import { ThemeProvider, Toaster } from '@/shared/ui';
 
 import type { FlagName, FlagValue } from '@/core/flags';
-import ScrollProvider from './scroll-provider';
+
 
 /**
  * Read a cookie the browser is allowed to read.
@@ -277,7 +277,7 @@ export function Providers({ children }: ProvidersProps) {
  * without touching a real `localStorage` or leaking state between test files.
  */}
  <ThemeProvider driver={container.resolve(LOCAL_STORAGE_DRIVER)}>
- <ScrollProvider>{children}</ScrollProvider>
+ {children}
  {/*
  * One toast viewport for the whole app, mounted last so its fixed-position
  * container paints above everything. `toast()` is called from anywhere; nothing

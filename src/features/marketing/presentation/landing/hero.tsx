@@ -1,6 +1,9 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { ROUTES } from '@/shared/constants/routes';
 import { ArrowRightIcon, Button } from '@/shared/ui';
 
@@ -10,9 +13,46 @@ export interface LandingHeroProps {
   specimenId: string;
 }
 
+// Ensure GSAP plugins are registered if needed, but core gsap is enough here.
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(useGSAP);
+}
+
 export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroProps) {
+  const container = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    // Elegant stagger fade-up for text elements
+    gsap.fromTo(
+      '.hero-stagger',
+      { y: 30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, stagger: 0.15, ease: 'power3.out', delay: 0.1 }
+    );
+
+    // Subtle parallax float for the document cards
+    gsap.fromTo(
+      '.hero-card-left',
+      { x: -40, y: 40, opacity: 0, rotation: -16 },
+      { x: 0, y: 0, opacity: 1, rotation: -12, duration: 1.4, ease: 'back.out(1.2)', delay: 0.4 }
+    );
+    gsap.fromTo(
+      '.hero-card-right',
+      { x: 40, y: 40, opacity: 0, rotation: 12 },
+      { x: 0, y: 0, opacity: 1, rotation: 6, duration: 1.4, ease: 'back.out(1.2)', delay: 0.6 }
+    );
+    
+    // Continuous floating animation
+    gsap.to('.hero-card-left', {
+      y: '-=10', rotation: '-=2', duration: 3, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 1.8
+    });
+    gsap.to('.hero-card-right', {
+      y: '-=12', rotation: '+=2', duration: 3.5, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 2
+    });
+
+  }, { scope: container });
+
   return (
-    <section className="relative w-full pt-12 pb-24 md:pt-16 md:pb-28 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-canvas via-surface-1/30 to-canvas">
+    <section ref={container} className="relative w-full pt-12 pb-24 md:pt-16 md:pb-28 lg:pt-20 lg:pb-32 overflow-hidden bg-gradient-to-b from-canvas via-surface-1/30 to-canvas">
       {/* Ambient decorative blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-brand-primary/5 blur-[120px] pointer-events-none -z-10" />
       <div className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-brand-secondary/5 blur-[100px] pointer-events-none -z-10" />
@@ -23,14 +63,14 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
           {/* Left Column: Copywriting & Actions */}
           <div className="lg:col-span-7 flex flex-col gap-6 text-left relative z-10">
             {/* Announcement Pill */}
-            <div className="inline-flex self-start items-center gap-2 border border-brand-primary/20 bg-brand-primary/5 rounded-full px-4.5 py-1.5 text-xs font-semibold text-brand-solid dark:text-brand-primary hover:border-brand-primary/30 transition-colors shadow-sm">
+            <div className="hero-stagger inline-flex self-start items-center gap-2 border border-brand-primary/20 bg-brand-primary/5 rounded-full px-4.5 py-1.5 text-xs font-semibold text-brand-solid dark:text-brand-primary hover:border-brand-primary/30 transition-colors shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-pulse" />
               <span>Next-Gen Document Intelligence</span>
               <span className="text-[10px] bg-brand-primary/10 text-brand-solid dark:text-brand-primary px-1.5 py-0.5 rounded-full uppercase font-bold">V2.1</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-text-primary">
+            <h1 className="hero-stagger text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] text-text-primary">
               Turn Document Chaos <br />
               into{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-solid via-brand-primary to-brand-secondary">
@@ -39,13 +79,13 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
             </h1>
 
             {/* Sub-headline */}
-            <p className="text-base sm:text-lg text-text-secondary leading-relaxed max-w-xl font-normal">
+            <p className="hero-stagger text-base sm:text-lg text-text-secondary leading-relaxed max-w-xl font-normal">
               PaperLens uses proprietary AI to automatically scan, extract, and organize information from physical and digital documents—eliminating manual entry.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2">
-              <Button variant="premium" className="group rounded-full px-8 h-14 text-sm font-bold shadow-xl shadow-brand-primary/30" asChild>
+            <div className="hero-stagger flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2">
+              <Button variant="premium" className="group px-8 h-14 text-sm font-bold shadow-xl shadow-brand-primary/30" asChild>
                 <Link href={ROUTES.scan}>
                   Start Your Free Trial Today
                   <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-transform" />
@@ -61,7 +101,7 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
             </div>
 
             {/* Trust points */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-semibold text-text-tertiary mt-6 border-t border-border-subtle pt-6">
+            <div className="hero-stagger flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-semibold text-text-tertiary mt-6 border-t border-border-subtle pt-6">
               <div className="flex items-center gap-2">
                 <svg className="size-4.5 text-brand-solid" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -91,7 +131,7 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
               <div className="absolute inset-0 bg-[radial-gradient(var(--border-strong)_1px,transparent_1px)] [background-size:20px_20px] opacity-30 pointer-events-none" />
 
               {/* The "Physical Document Ingestion" zone */}
-              <div className="absolute top-[10%] left-[-5%] w-[180px] h-[240px] rounded-xl border border-border-strong/80 bg-surface-raised shadow-2xl p-4 rotate-[-12deg] hover:rotate-[-6deg] transition-transform duration-500 flex flex-col gap-3 group">
+              <div className="hero-card-left absolute top-[10%] left-[-5%] w-[180px] h-[240px] rounded-xl border border-border-strong/80 bg-surface-raised shadow-2xl p-4 flex flex-col gap-3 group">
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
                   <div className="h-3 w-16 bg-border-strong rounded" />
                   <div className="size-4 rounded-full bg-brand-primary/20 flex items-center justify-center">
@@ -114,12 +154,12 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
               </div>
 
               {/* Floating connector line representing AI parsing */}
-              <svg className="absolute w-[180px] h-[100px] top-[30%] left-[30%] text-brand-primary pointer-events-none opacity-40 hidden md:block" viewBox="0 0 100 100" fill="none">
+              <svg className="hero-stagger absolute w-[180px] h-[100px] top-[30%] left-[30%] text-brand-primary pointer-events-none opacity-40 hidden md:block" viewBox="0 0 100 100" fill="none">
                 <path d="M0,50 C40,50 60,10 100,10" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" className="animate-dash" />
               </svg>
 
               {/* The "Structured Data" Dashboard UI card */}
-              <div className="absolute bottom-[8%] right-[-5%] w-[260px] h-[320px] rounded-2xl border border-brand-primary/30 bg-surface-1/80 backdrop-blur-xl shadow-2xl p-5 rotate-[6deg] hover:rotate-[2deg] transition-transform duration-500 flex flex-col gap-4">
+              <div className="hero-card-right absolute bottom-[8%] right-[-5%] w-[260px] h-[320px] rounded-2xl border border-brand-primary/30 bg-surface-1/80 backdrop-blur-xl shadow-2xl p-5 flex flex-col gap-4">
                 
                 {/* Header */}
                 <div className="flex justify-between items-center pb-2.5 border-b border-border-subtle">

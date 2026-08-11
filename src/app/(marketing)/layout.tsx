@@ -11,6 +11,8 @@ import {
 import { getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
 import { CookieConsent, SiteFooter, SiteHeader } from '@/shared/ui';
+import { StickyCta } from '@/shared/ui/patterns/sticky-cta';
+import ScrollProvider from '../scroll-provider';
 
 /**
  * The public shell — every page a signed-out visitor can reach.
@@ -79,6 +81,7 @@ export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
  const guides = isOk(listed) ? listed.value : [];
 
  return (
+ <ScrollProvider>
  <div className="flex min-h-full flex-1 flex-col">
  <SiteHeader
  productName={tenant.productName}
@@ -115,6 +118,17 @@ export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
  groups={siteFooterGroups({ t, guides, guideCount: guides.length })}
  legal={siteLegalLinks(t)}
  year={COPYRIGHT_YEAR}
+ ctaHref={ROUTES.scan}
+ ctaLabel={t.t('cta.analyze')}
+ />
+
+ <StickyCta
+ campaignId="marketing-global-conversion"
+ threshold={0.2}
+ message="Unlock hidden risks and deadlines right now. First scan is free."
+ ctaLabel="Analyze Your Document"
+ ctaHref={ROUTES.scan}
+ dismissLabel={t.t('common.close')}
  />
 
  <CookieConsent
@@ -128,5 +142,6 @@ export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
  }}
  />
  </div>
+ </ScrollProvider>
  );
 }

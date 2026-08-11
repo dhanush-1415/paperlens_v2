@@ -51,6 +51,9 @@ const serverEnvSchema = z.object({
 
  /** White-label tenant this deployment serves. See `tenant.ts`. */
  TENANT_ID: z.string().default('default'),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_ANON_KEY: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

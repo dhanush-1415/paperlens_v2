@@ -1,3 +1,14 @@
+'use client';
+
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(useGSAP, ScrollTrigger);
+}
+
 export interface SecurityPostureProps {
  contactEmail: string;
 }
@@ -43,13 +54,13 @@ const NOT_YET: readonly Entry[] = [
 
 function EntryList({ entries, highlightHover }: { entries: readonly Entry[], highlightHover?: 'safe' | 'caution' }) {
  return (
- <ul className="flex flex-col gap-4 mt-6">
+ <ul className="flex flex-col gap-4 mt-8 relative z-10">
  {entries.map((entry) => (
  <li 
  key={entry.title} 
- className={`flex flex-col gap-2 py-5 px-6 rounded-2xl bg-surface-2/40 border border-border-strong/50 transition-all duration-300 hover:shadow-md ${highlightHover === 'safe' ? 'hover:border-risk-safe/30 hover:bg-risk-safe/5' : 'hover:border-risk-caution/30 hover:bg-risk-caution/5'}`}
+ className={`posture-item flex flex-col gap-2 py-6 px-7 rounded-[1.5rem] bg-surface-2/40 border border-border-strong/50 transition-all duration-500 hover:shadow-lg ${highlightHover === 'safe' ? 'hover:border-risk-safe/40 hover:bg-risk-safe/5 hover:shadow-risk-safe/10' : 'hover:border-risk-caution/40 hover:bg-risk-caution/5 hover:shadow-risk-caution/10'}`}
  >
- <h4 className="text-sm font-bold text-text-primary">
+ <h4 className="text-base font-bold text-text-primary">
  {entry.title}
  </h4>
  <p className="text-sm text-text-secondary leading-relaxed">
@@ -62,47 +73,92 @@ function EntryList({ entries, highlightHover }: { entries: readonly Entry[], hig
 }
 
 export function SecurityPosture({ contactEmail }: SecurityPostureProps) {
+  const container = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.posture-column',
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          stagger: 0.2,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: container.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        }
+      );
+      
+      gsap.fromTo(
+        '.posture-item',
+        { x: -20, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: container.current,
+            start: 'top 75%',
+            toggleActions: 'play none none none',
+          },
+        }
+      );
+    }, container);
+    return () => ctx.revert();
+  }, { scope: container });
+
  return (
- <section aria-labelledby="posture-heading" className="w-full py-24 relative bg-canvas">
- <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto">
- <div className="flex flex-col gap-4 max-w-2xl mb-12">
+ <section ref={container} aria-labelledby="posture-heading" className="w-full py-24 md:py-32 relative overflow-hidden bg-canvas">
+ <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-primary/5 rounded-full blur-[120px] pointer-events-none" />
+
+ <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto relative z-10">
+ <div className="flex flex-col gap-4 max-w-2xl mb-16">
  <span className="text-xs uppercase font-bold tracking-widest text-brand-primary">Posture</span>
- <h2 id="posture-heading" className="text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary">
- What is in place, and what is not
+ <h2 id="posture-heading" className="text-3xl md:text-5xl font-extrabold tracking-tight text-text-primary leading-tight">
+ What is in place, and what is not.
  </h2>
- <p className="text-sm md:text-base text-text-secondary leading-relaxed">
+ <p className="text-base md:text-lg text-text-secondary leading-relaxed font-medium">
  The second list is the one worth reading. Every security page has the first.
  </p>
  </div>
 
  <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-start">
- <div className="flex flex-col p-8 rounded-3xl bg-surface-1/40 border border-border-strong/50 backdrop-blur-md shadow-sm relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-32 h-32 bg-risk-safe/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity" />
- <h3 className="text-xs font-bold tracking-widest text-risk-safe uppercase">
+ <div className="posture-column flex flex-col p-10 rounded-[2.5rem] bg-surface-1/40 border border-border-strong/50 backdrop-blur-2xl shadow-sm relative overflow-hidden group">
+ <div className="absolute top-0 right-0 w-64 h-64 bg-risk-safe/10 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+ <h3 className="text-sm font-bold tracking-widest text-risk-safe uppercase flex items-center gap-3">
+ <span className="flex size-2 rounded-full bg-risk-safe animate-pulse shadow-[0_0_8px_rgba(var(--risk-safe-rgb),0.8)]" />
  In place today
  </h3>
  <EntryList entries={IN_PLACE} highlightHover="safe" />
  </div>
 
- <div className="flex flex-col p-8 rounded-3xl bg-surface-1/40 border border-border-strong/50 backdrop-blur-md shadow-sm relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-32 h-32 bg-risk-caution/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity" />
- <h3 className="text-xs font-bold tracking-widest text-risk-caution uppercase">
+ <div className="posture-column flex flex-col p-10 rounded-[2.5rem] bg-surface-1/40 border border-border-strong/50 backdrop-blur-2xl shadow-sm relative overflow-hidden group">
+ <div className="absolute top-0 right-0 w-64 h-64 bg-risk-caution/10 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+ <h3 className="text-sm font-bold tracking-widest text-risk-caution uppercase flex items-center gap-3">
+ <span className="flex size-2 rounded-full bg-risk-caution shadow-[0_0_8px_rgba(var(--risk-caution-rgb),0.8)]" />
  Not yet
  </h3>
  <EntryList entries={NOT_YET} highlightHover="caution" />
  </div>
  </div>
 
- <div className="mt-12 flex flex-col gap-3 rounded-3xl border border-brand-primary/20 bg-gradient-to-br from-brand-primary/10 via-surface-1/50 to-transparent p-8 md:p-10 relative overflow-hidden shadow-sm">
- <div className="absolute bottom-0 right-0 w-64 h-64 bg-brand-primary/5 rounded-full blur-3xl pointer-events-none" />
- <h4 className="text-lg font-bold text-text-primary relative z-10">
+ <div className="posture-column mt-16 flex flex-col gap-4 rounded-[2rem] border border-brand-primary/20 bg-gradient-to-br from-brand-primary/10 via-surface-1/50 to-transparent p-10 md:p-12 relative overflow-hidden shadow-lg backdrop-blur-xl group">
+ <div className="absolute bottom-0 right-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-brand-primary/20 transition-colors duration-700" />
+ <h4 className="text-2xl font-bold text-text-primary relative z-10">
  Found something?
  </h4>
- <p className="text-sm text-text-secondary leading-relaxed max-w-3xl relative z-10">
+ <p className="text-base text-text-secondary leading-relaxed max-w-3xl relative z-10">
  Write to{' '}
  <a
  href={`mailto:${contactEmail}`}
- className="font-bold text-brand-primary hover:text-brand-primary-hover transition-colors"
+ className="font-bold text-brand-primary hover:text-brand-primary-hover hover:underline transition-all"
  >
  {contactEmail}
  </a>{' '}

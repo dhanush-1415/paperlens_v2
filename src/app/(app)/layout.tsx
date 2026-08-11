@@ -6,7 +6,7 @@ import { TRANSLATOR } from '@/core/container';
 import { signOutFormAction } from '@/server/actions/auth';
 import { getPublicSession, getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants/routes';
-import { Button, Container, Skeleton, Text, ThemeToggle } from '@/shared/ui';
+import { Button, Container, Skeleton, Text, ThemeToggle, AppSidebar, AppTopBar, AppBreadcrumbs } from '@/shared/ui';
 
 import Link from 'next/link';
 
@@ -66,39 +66,42 @@ async function SessionChip() {
  );
 }
 
-export default function AppLayout({ children }: LayoutProps<'/'>) {
- const t = getRequestScope().resolve(TRANSLATOR);
+export default async function AppLayout({ children }: LayoutProps<'/'>) {
+  const t = getRequestScope().resolve(TRANSLATOR);
+  const session = await getPublicSession();
 
- return (
- <div className="flex min-h-full flex-1 flex-col">
- <header className="border-b border-border-subtle">
- <Container className="flex h-14 items-center justify-between gap-4">
- <Link href={ROUTES.scan} className=" text-lg text-text-primary">
- {tenant.productName}
- </Link>
+  // If no session, they shouldn't be in (app), but gracefully handle it.
+  // We can pass default role/plan.
+  const role = session?.role || 'user';
+  const plan = session?.plan || 'free';
 
- <div className="flex items-center gap-2">
- <ThemeToggle
- label={t.t('theme.label')}
- optionLabels={{
- light: t.t('theme.light'),
- dark: t.t('theme.dark'),
- system: t.t('theme.system'),
- }}
- />
- {/*
- * The fallback is the same size as the resolved chip. A skeleton that is a
- * different height than what replaces it produces a layout shift in the header on
- * every single page load — the most visible CLS a product can ship.
- */}
- <Suspense fallback={<Skeleton className="h-8 w-24" />}>
- <SessionChip />
- </Suspense>
- </div>
- </Container>
- </header>
+  const themeLabels = {
+    label: t.t('theme.label'),
+    light: t.t('theme.light'),
+    dark: t.t('theme.dark'),
+    system: t.t('theme.system'),
+  };
 
- <main className="flex-1">{children}</main>
- </div>
- );
+  return (
+    <div className="flex min-h-screen bg-canvas">
+      <AppSidebar
+        role={role as any}
+        plan={plan as any}
+        productName={tenant.productName}
+        signOutAction={signOutFormAction}
+      />
+      <div className="flex w-full flex-1 flex-col min-w-0">
+        <AppTopBar
+          themeLabels={themeLabels}
+          sessionChip={<SessionChip />}
+        />
+        <main className="flex-1 relative">
+          <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto">
+            <AppBreadcrumbs />
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
 }

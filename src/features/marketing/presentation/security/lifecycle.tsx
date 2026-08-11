@@ -1,3 +1,14 @@
+'use client';
+
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(useGSAP, ScrollTrigger);
+}
+
 interface Moment {
  readonly when: string;
  readonly title: string;
@@ -33,49 +44,75 @@ const MOMENTS: readonly Moment[] = [
 ];
 
 export function SecurityLifecycle() {
+  const container = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    gsap.fromTo(
+      '.lifecycle-step',
+      { y: 30, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.6,
+        stagger: 0.15,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: container.current,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      }
+    );
+  }, { scope: container });
+
  return (
- <section aria-labelledby="lifecycle-heading" className="w-full py-24 relative overflow-hidden bg-surface-1/40 border-b border-border-strong/30">
- <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,rgba(var(--brand-primary-rgb),0.03),transparent_50%)] pointer-events-none" />
+ <section ref={container} aria-labelledby="lifecycle-heading" className="w-full py-24 relative overflow-hidden bg-canvas border-b border-border-strong/30">
+ <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,rgba(var(--brand-primary-rgb),0.05),transparent_60%)] pointer-events-none" />
 
  <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto relative z-10">
- <div className="flex flex-col gap-4 max-w-2xl mb-12">
+ <div className="flex flex-col gap-4 max-w-2xl mb-16">
  <span className="text-xs uppercase font-bold tracking-widest text-brand-primary">The life of a document</span>
- <h2 id="lifecycle-heading" className="text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary">
- Where your file is, at every moment
+ <h2 id="lifecycle-heading" className="text-3xl md:text-5xl font-extrabold tracking-tight text-text-primary leading-tight">
+ Where your file is, at every moment.
  </h2>
- <p className="text-sm md:text-base text-text-secondary leading-relaxed">
+ <p className="text-base md:text-lg text-text-secondary leading-relaxed font-medium">
  The honest version of this answer is short, so here is the whole of it rather than a
  summary with a link to a policy.
  </p>
  </div>
 
- <ol className="flex flex-col relative before:absolute before:inset-y-0 before:left-[15px] before:w-px before:bg-gradient-to-b before:from-border-strong before:via-border-subtle before:to-transparent lg:before:hidden">
+ <ol className="flex flex-col relative before:absolute before:inset-y-0 before:left-[19px] before:w-px before:bg-gradient-to-b before:from-brand-primary/50 before:via-brand-primary/20 before:to-transparent lg:before:hidden">
  {MOMENTS.map((moment, index) => (
  <li
  key={moment.title}
- className="grid gap-4 py-8 pl-12 lg:pl-0 lg:grid-cols-[14rem_1fr] lg:gap-12 relative group border-b border-border-subtle/50 last:border-0"
+ className="lifecycle-step grid gap-4 py-10 pl-14 lg:pl-0 lg:grid-cols-[16rem_1fr] lg:gap-16 relative group border-b border-border-subtle/50 last:border-0"
  >
- <div className="absolute left-0 top-10 lg:static lg:mt-1 flex items-center">
+ <div className="absolute left-0 top-12 lg:static lg:mt-1 flex items-center">
  <span
  aria-hidden
- className="absolute left-0 flex size-8 -translate-x-[15px] lg:translate-x-0 items-center justify-center rounded-full border border-border-strong bg-surface-raised text-xs font-bold text-text-primary shadow-sm group-hover:scale-110 group-hover:bg-brand-primary group-hover:text-canvas group-hover:border-brand-primary transition-all duration-300 z-10 lg:hidden"
+ className="absolute left-0 flex size-10 -translate-x-[19px] lg:translate-x-0 items-center justify-center rounded-full border-2 border-canvas bg-surface-1 text-sm font-bold text-text-primary shadow-[0_0_15px_-3px_rgba(var(--brand-primary-rgb),0.3)] group-hover:scale-110 group-hover:bg-brand-primary group-hover:text-canvas group-hover:border-brand-primary group-hover:shadow-[0_0_20px_0_rgba(var(--brand-primary-rgb),0.6)] transition-all duration-500 z-10 lg:hidden"
  >
  {String(index + 1).padStart(2, '0')}
  </span>
  
- <p className="text-xs font-medium text-brand-primary/80 uppercase tracking-wider group-hover:text-brand-primary transition-colors hidden lg:block">
- {moment.when}
- </p>
+ <div className="hidden lg:flex flex-col gap-1">
+  <span className="text-4xl font-extrabold text-border-strong/30 group-hover:text-brand-primary/20 transition-colors duration-500">
+    {String(index + 1).padStart(2, '0')}
+  </span>
+  <p className="text-sm font-bold text-brand-primary/80 uppercase tracking-widest group-hover:text-brand-primary transition-colors duration-500">
+  {moment.when}
+  </p>
+ </div>
  </div>
  
- <div className="flex flex-col gap-2">
- <p className="text-xs font-medium text-brand-primary/80 uppercase tracking-wider group-hover:text-brand-primary transition-colors lg:hidden block mb-1">
+ <div className="flex flex-col gap-3">
+ <p className="text-xs font-bold text-brand-primary/80 uppercase tracking-widest group-hover:text-brand-primary transition-colors lg:hidden block mb-1">
  {moment.when}
  </p>
- <h3 className="text-lg font-bold text-text-primary group-hover:text-brand-primary transition-colors">
+ <h3 className="text-2xl font-bold text-text-primary group-hover:text-brand-primary transition-colors duration-500">
  {moment.title}
  </h3>
- <p className="text-sm text-text-secondary leading-relaxed max-w-3xl">
+ <p className="text-base text-text-secondary leading-relaxed max-w-3xl">
  {moment.body}
  </p>
  </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Container, Heading, Section, Text, Button } from '@/shared/ui';
+import { Container, Heading, Section, Text, Button, ScrollReveal } from '@/shared/ui';
 import DemoRequestModal from '@/shared/ui/DemoRequestModal';
 
 export function LandingSocialProofAndCta() {
@@ -55,20 +55,22 @@ export function LandingSocialProofAndCta() {
       {/* Social Proof (Logo Wall) */}
       <Section spacing="sm" className="bg-canvas border-b border-border-subtle/50">
         <Container width="shell" className="text-center relative overflow-hidden">
-          <Heading level={2} size="eyebrow" className="text-text-tertiary tracking-widest uppercase relative z-10">
-            Trusted by Leaders in Finance, Legal, and Healthcare
-          </Heading>
-          
-          <div className="mt-10 flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700 relative z-10">
-            {logos.map((logo) => (
-              <div key={logo.name} className="flex items-center gap-3 text-text-primary text-base md:text-lg font-extrabold select-none hover:scale-105 transition-transform duration-300">
-                <div className="text-brand-primary">
-                  {logo.icon}
+          <ScrollReveal variant="fade-up">
+            <Heading level={2} size="eyebrow" className="text-text-tertiary tracking-widest uppercase relative z-10">
+              Trusted by Leaders in Finance, Legal, and Healthcare
+            </Heading>
+            
+            <div className="mt-10 flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700 relative z-10">
+              {logos.map((logo) => (
+                <div key={logo.name} className="flex items-center gap-3 text-text-primary text-base md:text-lg font-extrabold select-none hover:scale-105 transition-transform duration-300">
+                  <div className="text-brand-primary">
+                    {logo.icon}
+                  </div>
+                  <span className="tracking-tight">{logo.name}</span>
                 </div>
-                <span className="tracking-tight">{logo.name}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollReveal>
         </Container>
       </Section>
 
@@ -76,7 +78,7 @@ export function LandingSocialProofAndCta() {
       <div className="force-dark w-full">
         <Section spacing="lg" className="bg-canvas relative overflow-hidden border-b border-border-strong/30">
           <Container width="content" className="text-center flex flex-col items-center gap-8 relative z-10">
-            <div className="flex flex-col gap-4 max-w-3xl relative items-center">
+            <ScrollReveal variant="fade-up" className="flex flex-col gap-4 max-w-3xl relative items-center">
               <div className="inline-flex items-center justify-center rounded-full bg-surface-1 border border-border-strong backdrop-blur-md px-5 py-1.5 shadow-sm mb-2">
                  <span className="text-xs font-bold text-brand-primary uppercase tracking-widest">Get Started Today</span>
               </div>
@@ -87,13 +89,13 @@ export function LandingSocialProofAndCta() {
               <Text size="lg" tone="secondary" className="leading-relaxed">
                 Join enterprise teams processing contracts, tax notices, and regulatory papers with human-level accuracy. <strong className="text-text-primary">No credit card required.</strong>
               </Text>
-            </div>
+            </ScrollReveal>
 
-            <div className="flex flex-col items-center gap-6 mt-4 p-8 rounded-3xl bg-surface-1 border border-border-strong shadow-card w-full max-w-lg">
+            <ScrollReveal variant="fade-up" delay={0.2} className="flex flex-col items-center gap-6 mt-4 p-8 rounded-3xl bg-surface-1 border border-border-strong shadow-card w-full max-w-lg">
               <Button
                 variant="premium"
                 onClick={() => setIsModalOpen(true)}
-                className="group w-full rounded-2xl px-12 h-16 text-lg font-bold shadow-xl shadow-brand-primary/40 cursor-pointer border border-brand-primary/20 hover:border-brand-primary/50 overflow-hidden"
+                className="group w-full px-12 h-16 text-lg font-bold shadow-xl shadow-brand-primary/40 cursor-pointer border border-brand-primary/20 hover:border-brand-primary/50 overflow-hidden"
               >
                 Sign Up for a Free Demo
                 <svg className="size-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +108,7 @@ export function LandingSocialProofAndCta() {
                 </svg>
                 Setup takes less than 2 minutes
               </div>
-            </div>
+            </ScrollReveal>
           </Container>
         </Section>
       </div>

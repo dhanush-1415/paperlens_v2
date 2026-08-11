@@ -34,6 +34,7 @@ export const ROUTES = {
  about: '/about',
  faq: '/faq',
  support: '/support',
+ contact: '/contact',
  blog: '/blog',
  blogPost: (slug: string) => `/blog/${segment(slug)}`,
 
@@ -44,7 +45,7 @@ export const ROUTES = {
 
  // ── Authentication ────────────────────────────────────────────────────────────────────
  login: '/login',
- register: '/register',
+ signup: '/signup',
  forgotPassword: '/forgot-password',
  verifyEmail: '/verify-email',
 
@@ -56,6 +57,11 @@ export const ROUTES = {
  document: (id: string) => `/document/${segment(id)}`,
  usage: '/usage',
  settings: '/settings',
+ profile: '/profile',
+ billing: '/billing',
+ adminUsers: '/admin/users',
+ adminLogs: '/admin/logs',
+ adminConfig: '/admin/config',
 
  // ── Public sharing ────────────────────────────────────────────────────────────────────
  share: (shareToken: string) => `/share/${segment(shareToken)}`,
@@ -73,9 +79,9 @@ export const ROUTES = {
  */
 export const ROUTE_ACCESS = {
  /** Requires a session. Prefix match. */
- protected: ['/welcome', '/scan', '/vault', '/document', '/usage', '/settings'],
+ protected: ['/welcome', '/scan', '/vault', '/document', '/usage', '/settings', '/profile', '/billing', '/admin'],
  /** Signed-in users are bounced away from these. */
- authOnly: ['/login', '/register', '/forgot-password'],
+ authOnly: ['/login', '/signup', '/forgot-password'],
  /** Never redirected, never gated. */
  public: [
  '/',
@@ -87,6 +93,7 @@ export const ROUTE_ACCESS = {
  '/about',
  '/faq',
  '/support',
+ '/contact',
  '/blog',
  '/terms',
  '/privacy',
@@ -108,5 +115,5 @@ export function isAuthOnlyPath(pathname: string): boolean {
 }
 
 /** Where to land after signing in, when no `redirectTo` was captured. */
-export const DEFAULT_AUTHENTICATED_ROUTE = ROUTES.scan;
+export const DEFAULT_AUTHENTICATED_ROUTE = ROUTES.welcome;
 export const DEFAULT_UNAUTHENTICATED_ROUTE = ROUTES.home;

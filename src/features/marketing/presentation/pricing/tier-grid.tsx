@@ -5,7 +5,7 @@ import { ROUTES } from '@/shared/constants/routes';
 
 const TIER_HREF: Record<PricingTier['id'], Route> = {
  free: ROUTES.scan,
- pro: ROUTES.register,
+ pro: ROUTES.signup,
  business: ROUTES.support,
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Container, Heading, Section, Text } from '@/shared/ui';
+import { Container, Heading, Section, Text, ScrollReveal } from '@/shared/ui';
 import { cn } from '@/shared/ui/cn';
 
 interface StepDetail {
@@ -167,16 +167,16 @@ export function LandingHowItWorks() {
       <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[radial-gradient(ellipse_at_top_right,rgba(var(--brand-primary-rgb),0.05),transparent_70%)] pointer-events-none" />
       
       <Container width="shell" className="py-8 relative z-10">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-4 mb-20">
+        <ScrollReveal variant="fade-up" className="text-center max-w-2xl mx-auto flex flex-col gap-4 mb-20">
           <Heading level={2} size="eyebrow" className="text-brand-solid dark:text-brand-primary uppercase tracking-widest font-bold">
             How It Works
           </Heading>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-text-primary">
             Zero friction from <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-secondary">upload to structured analysis</span>
           </h2>
-        </div>
+        </ScrollReveal>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
+        <ScrollReveal variant="fade-up" delay={0.2} className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
           
           {/* Left Column: Interactive vertical steps */}
           <div className="lg:col-span-5 flex flex-col gap-4">
@@ -262,7 +262,7 @@ export function LandingHowItWorks() {
             </div>
           </div>
 
-        </div>
+        </ScrollReveal>
       </Container>
     </Section>
   );

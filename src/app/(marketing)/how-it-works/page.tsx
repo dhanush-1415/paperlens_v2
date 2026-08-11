@@ -58,10 +58,10 @@ export default async function HowItWorksPage() {
  {/* The CTA sits inside the intro rather than in its own band: a reader who is already
  convinced should not have to scroll past the explanation to act on it. */}
  <div className="flex flex-col gap-2">
- <Button asChild size="lg" variant="primary">
+ <Button asChild size="lg" variant="premium" className="shadow-xl shadow-brand-primary/30">
  <Link href={ROUTES.scan}>
  {ctaLabel}
- <ArrowRightIcon aria-hidden className="size-4" />
+ <ArrowRightIcon aria-hidden className="size-4 ml-2" />
  </Link>
  </Button>
  <Text size="xs" tone="tertiary">

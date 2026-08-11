@@ -68,8 +68,7 @@ export function Input({ className, size, startAdornment, endAdornment, ...props 
  {control}
  {endAdornment ? (
  <span
- aria-hidden
- className="pointer-events-none absolute end-3 flex items-center text-text-tertiary"
+ className="absolute end-3 flex items-center text-text-tertiary"
  >
  {endAdornment}
  </span>

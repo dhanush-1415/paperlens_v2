@@ -34,3 +34,8 @@ export {
  type FakeUser,
  type InMemoryAuthOptions,
 } from './in-memory-provider';
+
+export {
+ createSupabaseAuthProvider,
+ type SupabaseAuthOptions,
+} from './supabase-provider';

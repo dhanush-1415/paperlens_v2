@@ -1,4 +1,14 @@
+'use client';
+
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CheckIcon } from '@/shared/ui';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(useGSAP, ScrollTrigger);
+}
 
 interface Commitment {
  readonly title: string;
@@ -25,17 +35,38 @@ const COMMITMENTS: readonly Commitment[] = [
 ];
 
 export function SecurityCommitments() {
+  const container = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    gsap.fromTo(
+      '.commitment-card',
+      { y: 30, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: container.current,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      }
+    );
+  }, { scope: container });
+
  return (
- <section aria-labelledby="commitments-heading" className="w-full py-24 relative overflow-hidden bg-surface-1/40 border-y border-border-strong/30">
- <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--risk-safe-rgb),0.05),transparent_70%)] pointer-events-none" />
+ <section ref={container} aria-labelledby="commitments-heading" className="w-full py-24 relative overflow-hidden bg-canvas border-b border-border-strong/30">
+ <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--risk-safe-rgb),0.06),transparent_70%)] pointer-events-none" />
 
  <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto relative z-10">
- <div className="flex flex-col gap-4 max-w-2xl mb-12">
+ <div className="flex flex-col gap-4 max-w-2xl mb-16">
  <span className="text-xs uppercase font-bold tracking-widest text-risk-safe">Commitments</span>
- <h2 id="commitments-heading" className="text-3xl md:text-4xl font-extrabold tracking-tight text-text-primary">
- Four promises we could be caught breaking
+ <h2 id="commitments-heading" className="text-3xl md:text-5xl font-extrabold tracking-tight text-text-primary leading-tight">
+ Four promises we could be caught breaking.
  </h2>
- <p className="text-sm md:text-base text-text-secondary leading-relaxed">
+ <p className="text-base md:text-lg text-text-secondary leading-relaxed font-medium">
  Which is the only kind worth printing. Each of these is a statement of fact about how
  the product operates, not an aspiration about how we feel.
  </p>
@@ -45,16 +76,17 @@ export function SecurityCommitments() {
  {COMMITMENTS.map((commitment) => (
  <li
  key={commitment.title}
- className="flex gap-5 p-8 rounded-3xl bg-surface-1/40 border border-border-strong/50 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-lg hover:border-risk-safe/30 hover:-translate-y-1 group"
+ className="commitment-card flex gap-5 p-8 rounded-[2rem] bg-surface-1/40 border border-border-strong/50 backdrop-blur-xl shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-risk-safe/10 hover:border-risk-safe/40 hover:-translate-y-1 group overflow-hidden relative"
  >
+ <div className="absolute inset-0 bg-gradient-to-br from-risk-safe/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
  <span
  aria-hidden
- className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full border border-risk-safe/20 bg-risk-safe/10 text-risk-safe group-hover:scale-110 transition-transform"
+ className="relative z-10 mt-1 flex size-12 shrink-0 items-center justify-center rounded-full border border-risk-safe/20 bg-risk-safe/10 text-risk-safe group-hover:scale-110 group-hover:bg-risk-safe group-hover:text-canvas transition-all duration-500 shadow-[0_0_15px_-3px_rgba(var(--risk-safe-rgb),0.3)]"
  >
- <CheckIcon className="size-5" />
+ <CheckIcon className="size-6" />
  </span>
- <div className="flex min-w-0 flex-col gap-2">
- <h3 className="text-lg font-bold text-text-primary">
+ <div className="relative z-10 flex min-w-0 flex-col gap-3">
+ <h3 className="text-xl font-bold text-text-primary">
  {commitment.title}
  </h3>
  <p className="text-sm text-text-secondary leading-relaxed">

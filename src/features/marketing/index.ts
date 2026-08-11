@@ -61,6 +61,7 @@ export type {
  */
 export {
  GUIDE_SECTION_IDS,
+ FaqAccordion,
  GuideChecklist,
  GuideFaqSection,
  GuideHero,

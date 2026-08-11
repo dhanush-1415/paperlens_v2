@@ -49,7 +49,7 @@ import {
  grantAll,
  type AnalyticsProvider,
 } from '@/core/analytics';
-import { createInMemoryAuthProvider } from '@/core/auth';
+import { createInMemoryAuthProvider, createSupabaseAuthProvider } from '@/core/auth';
 import { createSessionAccessors } from '@/core/auth/dal';
 import { createCookieSessionStore } from '@/core/auth/session-store';
 import {
@@ -238,43 +238,23 @@ function buildServerContainer(): Container {
  container.register(SESSION_STORE, () => createCookieSessionStore());
 
  container.register(AUTH_PROVIDER, (c) => {
- /**
- * FAKE. Three demo users, in memory, gone on restart. Documented as such in
- * `core/auth/in-memory-provider.ts`, and the only reason the app runs end to end before
- * a real identity provider exists.
- *
- * The replacement is this factory call and nothing else — `SupabaseAuthProvider`,
- * `Auth0AuthProvider`, whatever it turns out to be — because every consumer talks to
- * the `AuthProvider` port and the DAL below is built from the token, not the class.
- *
- * ### Why this warns instead of throwing
- *
- * Refusing to bind in production would be the stronger guarantee, and it is the wrong
- * one *today*: there is no second adapter to fall back to, so the refusal would break
- * `next build` (which runs with NODE_ENV=production) and make the scaffold unshippable
- * to a staging environment. A guard that forces the next person to comment it out
- * teaches them to comment out guards.
- *
- * So it is loud instead. `fatal` is the highest severity the logger has, it is emitted
- * once per process at first resolve, and it is not suppressible by log level — which
- * means it is in the first screen of every production boot log until someone fixes it.
- * When the real adapter lands, this branch becomes the throw it wants to be.
- */
- if (isProduction) {
- c.resolve(LOGGER)
- .child('auth')
- .fatal('In-memory auth provider bound in a production build', undefined, {
- detail:
- 'Passwords are compared as plaintext and sessions die with the process. ' +
- 'Bind a real AuthProvider in buildServerContainer before serving real users.',
- });
- }
+    const supabaseUrl = serverEnv.SUPABASE_URL;
+    const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
 
- return createInMemoryAuthProvider({
- store: c.resolve(SESSION_STORE),
- now: c.resolve(CLOCK),
- });
- });
+    if (!supabaseUrl || !supabaseKey) {
+      c.resolve(LOGGER)
+        .child('auth')
+        .fatal('Missing SUPABASE_URL or SUPABASE_ANON_KEY for production auth');
+      throw new Error('Missing Supabase configuration');
+    }
+
+    return createSupabaseAuthProvider({
+      supabaseUrl,
+      supabaseKey,
+      store: c.resolve(SESSION_STORE),
+      now: c.resolve(CLOCK),
+    });
+  });
 
  /**
  * Rate limiting (requirement 15).

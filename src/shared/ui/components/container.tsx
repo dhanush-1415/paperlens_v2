@@ -26,7 +26,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/shared/ui/cn';
 import type { LayoutElement } from '../primitives/polymorphic';
 
-const containerVariants = cva('mx-auto w-[95%] md:w-[90%] lg:w-[80%]', {
+const containerVariants = cva('mx-auto w-full', {
  variants: {
  width: {
  content: 'max-w-content',

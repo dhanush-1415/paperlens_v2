@@ -94,6 +94,15 @@ export function siteFooterGroups({
  { href: ROUTES.howItWorks, label: t.t('nav.howItWorks') },
  { href: ROUTES.pricing, label: t.t('nav.pricing') },
  { href: ROUTES.security, label: t.t('nav.security') },
+				{ href: ROUTES.about, label: 'About Us' },
+			],
+		},
+		{
+			title: 'Support',
+			links: [
+				{ href: ROUTES.faq, label: 'FAQ' },
+				{ href: ROUTES.support, label: 'Help & Support' },
+				{ href: ROUTES.contact as Route, label: 'Contact Us' },
  ],
  },
  {

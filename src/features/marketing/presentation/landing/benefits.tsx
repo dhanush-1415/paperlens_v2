@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants/routes';
-import { Container, Heading, Section, Text } from '@/shared/ui';
+import { Container, Heading, Section, Text, ScrollReveal } from '@/shared/ui';
 
 interface BenefitItem {
   icon: React.ReactNode;
@@ -58,7 +58,7 @@ export function LandingBenefits() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(var(--brand-secondary-rgb),0.05)_0%,transparent_60%)] pointer-events-none" />
 
       <Container width="shell" className="py-8 relative z-10">
-        <div className="text-center max-w-3xl mx-auto flex flex-col gap-4 mb-20">
+        <ScrollReveal variant="fade-up" className="text-center max-w-3xl mx-auto flex flex-col gap-4 mb-20">
           <Heading level={2} size="eyebrow" className="text-brand-solid dark:text-brand-primary uppercase tracking-widest font-extrabold">
             Built for peace of mind
           </Heading>
@@ -68,13 +68,13 @@ export function LandingBenefits() {
           <Text size="lg" tone="secondary" className="leading-relaxed max-w-2xl mx-auto">
             Our intelligent pipeline extracts the hidden traps in complex legal and financial documents so you can negotiate with absolute confidence.
           </Text>
-        </div>
+        </ScrollReveal>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <ScrollReveal variant="stagger-children" className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {benefits.map((benefit) => (
             <div
               key={benefit.title}
-              className="group relative flex flex-col gap-6 p-8 rounded-3xl border border-border-strong/50 bg-canvas shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-surface-1 hover:border-brand-primary/30 hover:shadow-[0_20px_40px_-15px_rgba(var(--brand-primary-rgb),0.2)] hover:-translate-y-1 transition-all duration-500 overflow-hidden"
+              className="reveal-item group relative flex flex-col gap-6 p-8 rounded-3xl border border-border-strong/50 bg-canvas shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-surface-1 hover:border-brand-primary/30 hover:shadow-[0_20px_40px_-15px_rgba(var(--brand-primary-rgb),0.2)] hover:-translate-y-1 transition-all duration-500 overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-primary/10 to-transparent rounded-bl-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
@@ -96,9 +96,9 @@ export function LandingBenefits() {
               </Text>
             </div>
           ))}
-        </div>
+        </ScrollReveal>
         
-        <div className="flex justify-center relative z-10">
+        <ScrollReveal variant="fade-up" delay={0.3} className="flex justify-center relative z-10">
           <Link
             href={ROUTES.scan}
             className="group relative inline-flex items-center gap-3 rounded-full bg-surface-overlay/80 backdrop-blur-xl border border-border-strong px-8 py-4 text-sm font-bold text-text-primary transition-all duration-300 hover:border-brand-primary hover:bg-surface-1 hover:shadow-2xl hover:shadow-brand-primary/20 hover:-translate-y-0.5 overflow-hidden"
@@ -114,7 +114,7 @@ export function LandingBenefits() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </Link>
-        </div>
+        </ScrollReveal>
       </Container>
     </Section>
   );

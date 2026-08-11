@@ -65,12 +65,13 @@ export function HowItWorksLimits() {
  {LIMITS.map((limit) => (
  <div 
  key={limit.title} 
- className="flex flex-col gap-3 p-6 rounded-2xl bg-surface-1/30 border border-border-strong/50 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-lg hover:border-brand-primary/20 hover:-translate-y-0.5"
+ className="flex flex-col gap-3 p-8 rounded-3xl bg-surface-1 border border-border-strong shadow-card transition-all duration-500 hover:shadow-2xl hover:border-brand-primary/40 hover:-translate-y-1 relative overflow-hidden group/limit"
  >
- <h3 className="text-lg font-bold text-text-primary">
+ <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-[30px] opacity-0 group-hover/limit:opacity-100 transition-opacity duration-700 pointer-events-none" />
+ <h3 className="text-xl font-bold text-text-primary z-10">
  {limit.title}
  </h3>
- <p className="text-sm text-text-secondary leading-relaxed">
+ <p className="text-sm md:text-base text-text-secondary leading-relaxed z-10">
  {limit.body}
  </p>
  </div>

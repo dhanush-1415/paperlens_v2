@@ -3,7 +3,8 @@
 import { redirect } from 'next/navigation';
 
 import { ANALYTICS, AUTH_PROVIDER, CLOCK, RATE_LIMITER } from '@/core/container';
-import { rateLimitError } from '@/core/errors/app-error';
+import { AppError, rateLimitError } from '@/core/errors/app-error';
+import { serverEnv } from '@/config/env.server';
 import { unwrapOrThrow } from '@/core/result/result';
 import { sanitizeRedirectTo } from '@/shared/constants/query-params';
 import {
@@ -124,6 +125,114 @@ export const signInAction = action(
  redirect(sanitizeRedirectTo(input.redirectTo, DEFAULT_AUTHENTICATED_ROUTE));
  },
 );
+
+
+const SIGN_UP_SCOPE = 'auth.register';
+
+const signUpSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(8, { message: 'validation.minLength' }),
+  displayName: z.string().optional(),
+  redirectTo: z.string().optional(),
+});
+
+export const signUpAction = action(
+  'auth.signUp',
+  async (_previous: unknown, formData: FormData): Promise<never> => {
+    const container = getServerContainer();
+
+    const email = String(formData.get('email') ?? '').trim().toLowerCase();
+    const decision = await container.resolve(RATE_LIMITER).consume(SIGN_UP_SCOPE, email);
+
+    if (!decision.allowed) {
+      const nowMs = container.resolve(CLOCK)().getTime();
+      throw rateLimitError(
+        Math.max(1, Math.ceil((decision.resetAt - nowMs) / 1_000)),
+        SIGN_UP_SCOPE,
+      );
+    }
+
+    const input = unwrapOrThrow(parseFormData(signUpSchema, formData));
+
+    const attempt = await container.resolve(AUTH_PROVIDER).signUp({
+      email: input.email,
+      password: input.password,
+      displayName: input.displayName,
+      acceptedTerms: true,
+    });
+
+    if (!attempt.ok) {
+      container.resolve(ANALYTICS).track('signup.failed', { reason: 'credentials' });
+      throw attempt.error;
+    }
+
+    container.resolve(ANALYTICS).track('signup.completed', { method: 'email' });
+    redirect(sanitizeRedirectTo(input.redirectTo, DEFAULT_AUTHENTICATED_ROUTE));
+  },
+);
+
+export const signInWithGoogleAction = action('auth.google', async (_previous: unknown, formData: FormData): Promise<never> => {
+  const next = sanitizeRedirectTo(formData.get('redirectTo') as string | undefined, DEFAULT_AUTHENTICATED_ROUTE);
+
+  const supabaseUrl = serverEnv.SUPABASE_URL;
+  const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new AppError('INTERNAL_ERROR', { message: 'Supabase credentials missing for OAuth.' });
+  }
+
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${serverEnv.APP_URL}/api/auth/callback?next=${encodeURIComponent(next)}`,
+    },
+  });
+
+  if (error || !data.url) {
+    throw new AppError('INTERNAL_ERROR', { message: error?.message || 'Failed to initialize Google auth' });
+  }
+
+  redirect(data.url);
+});
+
+export async function signInWithGoogleFormAction(formData: FormData): Promise<void> {
+  await signInWithGoogleAction(null, formData);
+}
+
+export async function checkEmailAvailabilityAction(email: string): Promise<{ available: boolean }> {
+  if (!email) return { available: true };
+
+  const supabaseUrl = serverEnv.SUPABASE_URL;
+  const serviceKey = serverEnv.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) return { available: true };
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/auth/v1/admin/users?filter=${encodeURIComponent(email)}&per_page=10`,
+      {
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        cache: 'no-store',
+      }
+    );
+
+    if (!res.ok) return { available: true };
+
+    const { users = [] } = (await res.json()) as { users?: { email: string }[] };
+
+    const taken = users.some(
+      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+    return { available: !taken };
+  } catch {
+    return { available: true };
+  }
+}
 
 export const signOutAction = action('auth.signOut', async (): Promise<never> => {
  const container = getServerContainer();

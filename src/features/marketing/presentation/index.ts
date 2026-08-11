@@ -70,3 +70,4 @@ export type { RichTextProps } from './rich-text';
 
 export { siteFooterGroups, siteLegalLinks, siteNavItems } from './navigation';
 export type { SiteFooterContentDeps } from './navigation';
+export * from './faq-accordion';

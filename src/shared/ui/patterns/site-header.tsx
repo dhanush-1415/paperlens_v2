@@ -114,32 +114,22 @@ export function SiteHeader({
  const [openedAt, setOpenedAt] = useState<string | null>(null);
  const isMenuOpen = openedAt === pathname;
 
- return (
+  return (
  <header
- className={cn(
- 'sticky top-0 z-40',
- /**
- * Translucent, and *only* translucent once scrolled.
- *
- * At the top of the page the header sits on the canvas and needs no separation, so
- * it stays fully transparent — the hero reads as one piece. The moment content
- * passes underneath, the blur and the hairline appear. Doing this with
- * `backdrop-blur` rather than an opaque fill is what keeps the brand gradient in a
- * hero visible through the bar instead of chopping it off at 64px.
- *
- * `supports-[backdrop-filter]` guards the transparency: a browser without backdrop
- * filters would render text over whatever is behind it. There, the bar is solid.
- */
- 'transition-[background-color,border-color,backdrop-filter] duration-(--duration-standard) ease-brand',
- isScrolled
- ? [
- 'border-b border-border-subtle bg-canvas/95',
- 'supports-[backdrop-filter]:bg-canvas/70 supports-[backdrop-filter]:backdrop-blur-xl',
- ]
- : 'border-b border-transparent bg-transparent',
- className,
- )}
+ className="sticky top-0 z-50 pt-4 px-4 sm:pt-6 sm:px-6 pointer-events-none"
  >
+  <div
+    className={cn(
+      'mx-auto w-[95%] max-w-7xl pointer-events-auto rounded-[1.25rem] transition-all duration-(--duration-standard) ease-brand flex flex-col',
+      isScrolled
+        ? [
+            'bg-surface-1/80 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border-strong/50',
+            'supports-[backdrop-filter]:bg-surface-1/60 supports-[backdrop-filter]:backdrop-blur-2xl',
+            'dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] dark:border-white/10',
+          ]
+        : 'bg-transparent border border-transparent'
+    )}
+  >
  {/*
  The skip link. First focusable element in the document, invisible until focused.
  WCAG 2.4.1: without it a keyboard user tabs through every nav item on every page
@@ -157,7 +147,7 @@ export function SiteHeader({
  Skip to content
  </a>
 
- <div className="mx-auto flex h-16 w-[95%] md:w-[90%] lg:w-[80%] items-center gap-6 px-5 sm:px-6 lg:px-8">
+ <div className="mx-auto flex h-16 w-full items-center justify-between gap-6 px-5 sm:px-6 lg:px-8">
  <Link
  href="/"
  className={cn(
@@ -177,11 +167,10 @@ export function SiteHeader({
  </Link>
 
  {/*
- `md` is the breakpoint, not `lg`: at 768px there is room for five items at this
- size, and pushing the drawer up to 1024px means tablet users get a mobile
+ `lg` is the breakpoint: pushing the drawer up means tablet users get a mobile
  interaction on a screen with 300px of unused header.
  */}
- <nav aria-label="Primary" className="hidden min-w-0 flex-1 md:block">
+ <nav aria-label="Primary" className="hidden min-w-0 flex-1 lg:block">
  <ul className="flex items-center gap-1">
  {items.map((item) => {
  const active = isActive(pathname, item.href);
@@ -191,10 +180,10 @@ export function SiteHeader({
  href={item.href}
  aria-current={active ? 'page' : undefined}
  className={cn(
- 'inline-flex h-9 items-center rounded-control px-3 text-sm',
+ 'inline-flex h-9 items-center rounded-control px-3 text-sm whitespace-nowrap',
  'transition-colors duration-(--duration-micro) ease-brand',
  active
- ? 'text-text-primary'
+ ? 'bg-brand-primary/10 text-brand-primary font-semibold ring-1 ring-brand-primary/20 shadow-sm'
  : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',
  )}
  >
@@ -206,14 +195,14 @@ export function SiteHeader({
  </ul>
  </nav>
 
- <div className="ml-auto flex items-center gap-1 md:gap-2">
+ <div className="ml-auto flex items-center gap-1 lg:gap-2">
  <ThemeToggle label={labels.theme} optionLabels={labels.themeOptions} />
 
- <Button asChild variant="tertiary" size="sm" className="hidden sm:inline-flex">
+ <Button asChild variant="tertiary" size="sm" className="hidden lg:inline-flex">
  <Link href={signInHref}>{labels.signIn}</Link>
  </Button>
 
- <Button asChild variant="premium" size="sm" className="hidden sm:inline-flex">
+ <Button asChild variant="premium" size="md" className="hidden lg:inline-flex font-bold shadow-md shadow-brand-primary/20 whitespace-nowrap">
  <Link href={ctaHref}>{labels.cta}</Link>
  </Button>
 
@@ -226,7 +215,7 @@ export function SiteHeader({
  aria-expanded={isMenuOpen}
  className={cn(
  // 44px, per WCAG 2.5.8 — and this is the one control a phone user must hit.
- 'inline-flex size-11 items-center justify-center rounded-control md:hidden',
+ 'inline-flex size-11 items-center justify-center rounded-control lg:hidden',
  'text-text-secondary transition-colors duration-(--duration-micro)',
  'hover:bg-surface-2 hover:text-text-primary',
  )}
@@ -286,6 +275,7 @@ export function SiteHeader({
  </ul>
  </nav>
  </Drawer>
+ </div>
  </header>
  );
 }

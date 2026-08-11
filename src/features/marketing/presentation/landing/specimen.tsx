@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { DocumentExcerpt, RiskBadge } from '@/shared/ui';
+import { DocumentExcerpt, RiskBadge, ScrollReveal } from '@/shared/ui';
 
 import type { RiskTone } from '@/shared/ui/tone';
 
@@ -86,12 +86,14 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
         gsap.from(leftColRef.current.querySelectorAll('.document-excerpt-wrapper'), {
           scrollTrigger: {
             trigger: leftColRef.current,
-            start: 'top 80%',
+            start: 'top 105%',
+            toggleActions: 'play none none none',
+            fastScrollEnd: true,
           },
           y: 40,
           opacity: 0,
-          duration: 0.8,
-          stagger: 0.3,
+          duration: 0.5,
+          stagger: 0.05,
           ease: 'power3.out',
         });
       }
@@ -101,12 +103,14 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
         gsap.from(rightColRef.current.querySelectorAll('.finding-row'), {
           scrollTrigger: {
             trigger: rightColRef.current,
-            start: 'top 75%',
+            start: 'top 105%',
+            toggleActions: 'play none none none',
+            fastScrollEnd: true,
           },
           x: 40,
           opacity: 0,
-          duration: 0.8,
-          stagger: 0.3,
+          duration: 0.5,
+          stagger: 0.05,
           ease: 'power3.out',
         });
       }
@@ -123,7 +127,7 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
 
       <div className="w-[95%] md:w-[90%] lg:w-[85%] mx-auto px-4 md:px-6 flex flex-col gap-16 relative z-10">
         
-        <div className="flex flex-col gap-4 max-w-3xl">
+        <ScrollReveal variant="fade-up" className="flex flex-col gap-4 max-w-3xl">
           <span className="text-xs font-extrabold text-brand-solid dark:text-brand-primary uppercase tracking-widest">
             Interactive Specimen
           </span>
@@ -133,7 +137,7 @@ export function LandingSpecimen({ id }: LandingSpecimenProps) {
           <p className="text-base md:text-lg text-text-secondary leading-relaxed">
             This is the whole product in one screen: the passage exactly as it appears in the document, and what it means for the person who has to sign it.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Dashboard Frame */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-border-strong/60 bg-surface-overlay/80 backdrop-blur-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] rounded-[2.5rem] overflow-hidden relative">

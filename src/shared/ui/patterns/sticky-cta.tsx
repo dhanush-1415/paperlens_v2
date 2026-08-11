@@ -39,7 +39,7 @@
  * with the header.
  */
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useState, useSyncExternalStore, useEffect } from 'react';
 import Link from 'next/link';
 
 import type { Route } from 'next';
@@ -50,7 +50,7 @@ import { cn } from '@/shared/ui/cn';
 
 import { Button } from '../components/button';
 import { CloseIcon } from '../icons';
-import { useScrolledPast } from '../primitives/use-scroll';
+import { useScrolledPast, useScrolledDown } from '../primitives/use-scroll';
 
 /**
  * A subscription that never fires.
@@ -93,6 +93,7 @@ export function StickyCta({
  const storageKey = `pl:sticky-cta:${campaignId}`;
 
  const isPastThreshold = useScrolledPast(threshold);
+ const isScrolledDown = useScrolledDown(10);
 
  /**
  * Dismissed until storage says otherwise — note the server snapshot is `true`.
@@ -117,6 +118,25 @@ export function StickyCta({
  */
  const [wasJustDismissed, setJustDismissed] = useState(false);
 
+ /**
+ * Re-arm the CTA if the user scrolls all the way back to the top.
+ *
+ * The problem with permanent dismissal is that it assumes the user is completely
+ * uninterested. Often, they just wanted to read the page without obstruction. If they
+ * scroll all the way back to the hero section, it signals a reset of their reading intent.
+ * By clearing the dismissal state, the CTA will reappear naturally when they scroll back down.
+ */
+ useEffect(() => {
+   if (!isScrolledDown) {
+     if (wasJustDismissed) setJustDismissed(false);
+     
+     // Only access driver if we know it was previously dismissed (avoid unnecessary writes)
+     if (driver.getItem(storageKey) === '1') {
+       driver.removeItem(storageKey);
+     }
+   }
+ }, [isScrolledDown, wasJustDismissed, driver, storageKey]);
+
  if (wasDismissed || wasJustDismissed || !isPastThreshold) return null;
 
  return (
@@ -124,7 +144,7 @@ export function StickyCta({
  role="region"
  aria-label={message}
  className={cn(
- 'fixed inset-x-0 bottom-0 z-40 p-4',
+ 'fixed inset-x-0 bottom-0 z-40 p-4 sm:p-6',
  'pb-[max(1rem,env(safe-area-inset-bottom))]',
  /**
  * The entrance, in CSS, with no JavaScript and no animation library.
@@ -142,20 +162,25 @@ export function StickyCta({
  >
       <div
         className={cn(
-          'mx-auto flex flex-col sm:flex-row w-full max-w-4xl items-start sm:items-center gap-4 sm:gap-6 rounded-2xl border border-border-strong/40',
-          'bg-surface-overlay/95 p-5 sm:py-3 sm:pr-3 sm:pl-6 shadow-2xl relative',
-          'supports-[backdrop-filter]:bg-surface-overlay/80 supports-[backdrop-filter]:backdrop-blur-2xl',
+          'mx-auto flex flex-col sm:flex-row w-full max-w-4xl items-start sm:items-center gap-4 sm:gap-6 rounded-[1.5rem] sm:rounded-[2.5rem] border border-border-strong/50',
+          'bg-surface-1/90 p-5 sm:py-3 sm:pr-3 sm:pl-8 relative overflow-hidden',
+          'shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_80px_-20px_rgba(0,0,0,0.7)]',
+          'supports-[backdrop-filter]:bg-surface-1/60 supports-[backdrop-filter]:backdrop-blur-3xl',
         )}
       >
-        <div className="flex-1 pr-8 sm:pr-0">
-          <p className="text-sm font-medium text-text-primary leading-snug">
+        {/* Premium styling: Inner ring and ambient glow */}
+        <div className="absolute inset-0 rounded-[1.5rem] sm:rounded-[2.5rem] ring-1 ring-inset ring-white/40 dark:ring-white/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/10 via-transparent to-brand-accent/5 opacity-80 dark:opacity-100 pointer-events-none" />
+        
+        <div className="flex-1 pr-8 sm:pr-0 relative z-10">
+          <p className="text-[15px] sm:text-base font-extrabold text-text-primary leading-snug tracking-tight">
             {message}
           </p>
         </div>
 
-        <div className="flex w-full sm:w-auto items-center shrink-0">
-          <Button asChild variant="premium" className="w-full sm:w-auto font-bold shadow-lg shadow-brand-primary/20">
-            <Link href={ctaHref}>{ctaLabel}</Link>
+        <div className="flex w-full sm:w-auto items-center shrink-0 relative z-10">
+          <Button asChild variant="premium" className="w-full sm:w-auto font-bold shadow-xl shadow-brand-primary/25 hover:shadow-brand-primary/40 transition-shadow">
+            <Link href={ctaHref} className="whitespace-nowrap">{ctaLabel}</Link>
           </Button>
         </div>
 
@@ -167,10 +192,10 @@ export function StickyCta({
           }}
           aria-label={dismissLabel}
           className={cn(
-            'absolute top-3 right-3 sm:static sm:top-auto sm:right-auto',
-            'inline-flex size-8 sm:size-11 shrink-0 items-center justify-center rounded-control',
-            'text-text-tertiary transition-colors duration-(--duration-micro)',
-            'hover:bg-surface-2 hover:text-text-primary'
+            'absolute top-4 right-4 sm:static sm:top-auto sm:right-auto relative z-10',
+            'inline-flex size-8 sm:size-11 shrink-0 items-center justify-center rounded-full',
+            'text-text-tertiary transition-all duration-(--duration-micro)',
+            'hover:bg-surface-2 hover:text-text-primary hover:scale-105 active:scale-95 border border-transparent hover:border-border-strong/50'
           )}
         >
           <CloseIcon className="size-4" />

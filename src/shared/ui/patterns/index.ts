@@ -53,3 +53,14 @@ export type { StatusBlockProps } from './status-block';
 
 export { StickyCta } from './sticky-cta';
 export type { StickyCtaProps } from './sticky-cta';
+
+export { AppSidebar } from './app-sidebar';
+export type { AppSidebarProps } from './app-sidebar';
+
+export { AppTopBar } from './app-top-bar';
+export type { AppTopBarProps } from './app-top-bar';
+
+export { AppBreadcrumbs } from './app-breadcrumbs';
+
+export { DataTable } from './data-table';
+export type { DataTableProps, Column } from './data-table';

@@ -67,41 +67,41 @@ export function HowItWorksPipeline() {
  </h2>
  </div>
 
- <ol className="flex flex-col relative before:absolute before:inset-y-0 before:left-[15px] before:w-px before:bg-gradient-to-b before:from-border-strong before:via-border-subtle before:to-transparent">
- {STAGES.map((stage, index) => (
- <li
- key={stage.title}
- className="relative pl-12 pb-16 last:pb-0 group"
- >
- <span
- aria-hidden
- className="absolute left-0 top-0 flex size-8 items-center justify-center rounded-full border border-border-strong bg-surface-raised text-xs font-bold text-text-primary shadow-sm group-hover:scale-110 group-hover:bg-brand-primary group-hover:text-canvas group-hover:border-brand-primary transition-all duration-300 z-10"
- >
- {String(index + 1).padStart(2, '0')}
- </span>
+  <ol className="flex flex-col relative before:absolute before:inset-y-0 before:left-[15px] before:w-px before:bg-gradient-to-b before:from-brand-primary/40 before:via-brand-primary/20 before:to-transparent">
+    {STAGES.map((stage, index) => (
+      <li
+        key={stage.title}
+        className="relative pl-12 pb-16 last:pb-0 group"
+      >
+        <span
+          aria-hidden
+          className="absolute left-0 top-0 flex size-8 items-center justify-center rounded-full border-2 border-surface-1 bg-brand-primary/10 text-xs font-bold text-brand-primary shadow-sm group-hover:scale-110 group-hover:bg-brand-primary group-hover:text-text-on-brand group-hover:shadow-brand-primary/40 transition-all duration-300 z-10"
+        >
+          {String(index + 1).padStart(2, '0')}
+        </span>
 
- <div className="flex flex-col gap-4 bg-surface-1/40 border border-border-subtle backdrop-blur-xl p-8 rounded-3xl shadow-sm transition-all duration-300 hover:shadow-xl hover:border-brand-primary/30 max-w-4xl relative overflow-hidden">
- <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity" />
- 
- <h3 className="text-xl font-bold text-text-primary">
- {stage.title}
- </h3>
- <p className="text-sm text-text-secondary leading-relaxed">
- {stage.body}
- </p>
+        <div className="flex flex-col gap-4 bg-surface-1 border border-border-strong p-8 rounded-3xl shadow-card transition-all duration-500 hover:shadow-2xl hover:shadow-brand-primary/10 hover:-translate-y-1 hover:border-brand-primary/40 max-w-4xl relative overflow-hidden group/card">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/10 rounded-full blur-[60px] opacity-0 group-hover/card:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          
+          <h3 className="text-xl font-bold text-text-primary z-10">
+            {stage.title}
+          </h3>
+          <p className="text-sm md:text-base text-text-secondary leading-relaxed z-10">
+            {stage.body}
+          </p>
 
- <ul className="flex flex-col gap-2.5 mt-2 border-t border-border-subtle pt-4">
- {stage.details.map((detail) => (
- <li key={detail} className="flex gap-3 items-start">
- <CheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-risk-safe" />
- <span className="text-sm text-text-secondary">{detail}</span>
- </li>
- ))}
- </ul>
- </div>
- </li>
- ))}
- </ol>
+          <ul className="flex flex-col gap-3 mt-4 border-t border-border-subtle pt-6 z-10">
+            {stage.details.map((detail) => (
+              <li key={detail} className="flex gap-3 items-start">
+                <CheckIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-brand-primary" />
+                <span className="text-sm text-text-secondary font-medium">{detail}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </li>
+    ))}
+  </ol>
  </div>
  </section>
  );

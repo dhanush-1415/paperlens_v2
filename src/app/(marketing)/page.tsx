@@ -17,7 +17,6 @@ import {
 } from '@/features/marketing';
 import { getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
-import { StickyCta } from '@/shared/ui';
 
 /**
  * The home page.
@@ -49,18 +48,6 @@ export default async function HomePage() {
       <LandingClosingCta ctaLabel={ctaLabel} reassurance="No credit card required. Secure processing." />
       <LandingSpecimen id="sample-analysis" />
       <LandingBentoGrid />
-
-      {/*
-      The sticky bar appears only after 60% of the page
-      */}
-      <StickyCta
-        campaignId="home-conversion"
-        threshold={0.4}
-        message="Unlock hidden risks and deadlines right now. First scan is free."
-        ctaLabel="Analyze Your Document"
-        ctaHref={ROUTES.scan}
-        dismissLabel={t.t('common.close')}
-      />
     </>
   );
 }

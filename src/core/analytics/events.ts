@@ -51,6 +51,7 @@ export interface AnalyticsEventMap {
  // --- Activation --------------------------------------------------------------
  'signup.started': { method: 'email' | 'oauth' };
  'signup.completed': { method: 'email' | 'oauth' };
+ 'signup.failed': { reason: 'credentials' | 'locked' | 'unknown' };
  'signin.completed': { method: 'email' | 'oauth' };
  'signin.failed': { reason: 'credentials' | 'locked' | 'unknown' };
  'onboarding.completed': { stepCount: number };
@@ -98,6 +99,7 @@ export const ANALYTICS_EVENTS = {
 
  signupStarted: 'signup.started',
  signupCompleted: 'signup.completed',
+ signupFailed: 'signup.failed',
  signinCompleted: 'signin.completed',
  signinFailed: 'signin.failed',
  onboardingCompleted: 'onboarding.completed',

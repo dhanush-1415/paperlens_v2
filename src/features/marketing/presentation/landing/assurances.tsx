@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants/routes';
+import { Button, ScrollReveal } from '@/shared/ui';
 
 export function LandingAssurances() {
   return (
     <section className="w-full py-24 relative overflow-hidden bg-canvas border-b border-border-strong/30">
       <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto px-6 relative z-10">
         
-        <div className="force-dark grid grid-cols-1 lg:grid-cols-5 gap-12 items-center border border-border-strong/50 bg-canvas rounded-[2.5rem] p-8 md:p-14 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] relative overflow-hidden group">
+        <ScrollReveal variant="fade-up" className="force-dark grid grid-cols-1 lg:grid-cols-5 gap-12 items-center border border-border-strong/50 bg-canvas rounded-[2.5rem] p-8 md:p-14 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] relative overflow-hidden group">
           {/* Glowing vault ambient light */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(var(--risk-safe-rgb),0.15)_0%,transparent_60%)] rounded-full blur-[100px] pointer-events-none group-hover:bg-[radial-gradient(circle,rgba(var(--risk-safe-rgb),0.2)_0%,transparent_60%)] transition-colors duration-1000" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(var(--brand-primary-rgb),0.1)_0%,transparent_60%)] rounded-full blur-[100px] pointer-events-none" />
@@ -35,15 +36,14 @@ export function LandingAssurances() {
               <span className="text-xs font-bold text-text-primary bg-surface-2 px-5 py-2.5 rounded-xl border border-border-strong shadow-lg backdrop-blur-md">256-Bit AES</span>
             </div>
 
-            <Link
-              href={ROUTES.security}
-              className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-text-on-brand bg-brand-solid hover:bg-brand-solid-hover px-6 py-3 rounded-full w-max transition-all shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40 group/link"
-            >
-              How we handle documents, in detail
-              <svg className="size-4 transition-transform group-hover/link:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
+            <Button variant="premium" className="w-max mt-4 group/link" asChild>
+              <Link href={ROUTES.security}>
+                How we handle documents, in detail
+                <svg className="size-4 transition-transform group-hover/link:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+            </Button>
           </div>
           
           {/* Terminal / System Status Window */}
@@ -86,7 +86,7 @@ export function LandingAssurances() {
             </div>
           </div>
 
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );
