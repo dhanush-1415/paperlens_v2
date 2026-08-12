@@ -62,5 +62,8 @@ export type { AppTopBarProps } from './app-top-bar';
 
 export { AppBreadcrumbs } from './app-breadcrumbs';
 
+export { ProfileDropdown } from './profile-dropdown';
+export type { ProfileDropdownProps } from './profile-dropdown';
+
 export { DataTable } from './data-table';
 export type { DataTableProps, Column } from './data-table';

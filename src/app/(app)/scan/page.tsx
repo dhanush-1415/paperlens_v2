@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-import { AnalysisForm, type AnalysisFormLabels } from '@/features/document-analysis';
-import { INPUT_LIMITS } from '@/shared/constants/limits';
 import { Container, Heading, PageHeader, Section, Skeleton, Text } from '@/shared/ui';
 import { requireSession } from '@/server/bootstrap';
+import { ScanTabs } from './components/scan-tabs';
+import { ShieldIcon, ClockIcon, DocumentIcon } from '@/shared/ui/icons';
 
 export const metadata: Metadata = {
  title: 'Scan a document',
@@ -13,79 +13,89 @@ export const metadata: Metadata = {
 };
 
 /**
- * `/scan` — the feature's entry point.
- *
- * The page is thirty lines and does four things: check the session, build the labels, render
- * the form, set the metadata. It contains no business logic, no data access and no knowledge
- * of how an analysis is produced — which is the actual test of whether the architecture holds.
- * Everything below the form comes from `@/features/document-analysis`, through its public API,
- * with no path deeper than the feature name.
- */
-
-const LABELS: AnalysisFormLabels = {
- documentLabel: 'Your document',
- documentDescription:
- 'Paste the full text. Nothing is stored until the analysis finishes, and only you can read it.',
- documentPlaceholder: 'Paste your contract, lease, offer letter or terms of service here…',
- typeLabel: 'Document type',
- titleLabel: 'Title',
- titleDescription: 'Optional. We derive one from the first line if you leave this blank.',
- titlePlaceholder: 'Flat 3, Kingsway — tenancy agreement',
- submit: 'Analyse document',
- submitting: 'Reading your document…',
- errorTitle: 'We could not analyse that',
- counter: '{count} / {max} characters',
-};
-
-/**
  * The gate, isolated in its own component.
- *
- * `requireSession()` reads `cookies()` and throws `unauthorized()` when there is nothing to
- * read, so it is request data and must sit inside a Suspense boundary under `cacheComponents`.
- * Keeping it in a leaf means the page heading and the form's static chrome still prerender.
- *
- * The check is real, not decorative: `proxy.ts` already bounced a visitor with no session
- * cookie, but a cookie is not a session — it can be stale, revoked, or forged — and the proxy
- * never validates it. This is the first place the session is actually verified, and the Server
- * Action verifies again, because a POST to it never passes through this page at all.
  */
-async function ScanForm() {
+async function AuthGate() {
  await requireSession();
- return <AnalysisForm labels={LABELS} />;
+ return null;
 }
 
 export default function ScanPage() {
  return (
  <Container>
  <Section spacing="lg">
- <PageHeader
- title="Scan a document"
- description="Paste the text and we will read it the way a lawyer would — worst clause first."
- />
+ <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-10">
+   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary/10 ring-1 ring-brand-primary/20 mb-6">
+     <ScanIcon className="h-6 w-6 text-brand-primary" />
+   </div>
+   <Heading level={1} size="display-md" className="font-extrabold tracking-tight mb-4">
+     Upload Document
+   </Heading>
+   <Text size="md" tone="secondary" className="font-medium leading-relaxed">
+     Upload a file or paste a URL — AI decodes it instantly. We scan for hidden liabilities, renewal clauses, and critical risks.
+   </Text>
+ </div>
 
  <Suspense
  fallback={
- <div className="flex flex-col gap-6">
- <Skeleton className="h-64 w-full" />
- <Skeleton className="h-11 w-40" />
+ <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto items-center">
+   <Skeleton className="h-12 w-80 rounded-full" />
+   <Skeleton className="h-96 w-full rounded-[2rem]" />
  </div>
  }
  >
- <ScanForm />
+ <AuthGate />
+ <div className="max-w-4xl mx-auto w-full">
+   <ScanTabs />
+ </div>
  </Suspense>
 
- <div className="mt-10 border-t border-border-subtle pt-6">
- <Heading level={2} size="eyebrow">
- What we look for
- </Heading>
- <Text size="sm" tone="secondary" measure className="mt-2">
- Automatic renewal, forced arbitration, one-sided amendment rights, termination
- penalties, liability caps, indemnities, late fees, data sharing, non-competes and
- governing law — up to {INPUT_LIMITS.maxDocumentChars.toLocaleString()} characters per
- document.
- </Text>
+ <div className="mt-16 max-w-4xl mx-auto border-t border-border-subtle pt-10">
+   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+     <div className="flex flex-col gap-2 text-center items-center">
+       <div className="flex size-10 rounded-full bg-surface-2 items-center justify-center mb-2">
+         <ShieldIcon className="size-5 text-brand-primary" />
+       </div>
+       <Heading level={3} size="sm">Bank-grade Security</Heading>
+       <Text size="xs" tone="secondary">AES-256 encryption. Documents are immediately deleted after analysis.</Text>
+     </div>
+     <div className="flex flex-col gap-2 text-center items-center">
+       <div className="flex size-10 rounded-full bg-surface-2 items-center justify-center mb-2">
+         <ClockIcon className="size-5 text-brand-primary" />
+       </div>
+       <Heading level={3} size="sm">Instant Extraction</Heading>
+       <Text size="xs" tone="secondary">Proprietary OCR engines parse text, images, and skewed PDFs in seconds.</Text>
+     </div>
+     <div className="flex flex-col gap-2 text-center items-center">
+       <div className="flex size-10 rounded-full bg-surface-2 items-center justify-center mb-2">
+         <DocumentIcon className="size-5 text-brand-primary" />
+       </div>
+       <Heading level={3} size="sm">Multi-format Support</Heading>
+       <Text size="xs" tone="secondary">Process PDFs, DOCX, images, and raw URLs without changing workflows.</Text>
+     </div>
+   </div>
  </div>
  </Section>
  </Container>
  );
+}
+
+function ScanIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <line x1="7" x2="17" y1="12" y2="12" />
+    </svg>
+  );
 }

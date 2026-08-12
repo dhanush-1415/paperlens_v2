@@ -43,8 +43,9 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
  autoComplete="email"
  autoFocus
  value={email}
+ placeholder="name@company.com"
  onChange={(e) => setEmail(e.target.value)}
- className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-brand-primary/20 transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary/60"
+ className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary"
  />
  )}
  </Field>
@@ -57,8 +58,9 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
  type={showPassword ? 'text' : 'password'}
  autoComplete="current-password"
  value={password}
+ placeholder="••••••••"
  onChange={(e) => setPassword(e.target.value)}
- className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-brand-primary/20 transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary/60"
+ className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary"
  endAdornment={
    <button
      type="button"

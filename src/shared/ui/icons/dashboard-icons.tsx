@@ -173,3 +173,55 @@ export const MoreVerticalIcon = (props: IconProps) => (
     <circle cx="12" cy="19" r="1" />
   </Icon>
 );
+
+/** Trending up. */
+export const TrendingUpIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+    <polyline points="17 6 23 6 23 12"></polyline>
+  </Icon>
+);
+
+/** Filter. */
+export const FilterIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </Icon>
+);
+
+/** Arrow Up Down (Sort). */
+export const ArrowUpDownIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m21 16-4 4-4-4" />
+    <path d="M17 20V4" />
+    <path d="m3 8 4-4 4 4" />
+    <path d="M7 4v16" />
+  </Icon>
+);
+
+/** Mail. */
+export const MailIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </Icon>
+);
+
+/** Download. */
+export const DownloadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </Icon>
+);
+
+/** Calendar. */
+export const CalendarIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </Icon>
+);

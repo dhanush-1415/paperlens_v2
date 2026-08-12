@@ -65,7 +65,7 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Jane Doe"
-              className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-brand-primary/20 transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary/60"
+              className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary"
             />
           )}
         </Field>
@@ -81,7 +81,7 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               onBlur={handleEmailBlur}
               placeholder="jane@example.com"
-              className={`bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-brand-primary/20 transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary/60 ${emailStatus === 'available' ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`}
+              className={`bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary ${emailStatus === 'available' ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`}
             />
           )}
         </Field>
@@ -96,7 +96,7 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-brand-primary/20 transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary/60"
+                className="bg-surface-2/50 border-border-strong/50 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all rounded-xl py-2.5 px-4 placeholder:text-text-tertiary"
                 endAdornment={
                   <button
                     type="button"

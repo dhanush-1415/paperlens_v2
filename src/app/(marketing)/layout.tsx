@@ -8,7 +8,7 @@ import {
  siteLegalLinks,
  siteNavItems,
 } from '@/features/marketing';
-import { getRequestScope } from '@/server/bootstrap';
+import { getRequestScope, getPublicSession } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
 import { CookieConsent, SiteFooter, SiteHeader } from '@/shared/ui';
 import { StickyCta } from '@/shared/ui/patterns/sticky-cta';
@@ -79,6 +79,7 @@ export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
 
  const listed = await listGuides();
  const guides = isOk(listed) ? listed.value : [];
+ const session = await getPublicSession();
 
  return (
  <ScrollProvider>
@@ -88,6 +89,8 @@ export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
  items={siteNavItems(t)}
  signInHref={ROUTES.login}
  ctaHref={ROUTES.scan}
+ dashboardHref={ROUTES.welcome}
+ isAuthenticated={!!session}
  labels={{
  menu: t.t('nav.menu'),
  closeMenu: t.t('nav.closeMenu'),

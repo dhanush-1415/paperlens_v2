@@ -31,7 +31,7 @@ export function AppTopBar({ sessionChip, themeLabels }: AppTopBarProps) {
   const openMobile = useSidebarStore((s) => s.openMobile);
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-x-4 border-b border-border-subtle bg-surface-1/95 px-4 backdrop-blur-md sm:gap-x-6 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border-subtle bg-surface-1/95 px-4 backdrop-blur-md sm:gap-x-6 sm:px-6 lg:px-8">
       {/* Mobile hamburger menu */}
       <button
         type="button"
@@ -63,34 +63,30 @@ export function AppTopBar({ sessionChip, themeLabels }: AppTopBarProps) {
             </div>
           </form>
         </div>
-        <div className="flex items-center gap-x-4 lg:gap-x-6">
+        <div className="flex items-center gap-x-3 lg:gap-x-4">
+          <ThemeToggle
+            label={themeLabels.label}
+            optionLabels={{
+              light: themeLabels.light,
+              dark: themeLabels.dark,
+              system: themeLabels.system,
+            }}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/40 bg-surface-1 shadow-sm hover:shadow-md hover:bg-surface-2 transition-all text-text-secondary hover:text-text-primary"
+          />
+          
           <button
             type="button"
-            className="-m-2.5 p-2.5 text-text-secondary hover:text-text-primary"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/40 bg-surface-1 shadow-sm hover:shadow-md hover:bg-surface-2 transition-all text-text-secondary hover:text-text-primary"
           >
             <span className="sr-only">View notifications</span>
             <BellIcon className="h-5 w-5" aria-hidden="true" />
+            {/* The blue dot */}
+            <span className="absolute top-2.5 right-2.5 flex h-2 w-2 rounded-full bg-brand-primary ring-2 ring-surface-1" />
           </button>
 
-          {/* Separator */}
-          <div
-            className="hidden lg:block lg:h-6 lg:w-px lg:bg-border-subtle"
-            aria-hidden="true"
-          />
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle
-              label={themeLabels.label}
-              optionLabels={{
-                light: themeLabels.light,
-                dark: themeLabels.dark,
-                system: themeLabels.system,
-              }}
-            />
-            <Suspense fallback={<Skeleton className="h-8 w-24" />}>
-              {sessionChip}
-            </Suspense>
-          </div>
+          <Suspense fallback={<Skeleton className="h-10 w-32 rounded-full" />}>
+            {sessionChip}
+          </Suspense>
         </div>
       </div>
     </header>

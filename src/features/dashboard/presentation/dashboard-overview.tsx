@@ -1,9 +1,10 @@
 import { Button, Card, Heading, Text, Badge, StatTile, Progress } from '@/shared/ui';
-import { ArrowRightIcon } from '@/shared/ui/icons';
-import { ScanIcon, UploadCloudIcon, LayoutDashboardIcon, VaultIcon, SettingsIcon, MoreVerticalIcon } from '@/shared/ui/icons/dashboard-icons';
+import { ArrowRightIcon, DocumentIcon, AlertCircleIcon, CheckCircleIcon } from '@/shared/ui/icons';
+import { ScanIcon, UploadCloudIcon, LayoutDashboardIcon, VaultIcon, SettingsIcon, MoreVerticalIcon, TrendingUpIcon } from '@/shared/ui/icons/dashboard-icons';
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants/routes';
 import { CurrentTimeWidget } from './current-time-widget';
+import { ActivityChart } from './activity-chart';
 
 interface DashboardOverviewProps {
   user: {
@@ -20,115 +21,201 @@ interface DashboardOverviewProps {
 export function DashboardOverview({ user, usage }: DashboardOverviewProps) {
   const usagePercentage = Math.min(100, Math.round((usage.scansUsed / usage.scansLimit) * 100));
 
+  // Mock data for the activity chart
+  const scanActivityData = [
+    { label: 'Mon', value: 12 },
+    { label: 'Tue', value: 19 },
+    { label: 'Wed', value: 15 },
+    { label: 'Thu', value: 25 },
+    { label: 'Fri', value: 22 },
+    { label: 'Sat', value: 8 },
+    { label: 'Sun', value: Math.max(5, usage.scansUsed % 10) },
+  ];
+
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
+    <div className="flex flex-col gap-6 lg:gap-8 pb-12">
       {/* ── Welcome Banner ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-primary to-brand-secondary px-8 py-10 sm:px-12 sm:py-12 shadow-xl shadow-brand-primary/20">
-        <div className="absolute inset-0 bg-white/5 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/90">
+      <section className="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-brand-primary via-[#A855F7] to-brand-secondary px-6 py-6 sm:px-8 sm:py-8 shadow-lg shadow-brand-primary/10">
+        <div className="absolute inset-0 bg-white/10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px', opacity: 0.2 }} />
+        <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-white/20 blur-3xl pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-1.5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md w-max border border-white/20 shadow-sm mb-1">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white m-[1px]"></span>
               </span>
-              PAPERLENS ENGINE ACTIVE • SECURE LEDGER
+              Engine Active • Secure Ledger
             </div>
-            <Heading level={1} className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mt-1 drop-shadow-sm">
+            <Heading level={1} className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
               Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user.name || user.email.split('@')[0]} 👋
             </Heading>
-            <Text className="max-w-xl text-base mt-2 text-white/90 font-medium">
+            <Text className="max-w-xl text-sm sm:text-base text-white/90 font-medium tracking-wide">
               {user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Tier • Engineering & Legal Workspace
             </Text>
           </div>
           
-          <div className="hidden sm:flex shrink-0">
-            <div className="rounded-2xl bg-white/10 backdrop-blur-md px-8 py-4 shadow-sm border border-white/20 text-white">
-              <CurrentTimeWidget />
-            </div>
+          <div className="hidden md:flex shrink-0">
+            <Link 
+              href={ROUTES.scan}
+              className="group relative flex items-center gap-4 rounded-2xl bg-white/10 backdrop-blur-xl px-5 py-4 shadow-2xl border border-white/20 text-white overflow-hidden transition-all duration-300 hover:bg-white/20 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:border-white/40 cursor-pointer"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
+              
+              <div className="relative flex size-10 items-center justify-center rounded-xl bg-white/20 border border-white/30 shadow-inner group-hover:bg-white/30 transition-colors">
+                <UploadCloudIcon className="size-5 text-white group-hover:-translate-y-0.5 transition-transform" />
+              </div>
+              
+              <div className="flex flex-col">
+                <Text className="text-[10px] font-bold uppercase tracking-widest text-white/70 group-hover:text-white/90 transition-colors">
+                  Fast-Track Analysis
+                </Text>
+                <Heading level={3} className="text-sm font-extrabold tracking-tight text-white">
+                  Upload Contract
+                </Heading>
+              </div>
+              
+              <div className="ml-2 flex size-6 items-center justify-center rounded-full bg-white/10 group-hover:bg-white text-white group-hover:text-brand-primary transition-colors">
+                <ArrowRightIcon className="size-3 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ── Section Title ─────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 mt-2">
-        <LayoutDashboardIcon className="size-5 text-brand-primary" />
-        <Heading level={2} className="text-sm font-bold uppercase tracking-wider text-text-primary">
-          WORKSPACE OVERVIEW
-        </Heading>
-      </div>
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+        
         {/* ── Left Column (Main Content) ────────────────────────────────────────── */}
         <div className="flex flex-col gap-6 lg:col-span-2 lg:gap-8">
           
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="relative overflow-hidden rounded-2xl bg-surface-1 shadow-sm border border-border-subtle hover:-translate-y-1 transition-transform group">
-              <div className="p-5 pb-8">
-                <StatTile
-                  label="Documents Analyzed"
-                  value={usage.scansUsed.toString()}
-                  delta={{ label: '12%', intent: 'positive', direction: 'up' }}
-                />
+            <div className="relative overflow-hidden rounded-3xl bg-surface-1 shadow-[0_2px_20px_-8px_rgba(0,0,0,0.1)] border border-border-subtle hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.15)] transition-all duration-300 group p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
+                  <ScanIcon className="size-5" />
+                </div>
+                <Badge tone="safe" className="bg-positive-bg text-positive-fg border-none font-bold shadow-sm">
+                  <TrendingUpIcon className="size-3 mr-1" /> 12%
+                </Badge>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-primary to-brand-secondary opacity-80 group-hover:opacity-100 transition-opacity" />
+              <Text size="sm" tone="secondary" className="font-semibold uppercase tracking-wider mb-1">Total Scans</Text>
+              <Heading level={2} className="text-4xl font-extrabold">{usage.scansUsed}</Heading>
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-brand-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </div>
             
-            <div className="relative overflow-hidden rounded-2xl bg-surface-1 shadow-sm border border-border-subtle hover:-translate-y-1 transition-transform group">
-              <div className="p-5 pb-8">
-                <StatTile
-                  label="Critical Risks Flagged"
-                  value="3"
-                  delta={{ label: '2', intent: 'negative', direction: 'up' }}
-                />
+            <div className="relative overflow-hidden rounded-3xl bg-surface-1 shadow-[0_2px_20px_-8px_rgba(0,0,0,0.1)] border border-border-subtle hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.15)] transition-all duration-300 group p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-critical-bg text-critical">
+                  <AlertCircleIcon className="size-5" />
+                </div>
+                <Badge tone="critical" className="border-none font-bold shadow-sm">
+                  <TrendingUpIcon className="size-3 mr-1" /> 2
+                </Badge>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-critical to-critical-bg opacity-80 group-hover:opacity-100 transition-opacity" />
+              <Text size="sm" tone="secondary" className="font-semibold uppercase tracking-wider mb-1">Critical Risks</Text>
+              <Heading level={2} className="text-4xl font-extrabold">3</Heading>
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-critical scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl bg-surface-1 shadow-sm border border-border-subtle hover:-translate-y-1 transition-transform group">
-              <div className="p-5 pb-8">
-                <StatTile
-                  label="Pending Reviews"
-                  value="5"
-                  delta={{ label: '1', intent: 'neutral', direction: 'down' }}
-                />
+            <div className="relative overflow-hidden rounded-3xl bg-surface-1 shadow-[0_2px_20px_-8px_rgba(0,0,0,0.1)] border border-border-subtle hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.15)] transition-all duration-300 group p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-caution-bg text-caution">
+                  <DocumentIcon className="size-5" />
+                </div>
+                <Badge tone="caution" className="border-none font-bold shadow-sm">
+                  Active
+                </Badge>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-caution to-caution-bg opacity-80 group-hover:opacity-100 transition-opacity" />
+              <Text size="sm" tone="secondary" className="font-semibold uppercase tracking-wider mb-1">Pending Reviews</Text>
+              <Heading level={2} className="text-4xl font-extrabold">5</Heading>
+              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-caution scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </div>
           </div>
 
-          {/* Recent Documents */}
-          <Card className="flex flex-col overflow-hidden shadow-sm border-border-subtle rounded-3xl">
-            <div className="flex items-center justify-between border-b border-border-subtle bg-surface-2/50 px-6 py-5">
-              <Heading level={2} size="sm">Recent Documents</Heading>
-              <Link href={ROUTES.vault} className="inline-flex items-center text-sm font-bold text-brand-primary hover:text-brand-secondary transition-colors">
-                View Vault <ArrowRightIcon className="ml-1 size-4" />
-              </Link>
+          {/* Activity Graph Section */}
+          <Card className="flex flex-col shadow-[0_4px_30px_-10px_rgba(0,0,0,0.1)] border-border-subtle rounded-[2rem] p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <Heading level={2} size="md" className="font-extrabold tracking-tight">Activity Overview</Heading>
+                <Text size="sm" tone="secondary" className="mt-1 font-medium">Document scans over the last 7 days</Text>
+              </div>
+              <Badge tone="neutral" className="px-3 py-1.5 font-bold shadow-sm bg-surface-2 border-border-subtle">
+                This Week
+              </Badge>
             </div>
-            <div className="divide-y divide-border-subtle">
-              {/* Mock List for now */}
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between px-6 py-5 transition-colors hover:bg-surface-2/50 group">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-tertiary group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors">
-                      <ScanIcon className="size-5" />
-                    </div>
-                    <div>
-                      <Text className="font-semibold text-[15px]">Vendor_Agreement_v{i}.pdf</Text>
-                      <Text size="xs" tone="secondary" className="mt-0.5">Analyzed {i * 2} hours ago • PDF Document</Text>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Badge tone={i === 1 ? 'critical' : i === 2 ? 'caution' : 'safe'} className="shadow-sm">
-                      {i === 1 ? 'High Risk' : i === 2 ? 'Needs Review' : 'Verified Safe'}
-                    </Badge>
-                    <button className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-3 rounded-lg transition-colors" aria-label="More options">
-                      <MoreVerticalIcon className="size-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+            
+            <div className="h-64 w-full mt-2">
+              <ActivityChart data={scanActivityData} color="primary" />
+            </div>
+          </Card>
+
+          {/* Enterprise Data Table: Recent Documents */}
+          <Card className="flex flex-col overflow-hidden shadow-[0_4px_30px_-10px_rgba(0,0,0,0.1)] border-border-subtle rounded-[2rem]">
+            <div className="flex items-center justify-between border-b border-border-subtle bg-surface-2/30 px-6 py-6">
+              <div>
+                <Heading level={2} size="md" className="font-extrabold tracking-tight">Recent Documents</Heading>
+                <Text size="sm" tone="secondary" className="mt-1 font-medium">Latest contracts processed by the engine</Text>
+              </div>
+              <Button asChild variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 hover:bg-surface-3">
+                <Link href={ROUTES.vault}>
+                  View All <ArrowRightIcon className="size-4" />
+                </Link>
+              </Button>
+            </div>
+            
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-subtle bg-surface-2/10 text-xs uppercase tracking-wider text-text-tertiary">
+                    <th className="px-6 py-4 font-bold">Document Name</th>
+                    <th className="px-6 py-4 font-bold">Status</th>
+                    <th className="px-6 py-4 font-bold hidden sm:table-cell">Analyzed</th>
+                    <th className="px-6 py-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-subtle">
+                  {[1, 2, 3, 4].map((i) => (
+                    <tr key={i} className="hover:bg-surface-2/30 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-tertiary group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors">
+                            <DocumentIcon className="size-5" />
+                          </div>
+                          <div>
+                            <Text className="font-bold text-[14px] text-text-primary group-hover:text-brand-primary transition-colors cursor-pointer">
+                              Vendor_Agreement_v{i}.pdf
+                            </Text>
+                            <Text size="xs" tone="tertiary" className="mt-0.5 font-medium sm:hidden">Analyzed {i * 2}h ago</Text>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge tone={i === 1 ? 'critical' : i === 2 ? 'caution' : 'safe'} className="shadow-sm font-bold">
+                          {i === 1 ? 'High Risk' : i === 2 ? 'Needs Review' : 'Verified Safe'}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 hidden sm:table-cell">
+                        <Text size="sm" tone="secondary" className="font-medium">
+                          {i * 2} hours ago
+                        </Text>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-3 rounded-xl transition-colors" aria-label="More options">
+                          <MoreVerticalIcon className="size-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="border-t border-border-subtle bg-surface-2/20 px-6 py-4 sm:hidden">
+              <Button asChild variant="ghost" className="w-full justify-center">
+                <Link href={ROUTES.vault}>View All Documents</Link>
+              </Button>
             </div>
           </Card>
         </div>
@@ -136,77 +223,112 @@ export function DashboardOverview({ user, usage }: DashboardOverviewProps) {
         {/* ── Right Column (Sidebar Widgets) ────────────────────────────────────── */}
         <div className="flex flex-col gap-6 lg:gap-8">
           
-          {/* Usage Meter - Premium Gradient Card */}
-          <Card className="p-6 bg-brand-ink text-surface-1 border-brand-ink shadow-2xl shadow-brand-ink/20 rounded-3xl overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/30 via-transparent to-brand-secondary/20 pointer-events-none" />
-            <div className="relative z-10">
+          {/* Usage Meter - Premium Dark Card */}
+          <Card className="p-1 force-dark bg-canvas text-text-primary border-border-strong shadow-2xl rounded-[2rem] overflow-hidden relative group">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/20 via-transparent to-transparent opacity-50 pointer-events-none" />
+            
+            <div className="bg-surface-1/90 backdrop-blur-xl border border-border-strong rounded-[1.8rem] p-6 sm:p-8 relative z-10 h-full flex flex-col">
               <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-2">
-                  <ScanIcon className="size-5 text-brand-primary" />
-                  <Heading level={3} size="sm" className="text-surface-1 font-bold">Document Shield</Heading>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-brand-primary/20 text-brand-primary ring-1 ring-brand-primary/30 shadow-[0_0_15px_rgba(var(--color-brand-primary),0.3)]">
+                    <ScanIcon className="size-5" />
+                  </div>
+                  <Heading level={3} size="sm" className="text-text-primary font-bold tracking-tight">Scanner</Heading>
                 </div>
-                <Badge tone="safe" className="bg-safe-bg/20 border-safe/30 text-safe-fg shadow-inner">ACTIVE</Badge>
+                <Badge tone="safe" className="shadow-inner font-bold tracking-wider">
+                  ACTIVE
+                </Badge>
               </div>
 
-              <div className="py-4 border-y border-surface-1/10 mb-6 relative">
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-12 rounded-full border border-brand-primary/40 flex items-center justify-center bg-brand-ink/50 backdrop-blur-sm">
-                  <div className="size-2.5 bg-brand-primary rounded-full animate-ping" />
-                  <div className="size-2.5 bg-brand-primary rounded-full absolute" />
+              <div className="py-6 mb-4 relative flex-1 flex flex-col items-center justify-center">
+                {/* Radar/Pulse effect */}
+                <div className="relative size-24 flex items-center justify-center mb-6">
+                  <div className="absolute inset-0 rounded-full border border-brand-primary/20" />
+                  <div className="absolute inset-2 rounded-full border border-brand-primary/30" />
+                  <div className="absolute inset-4 rounded-full border border-brand-primary/40 animate-[spin_4s_linear_infinite] border-t-brand-primary" />
+                  
+                  <div className="relative size-12 rounded-full bg-brand-primary/20 backdrop-blur-md border border-brand-primary/50 flex items-center justify-center shadow-[0_0_30px_rgba(var(--color-brand-primary),0.4)] group-hover:scale-110 transition-transform duration-500">
+                    <ScanIcon className="size-6 text-brand-primary" />
+                  </div>
                 </div>
-                <div className="h-16 flex items-center justify-center">
-                  <Text className="text-surface-1/60 text-xs font-bold tracking-widest uppercase text-center w-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)]">
-                    Secure AI Parsing Active
-                  </Text>
-                </div>
+                
+                <Text className="text-text-secondary text-xs font-bold tracking-widest uppercase text-center w-full">
+                  Secure Engine Online
+                </Text>
               </div>
 
-              <div className="flex items-end justify-between mb-2">
-                <Heading level={2} className="text-4xl font-extrabold tracking-tight">{usage.scansUsed}</Heading>
-                <Text className="pb-1 text-sm text-surface-1/60 font-mono font-medium">/ {usage.scansLimit} VOL</Text>
+              <div className="mt-auto">
+                <div className="flex items-end justify-between mb-3">
+                  <div className="flex flex-col">
+                    <Text className="text-text-secondary text-xs font-bold tracking-widest uppercase mb-1">Volume Used</Text>
+                    <div className="flex items-baseline gap-1.5">
+                      <Heading level={2} className="text-4xl font-extrabold tracking-tight text-text-primary">{usage.scansUsed}</Heading>
+                      <Text className="text-sm text-text-secondary font-medium">/ {usage.scansLimit}</Text>
+                    </div>
+                  </div>
+                  <Text className="text-brand-primary font-bold">{usagePercentage}%</Text>
+                </div>
+                
+                <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden shadow-inner relative">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full relative overflow-hidden" 
+                    style={{ width: `${usagePercentage}%` }}
+                  >
+                    <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress_1s_linear_infinite]" />
+                  </div>
+                </div>
+                
+                <Button asChild variant="primary" className="mt-8 w-full bg-brand-primary hover:bg-brand-primary-hover text-text-on-brand shadow-md rounded-xl font-bold h-12 text-sm transition-all hover:scale-[1.02]">
+                  <Link href={ROUTES.scan}>Initiate New Scan</Link>
+                </Button>
               </div>
-              <Progress value={usagePercentage} label="Plan usage" className="h-2 bg-surface-1/20" />
-              
-              <Button asChild variant="primary" className="mt-8 w-full bg-brand-primary hover:bg-brand-primary-hover border-none text-white shadow-lg shadow-brand-primary/30 rounded-xl font-bold">
-                <Link href={ROUTES.scan}>Initiate New Scan</Link>
-              </Button>
             </div>
           </Card>
 
           {/* Quick Actions */}
-          <Card className="flex flex-col overflow-hidden shadow-sm border-border-subtle rounded-3xl">
-            <div className="border-b border-border-subtle bg-surface-2/50 px-6 py-5">
-              <Heading level={2} size="sm">Quick Actions</Heading>
+          <Card className="flex flex-col overflow-hidden shadow-[0_4px_30px_-10px_rgba(0,0,0,0.1)] border-border-subtle rounded-[2rem]">
+            <div className="border-b border-border-subtle bg-surface-2/30 px-6 py-6">
+              <Heading level={2} size="md" className="font-extrabold tracking-tight">Quick Actions</Heading>
+              <Text size="sm" tone="secondary" className="mt-1 font-medium">Common tasks and shortcuts</Text>
             </div>
-            <div className="p-3 flex flex-col gap-1">
-              <Link href={ROUTES.scan} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-surface-2 transition-colors group">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary group-hover:scale-110 transition-transform shadow-sm">
-                  <ScanIcon className="size-5" />
+            <div className="p-4 flex flex-col gap-2">
+              <Link href={ROUTES.scan} className="flex items-center gap-4 p-4 rounded-[1.25rem] bg-surface-1 border border-transparent hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md transition-all group">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary group-hover:scale-110 transition-transform shadow-sm ring-1 ring-brand-primary/20">
+                  <UploadCloudIcon className="size-6" />
                 </div>
                 <div className="flex-1">
-                  <Text className="text-sm font-bold">Analyze Document</Text>
-                  <Text size="xs" tone="secondary">Upload and scan instantly</Text>
+                  <Text className="text-[15px] font-bold text-text-primary group-hover:text-brand-primary transition-colors">Upload Document</Text>
+                  <Text size="xs" tone="secondary" className="mt-0.5">Parse a new contract</Text>
                 </div>
-                <ArrowRightIcon className="size-4 text-text-tertiary group-hover:translate-x-1 group-hover:text-text-primary transition-all" />
+                <div className="flex size-8 items-center justify-center rounded-full bg-surface-3 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                  <ArrowRightIcon className="size-4 text-text-primary" />
+                </div>
               </Link>
-              <Link href={ROUTES.vault} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-surface-2 transition-colors group">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-3 text-text-primary group-hover:scale-110 transition-transform shadow-sm">
-                  <VaultIcon className="size-5" />
+              
+              <Link href={ROUTES.vault} className="flex items-center gap-4 p-4 rounded-[1.25rem] bg-surface-1 border border-transparent hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md transition-all group">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-surface-3 text-text-primary group-hover:scale-110 transition-transform shadow-sm ring-1 ring-border-strong/10">
+                  <VaultIcon className="size-6" />
                 </div>
                 <div className="flex-1">
-                  <Text className="text-sm font-bold">Access Vault</Text>
-                  <Text size="xs" tone="secondary">View stored contracts</Text>
+                  <Text className="text-[15px] font-bold text-text-primary group-hover:text-brand-primary transition-colors">Document Vault</Text>
+                  <Text size="xs" tone="secondary" className="mt-0.5">Access archived files</Text>
                 </div>
-                <ArrowRightIcon className="size-4 text-text-tertiary group-hover:translate-x-1 group-hover:text-text-primary transition-all" />
+                <div className="flex size-8 items-center justify-center rounded-full bg-surface-3 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                  <ArrowRightIcon className="size-4 text-text-primary" />
+                </div>
               </Link>
-              <Link href={ROUTES.settings} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-surface-2 transition-colors group">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-3 text-text-primary group-hover:scale-110 transition-transform shadow-sm">
-                  <SettingsIcon className="size-5" />
+              
+              <Link href={ROUTES.settings} className="flex items-center gap-4 p-4 rounded-[1.25rem] bg-surface-1 border border-transparent hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md transition-all group">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-surface-3 text-text-primary group-hover:scale-110 transition-transform shadow-sm ring-1 ring-border-strong/10">
+                  <SettingsIcon className="size-6" />
                 </div>
                 <div className="flex-1">
-                  <Text className="text-sm font-bold">Workspace Settings</Text>
-                  <Text size="xs" tone="secondary">Manage your preferences</Text>
+                  <Text className="text-[15px] font-bold text-text-primary group-hover:text-brand-primary transition-colors">Workspace Settings</Text>
+                  <Text size="xs" tone="secondary" className="mt-0.5">Manage team preferences</Text>
                 </div>
-                <ArrowRightIcon className="size-4 text-text-tertiary group-hover:translate-x-1 group-hover:text-text-primary transition-all" />
+                <div className="flex size-8 items-center justify-center rounded-full bg-surface-3 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                  <ArrowRightIcon className="size-4 text-text-primary" />
+                </div>
               </Link>
             </div>
           </Card>

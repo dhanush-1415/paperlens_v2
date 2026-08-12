@@ -193,5 +193,19 @@ export function createInMemoryAuthProvider(options: InMemoryAuthOptions): AuthPr
  async verifyEmail(): Promise<Result<void, AppError>> {
  return err(new AppError('NOT_IMPLEMENTED', { message: 'Email verification needs a real provider' }));
  },
+
+ async verifyOtp(email: string, token: string): Promise<Result<Session, AppError>> {
+ if (token !== '123456') return err(unauthenticatedError('auth.invalidCredentials'));
+ const account = accounts.get(email.toLowerCase());
+ if (!account) return err(unauthenticatedError('auth.invalidCredentials'));
+ 
+ const session = issue(account);
+ await store.write(session.sessionId, sessionLifetimeSeconds);
+ return ok(session);
+ },
+ 
+ async resendOtp(): Promise<Result<void, AppError>> {
+ return ok(undefined);
+ },
  };
 }

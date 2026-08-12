@@ -99,7 +99,7 @@ export function proxy(request: NextRequest): NextResponse {
 
  if (!hasSessionHint && isProtectedPath(pathname)) {
  const target = request.nextUrl.clone();
- target.pathname = ROUTES.login;
+ target.pathname = ROUTES.home;
  target.search = '';
  /**
  * `sanitizeRedirectTo` rejects anything that is not a same-origin absolute path —

@@ -72,6 +72,8 @@ export interface SiteHeaderProps {
  items: readonly SiteNavItem[];
  signInHref: Route;
  ctaHref: Route;
+ dashboardHref?: Route;
+ isAuthenticated?: boolean;
  labels: SiteHeaderLabels;
  className?: string;
 }
@@ -93,6 +95,8 @@ export function SiteHeader({
  items,
  signInHref,
  ctaHref,
+ dashboardHref,
+ isAuthenticated,
  labels,
  className,
 }: SiteHeaderProps) {
@@ -120,12 +124,12 @@ export function SiteHeader({
   >
     <div
       className={cn(
-        'mx-auto w-[95%] md:w-[90%] lg:w-[80%] pointer-events-auto rounded-[1.25rem] transition-all duration-(--duration-standard) ease-brand flex flex-col',
+        'mx-auto w-[95%] md:w-[90%] lg:w-[80%] pointer-events-auto rounded-full transition-all duration-(--duration-standard) ease-brand flex flex-col',
         isScrolled
           ? [
-              'bg-surface-1/80 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border-strong/50',
-              'supports-[backdrop-filter]:bg-surface-1/60 supports-[backdrop-filter]:backdrop-blur-2xl',
-              'dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] dark:border-white/10',
+              'bg-surface-1/85 shadow-lg shadow-black/5 border border-border-strong/20',
+              'supports-[backdrop-filter]:bg-surface-1/75 supports-[backdrop-filter]:backdrop-blur-2xl',
+              'dark:shadow-black/50 dark:border-white/10',
             ]
           : 'bg-transparent border border-transparent'
       )}
@@ -180,7 +184,7 @@ export function SiteHeader({
  href={item.href}
  aria-current={active ? 'page' : undefined}
  className={cn(
- 'inline-flex h-9 items-center rounded-control px-3 text-sm whitespace-nowrap',
+ 'inline-flex h-9 items-center rounded-control px-3 text-sm font-medium whitespace-nowrap',
  'transition-colors duration-(--duration-micro) ease-brand',
  active
  ? 'bg-brand-primary/10 text-brand-primary font-semibold ring-1 ring-brand-primary/20 shadow-sm'
@@ -198,13 +202,21 @@ export function SiteHeader({
  <div className="ml-auto flex items-center gap-1 lg:gap-2">
  <ThemeToggle label={labels.theme} optionLabels={labels.themeOptions} />
 
- <Button asChild variant="tertiary" size="sm" className="hidden lg:inline-flex">
- <Link href={signInHref}>{labels.signIn}</Link>
- </Button>
+          {isAuthenticated && dashboardHref ? (
+            <Button asChild variant="premium" size="md" className="hidden lg:inline-flex font-bold shadow-md shadow-brand-primary/20 whitespace-nowrap">
+              <Link href={dashboardHref}>Go to Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button asChild variant="tertiary" size="sm" className="hidden lg:inline-flex">
+                <Link href={signInHref}>{labels.signIn}</Link>
+              </Button>
 
- <Button asChild variant="premium" size="md" className="hidden lg:inline-flex font-bold shadow-md shadow-brand-primary/20 whitespace-nowrap">
- <Link href={ctaHref}>{labels.cta}</Link>
- </Button>
+              <Button asChild variant="premium" size="md" className="hidden lg:inline-flex font-bold shadow-md shadow-brand-primary/20 whitespace-nowrap">
+                <Link href={ctaHref}>{labels.cta}</Link>
+              </Button>
+            </>
+          )}
 
  <button
  type="button"
@@ -238,12 +250,20 @@ export function SiteHeader({
  * where a thumb actually reaches. A primary action pinned to the top of a phone
  * drawer is a design that was only ever tested on a desktop.
  */
- <div className="flex flex-col gap-2">
- <Button asChild variant="premium" size="lg" fullWidth>
- <Link href={ctaHref}>{labels.cta}</Link>
- </Button>
- <p className="text-center text-2xs text-text-tertiary">{labels.ctaNote}</p>
- </div>
+          <div className="flex flex-col gap-2">
+            {isAuthenticated && dashboardHref ? (
+              <Button asChild variant="premium" size="lg" fullWidth>
+                <Link href={dashboardHref}>Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="premium" size="lg" fullWidth>
+                  <Link href={ctaHref}>{labels.cta}</Link>
+                </Button>
+                <p className="text-center text-2xs text-text-tertiary">{labels.ctaNote}</p>
+              </>
+            )}
+          </div>
  }
  >
  <nav aria-label="Primary">
@@ -254,7 +274,7 @@ export function SiteHeader({
  href={item.href}
  aria-current={isActive(pathname, item.href) ? 'page' : undefined}
  className={cn(
- 'flex min-h-11 items-center rounded-control px-3 text-base',
+ 'flex min-h-11 items-center rounded-control px-3 text-base font-medium',
  'text-text-secondary transition-colors duration-(--duration-micro)',
  'hover:bg-surface-2 hover:text-text-primary',
  'aria-[current=page]:text-text-primary',
@@ -264,14 +284,16 @@ export function SiteHeader({
  </Link>
  </li>
  ))}
- <li>
- <Link
- href={signInHref}
- className="flex min-h-11 items-center rounded-control px-3 text-base text-text-secondary hover:bg-surface-2 hover:text-text-primary"
- >
- {labels.signIn}
- </Link>
- </li>
+                {!isAuthenticated && (
+                  <li>
+                    <Link
+                      href={signInHref}
+                      className="flex min-h-11 items-center rounded-control px-3 text-base font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                    >
+                      {labels.signIn}
+                    </Link>
+                  </li>
+                )}
  </ul>
  </nav>
  </Drawer>

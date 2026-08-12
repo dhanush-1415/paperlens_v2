@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { ROUTES } from '@/shared/constants';
-import { Button, Container, ShieldIcon, StatusBlock } from '@/shared/ui';
+import { Container, ShieldIcon, StatusBlock } from '@/shared/ui';
+import { ClearSessionButton } from '@/shared/ui';
 
 /**
  * 401 — signed out, or a session that has expired (requirement 3).
@@ -49,15 +50,9 @@ export default function Unauthorized() {
  title="Please sign in to continue"
  description="Your session has ended, or this page needs an account. Signing in again takes a moment and brings you straight back."
  actions={
- <Button asChild>
- {/*
- * Home rather than the sign-in route: authentication pages do not exist yet, and
- * `typedRoutes` makes linking to a route that has no page a compile error — which
- * is precisely the guarantee we want. This link becomes `ROUTES.login` with a
- * `redirectTo` parameter the moment that page lands.
- */}
- <Link href={ROUTES.home}>Go to sign in</Link>
- </Button>
+ <ClearSessionButton>
+ Go to homepage
+ </ClearSessionButton>
  }
  />
  </Container>

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 
 import { QUERY_PARAMS, sanitizeRedirectTo } from '@/shared/constants/query-params';
 import { DEFAULT_AUTHENTICATED_ROUTE } from '@/shared/constants/routes';
-import { Alert, Card, CardContent, Container, Heading, Section, Text } from '@/shared/ui';
+import { Card, CardContent } from '@/shared/ui';
 
 import { SignInForm } from './sign-in-form';
 import { ROUTES } from '@/shared/constants/routes';

@@ -72,7 +72,7 @@ export default async function AuthLayout({ children }: LayoutProps<'/'>) {
           </Link>
         </div>
 
-        <div className="auth-box w-full max-w-[440px] relative z-10 bg-surface-1 border border-border-strong rounded-3xl p-8 md:p-10 shadow-2xl shadow-brand-primary/5">
+        <div className="auth-box w-full max-w-[440px] relative z-10 bg-surface-1 border border-border-strong rounded-3xl p-8 md:p-10 shadow-[0_8px_40px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
           {children}
         </div>
       </main>

@@ -128,6 +128,7 @@ export function StickyCta({
  */
  useEffect(() => {
    if (!isScrolledDown) {
+     // eslint-disable-next-line react-hooks/set-state-in-effect
      if (wasJustDismissed) setJustDismissed(false);
      
      // Only access driver if we know it was previously dismissed (avoid unnecessary writes)

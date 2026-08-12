@@ -1,4 +1,4 @@
-import { getPublicSession } from '@/server/bootstrap';
+import { requireSession } from '@/server/bootstrap';
 import { DashboardOverview } from '@/features/dashboard';
 
 export const metadata = {
@@ -6,12 +6,7 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const session = (await getPublicSession()) || {
-    id: 'mock-id',
-    userId: 'mock-user',
-    plan: 'enterprise',
-    role: 'admin',
-  };
+  const session = await requireSession();
 
   // In a real application, fetch this from the database or external API.
   const mockUsage = {

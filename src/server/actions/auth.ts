@@ -167,8 +167,49 @@ export const signUpAction = action(
     }
 
     container.resolve(ANALYTICS).track('signup.completed', { method: 'email' });
-    redirect(sanitizeRedirectTo(input.redirectTo, DEFAULT_AUTHENTICATED_ROUTE));
+    redirect(`/verify-email?email=${encodeURIComponent(input.email)}`);
   },
+);
+
+export const verifyOtpAction = action(
+  'auth.verifyOtp',
+  async (_previous: unknown, formData: FormData): Promise<never> => {
+    const email = String(formData.get('email') ?? '').trim();
+    const token = String(formData.get('token') ?? '').trim();
+
+    if (!email || !token) {
+      throw new AppError('VALIDATION_FAILED', { message: 'Email and verification code are required' });
+    }
+
+    const container = getServerContainer();
+    const attempt = await container.resolve(AUTH_PROVIDER).verifyOtp(email, token);
+
+    if (!attempt.ok) {
+      throw attempt.error;
+    }
+
+    redirect(DEFAULT_AUTHENTICATED_ROUTE);
+  },
+);
+
+export const resendOtpAction = action(
+  'auth.resendOtp',
+  async (_previous: unknown, formData: FormData): Promise<{ success: boolean }> => {
+    const email = String(formData.get('email') ?? '').trim();
+    
+    if (!email) {
+      throw new AppError('VALIDATION_FAILED', { message: 'Email address is required' });
+    }
+
+    const container = getServerContainer();
+    const attempt = await container.resolve(AUTH_PROVIDER).resendOtp(email);
+
+    if (!attempt.ok) {
+      throw attempt.error;
+    }
+
+    return { success: true };
+  }
 );
 
 export const signInWithGoogleAction = action('auth.google', async (_previous: unknown, formData: FormData): Promise<never> => {

@@ -127,8 +127,27 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       return err(new AppError('NOT_IMPLEMENTED', { message: 'Not implemented in this adapter' }));
     },
 
-    async verifyEmail(): Promise<Result<void, AppError>> {
-      return err(new AppError('NOT_IMPLEMENTED', { message: 'Not implemented in this adapter' }));
+    async verifyEmail(token: string): Promise<Result<void, AppError>> {
+      return err(new AppError('NOT_IMPLEMENTED', { message: 'Use verifyOtp instead' }));
     },
+
+    async verifyOtp(email: string, token: string): Promise<Result<Session, AppError>> {
+      const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
+      if (error || !data.session) {
+        return err(new AppError('INVALID_CREDENTIALS', { message: error?.message || 'Invalid or expired code.' }));
+      }
+      
+      const session = mapUserToSession(data.user);
+      await store.write(data.session.access_token, LIFETIME_SECONDS.session);
+      return ok(session);
+    },
+
+    async resendOtp(email: string): Promise<Result<void, AppError>> {
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) {
+        return err(new AppError('INTERNAL_ERROR', { message: error.message }));
+      }
+      return ok(undefined);
+    }
   };
 }

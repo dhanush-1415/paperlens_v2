@@ -46,6 +46,8 @@ export {
 } from './card';
 export type { CardProps, CardTitleProps } from './card';
 
+export { ClearSessionButton } from './clear-session-button';
+
 export { Checkbox } from './checkbox';
 export type { CheckboxProps } from './checkbox';
 

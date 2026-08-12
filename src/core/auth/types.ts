@@ -79,6 +79,8 @@ export interface AuthProvider {
  requestPasswordReset(email: string): Promise<Result<void, AppError>>;
  confirmPasswordReset(token: string, password: string): Promise<Result<void, AppError>>;
  verifyEmail(token: string): Promise<Result<void, AppError>>;
+ verifyOtp(email: string, token: string): Promise<Result<Session, AppError>>;
+ resendOtp(email: string): Promise<Result<void, AppError>>;
 }
 
 /**

@@ -6,7 +6,7 @@ import { TRANSLATOR } from '@/core/container';
 import { signOutFormAction } from '@/server/actions/auth';
 import { getPublicSession, getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants/routes';
-import { Button, Container, Skeleton, Text, ThemeToggle, AppSidebar, AppTopBar, AppBreadcrumbs } from '@/shared/ui';
+import { Button, Container, Skeleton, Text, ThemeToggle, AppSidebar, AppTopBar, AppBreadcrumbs, ProfileDropdown } from '@/shared/ui';
 
 import Link from 'next/link';
 import ScrollProvider from '../scroll-provider';
@@ -40,31 +40,24 @@ import ScrollProvider from '../scroll-provider';
 const tenant = resolveTenant(serverEnv.TENANT_ID);
 
 async function SessionChip() {
- const session = await getPublicSession();
+  const session = await getPublicSession();
 
- if (!session) {
- return (
- <Button asChild size="sm" variant="ghost">
- <Link href={ROUTES.login}>Sign in</Link>
- </Button>
- );
- }
+  if (!session) {
+    return (
+      <Button asChild size="sm" variant="ghost">
+        <Link href={ROUTES.login}>Sign in</Link>
+      </Button>
+    );
+  }
 
- return (
- <form action={signOutFormAction} className="flex items-center gap-3">
- {/*
- * The plan, not the email. A header is the most-screenshotted surface in any product,
- * and `PublicSession` deliberately carries no address for it to leak — see
- * `toPublicSession`, which is the only sanctioned way a session reaches a client.
- */}
- <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
- {session.plan}
- </Text>
- <Button type="submit" size="sm" variant="ghost">
- Sign out
- </Button>
- </form>
- );
+  return (
+    <ProfileDropdown
+      userName="Alice Williams"
+      userEmail="alice@company.com"
+      userInitials="AW"
+      signOutAction={signOutFormAction}
+    />
+  );
 }
 
 export default async function AppLayout({ children }: LayoutProps<'/'>) {

@@ -238,6 +238,14 @@ function buildServerContainer(): Container {
  container.register(SESSION_STORE, () => createCookieSessionStore());
 
  container.register(AUTH_PROVIDER, (c) => {
+    // If we're in development and missing credentials, use mock data:
+    if (isDevelopment && (!serverEnv.SUPABASE_URL || !serverEnv.SUPABASE_ANON_KEY)) {
+      return createInMemoryAuthProvider({
+        store: c.resolve(SESSION_STORE),
+        now: c.resolve(CLOCK),
+      });
+    }
+
     const supabaseUrl = serverEnv.SUPABASE_URL;
     const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
 

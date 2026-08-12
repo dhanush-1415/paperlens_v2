@@ -1,6 +1,11 @@
-import { redirect } from 'next/navigation';
-import { ROUTES } from '@/shared/constants/routes';
+import { requireSession } from '@/server/bootstrap';
+import { AnalyticsPage } from '@/features/dashboard/presentation/analytics-page';
 
-export default function UsageRoute() {
-  redirect(ROUTES.billing);
+export const metadata = {
+  title: 'Workspace Analytics',
+};
+
+export default async function UsageRoute() {
+  await requireSession(); // Ensure user is authenticated
+  return <AnalyticsPage />;
 }
