@@ -1,10 +1,30 @@
 'use client';
 
+import { useTransition } from 'react';
 import { Button, Heading, Text, Input, Badge } from '@/shared/ui';
 import { ShieldIcon, CheckIcon } from '@/shared/ui/icons';
 import { UserIcon, CreditCardIcon, MailIcon } from '@/shared/ui/icons/dashboard-icons';
+import { saveProfileAction } from '@/app/(app)/profile/actions';
 
-export function ProfilePage() {
+interface ProfilePageProps {
+  profile: any;
+  userEmail: string;
+  displayName: string;
+}
+
+export function ProfilePage({ profile, userEmail, displayName }: ProfilePageProps) {
+  const [isPending, startTransition] = useTransition();
+
+  const handleSave = (formData: FormData) => {
+    startTransition(() => {
+      saveProfileAction(formData);
+    });
+  };
+
+  const currentFirstName = profile?.firstName || displayName?.split(' ')[0] || '';
+  const currentLastName = profile?.lastName || (displayName?.split(' ').length > 1 ? displayName.split(' ').slice(1).join(' ') : '');
+  const currentFullName = [currentFirstName, currentLastName].filter(Boolean).join(' ') || 'User';
+
   return (
     <div className="flex flex-col gap-6 pb-8">
       {/* Header */}
@@ -16,11 +36,6 @@ export function ProfilePage() {
           <Text tone="secondary" className="mt-1 text-sm font-medium">
             Manage your personal information, security preferences, and connected accounts.
           </Text>
-        </div>
-        <div className="flex items-center gap-3 relative z-10">
-          <Button className="font-bold h-10 shadow-md">
-            Save All Changes
-          </Button>
         </div>
       </div>
 
@@ -38,11 +53,11 @@ export function ProfilePage() {
             </div>
             
             <div className="relative z-10">
-              <Heading level={3} className="text-xl font-extrabold text-text-primary">Alex Mercer</Heading>
-              <Text size="sm" tone="secondary" className="font-medium mt-1">alex.mercer@acmecorp.com</Text>
+              <Heading level={3} className="text-xl font-extrabold text-text-primary">{currentFullName}</Heading>
+              <Text size="sm" tone="secondary" className="font-medium mt-1">{userEmail}</Text>
               
               <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-bold text-brand-primary">
-                <ShieldIcon className="size-3.5" /> Workspace Admin
+                <ShieldIcon className="size-3.5" /> Workspace Member
               </div>
             </div>
           </div>
@@ -63,12 +78,6 @@ export function ProfilePage() {
                 </div>
                 <Badge tone="caution" className="font-bold">Setup Required</Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
-                  <CreditCardIcon className="size-4" /> Subscription
-                </div>
-                <Badge tone="brand" className="font-bold">Professional</Badge>
-              </div>
             </div>
           </div>
         </div>
@@ -77,25 +86,33 @@ export function ProfilePage() {
         <div className="flex flex-col gap-6 lg:col-span-2">
           
           <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-6 shadow-sm transition-all hover:border-brand-primary/30">
-            <div className="mb-6">
-              <Heading level={2} size="md" className="font-bold text-text-primary">Personal Information</Heading>
-              <Text size="sm" tone="secondary" className="mt-1">Update your name and contact details.</Text>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <Heading level={2} size="md" className="font-bold text-text-primary">Personal Information</Heading>
+                <Text size="sm" tone="secondary" className="mt-1">Update your name and contact details.</Text>
+              </div>
             </div>
 
-            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+            <form action={handleSave} className="space-y-5">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="firstName" className="block text-sm font-bold text-text-secondary mb-1.5 ml-1">First Name</label>
-                  <Input id="firstName" defaultValue="Alex" className="rounded-xl bg-surface-2 border-transparent focus:border-brand-primary focus:ring-1 focus:ring-brand-primary shadow-inner" />
+                  <Input name="firstName" id="firstName" defaultValue={currentFirstName} className="rounded-xl bg-surface-2 border-transparent focus:border-brand-primary focus:ring-1 focus:ring-brand-primary shadow-inner" />
                 </div>
                 <div>
                   <label htmlFor="lastName" className="block text-sm font-bold text-text-secondary mb-1.5 ml-1">Last Name</label>
-                  <Input id="lastName" defaultValue="Mercer" className="rounded-xl bg-surface-2 border-transparent focus:border-brand-primary focus:ring-1 focus:ring-brand-primary shadow-inner" />
+                  <Input name="lastName" id="lastName" defaultValue={currentLastName} className="rounded-xl bg-surface-2 border-transparent focus:border-brand-primary focus:ring-1 focus:ring-brand-primary shadow-inner" />
                 </div>
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-bold text-text-secondary mb-1.5 ml-1">Email Address</label>
-                <Input id="email" type="email" defaultValue="alex.mercer@acmecorp.com" className="rounded-xl bg-surface-2 border-transparent focus:border-brand-primary focus:ring-1 focus:ring-brand-primary shadow-inner" />
+                <Input id="email" type="email" disabled defaultValue={userEmail} className="rounded-xl bg-surface-2 border-transparent focus:border-brand-primary focus:ring-1 focus:ring-brand-primary shadow-inner opacity-70" />
+                <Text size="xs" tone="secondary" className="ml-1 mt-1 font-medium">To change your email, please contact support.</Text>
+              </div>
+              <div className="pt-2">
+                <Button type="submit" disabled={isPending} className="font-bold h-10 shadow-md">
+                  {isPending ? 'Saving...' : 'Save Profile'}
+                </Button>
               </div>
             </form>
           </div>

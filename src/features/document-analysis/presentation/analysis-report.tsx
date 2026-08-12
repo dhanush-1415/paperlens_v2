@@ -3,6 +3,8 @@ import { Accordion, EmptyState, Heading, StatTile, Text } from '@/shared/ui';
 import { type AnalysisDto } from '../application/dto';
 import { DOCUMENT_TYPE_LABEL } from '../constants';
 import { RiskFlagCard } from './risk-flag-card';
+import { DocumentResultCard } from './document-result-card';
+import { CopilotChatWindow } from './copilot-chat-window';
 
 /**
  * The report. A Server Component, and pointedly so.
@@ -66,14 +68,37 @@ const SCORE_TONE = {
 } as const satisfies Record<AnalysisDto['score']['level'], string>;
 
 export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
- return (
- <div className="flex flex-col gap-8">
- {/*
- * `StatTile` is already a card, so these sit directly in the grid. Wrapping them in
- * another `Card` would nest two surfaces and produce the double-border look that makes
- * a dashboard feel assembled rather than designed.
- */}
- <div className="grid gap-4 sm:grid-cols-3">
+  // Synthesize Copilot Data
+  const urgency = analysis.score.level === 'critical' ? 'critical' : 
+                  analysis.score.level === 'caution' ? 'medium' : 'low';
+  
+  const actionPlan = analysis.flags
+    .map(f => f.recommendation)
+    .filter((rec): rec is string => !!rec)
+    .slice(0, 4);
+
+  if (actionPlan.length === 0 && analysis.flags.length === 0) {
+    actionPlan.push('Proceed with signing the document.');
+  } else if (actionPlan.length === 0) {
+    actionPlan.push('Review the highlighted clauses carefully.');
+  }
+
+  const summary = analysis.flags.length > 0 
+    ? `We detected ${analysis.score.criticalCount} critical issue(s) and ${analysis.score.cautionCount} moderate risk(s) in this ${DOCUMENT_TYPE_LABEL[analysis.documentType].toLowerCase()}. Please review the action plan before proceeding.`
+    : `This ${DOCUMENT_TYPE_LABEL[analysis.documentType].toLowerCase()} appears clean. We found no predatory clauses or hidden liabilities.`;
+
+  return (
+    <div className="flex flex-col gap-8">
+      {/* Copilot Executive Summary */}
+      <DocumentResultCard 
+        summary={summary}
+        urgency={urgency}
+        confidenceScore={94} // Hardcoded for now, would be driven by AI metadata
+        actionPlan={actionPlan}
+      />
+
+      {/* Legacy Stats (Kept for continuity) */}
+      <div className="grid gap-4 sm:grid-cols-3">
  <StatTile
  label={labels.scoreLabel}
  /*
@@ -120,6 +145,10 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
  ))}
  </Accordion>
  )}
+ </section>
+
+ <section className="flex flex-col gap-4 mt-4">
+ <CopilotChatWindow documentId={analysis.id} />
  </section>
 
  <footer className="flex flex-col gap-2 border-t border-border-subtle pt-6">

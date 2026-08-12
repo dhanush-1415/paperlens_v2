@@ -64,71 +64,89 @@ function withRequestHeaders(request: NextRequest, extra: Record<string, string>)
  return NextResponse.next({ request: { headers } });
 }
 
-export function proxy(request: NextRequest): NextResponse {
- const { pathname, search } = request.nextUrl;
+import { createServerClient } from '@supabase/ssr';
 
- /**
- * Reuse an inbound correlation ID rather than minting a second one.
- *
- * A request that arrived through a gateway, a load balancer or our own HTTP client already
- * carries an ID. Generating a new one here would break the trace at exactly the boundary
- * a trace exists to cross.
- */
- const correlation = request.headers.get(HTTP_HEADERS.correlationId) ?? correlationId();
+export async function proxy(request: NextRequest): Promise<NextResponse> {
+  const { pathname, search } = request.nextUrl;
 
- const requestHeaders: Record<string, string> = {
- [HTTP_HEADERS.correlationId]: correlation,
- // Layouts cannot access the raw request or the URL — they are cached client-side and
- // would go stale. This is the supported way to give them the current path.
- [HTTP_HEADERS.pathname]: pathname,
- };
+  const correlation = request.headers.get(HTTP_HEADERS.correlationId) ?? correlationId();
 
- /**
- * The optimistic session check.
- *
- * *Presence*, not validity. Verifying a session here would mean a signature check or a
- * network call on every request including static assets, and it would still have to be
- * repeated in the DAL — the proxy's answer is stale the moment it is given. So this asks
- * the only question it can answer cheaply and honestly: does the user look signed in?
- *
- * The failure modes are both benign. A stale cookie lets someone through to a page whose
- * `requireSession()` immediately shows them `unauthorized.tsx`. A missing cookie on a
- * genuinely signed-in user costs one redirect.
- */
- const hasSessionHint = request.cookies.has(COOKIE_NAMES.sessionHint);
+  const requestHeaders: Record<string, string> = {
+    [HTTP_HEADERS.correlationId]: correlation,
+    [HTTP_HEADERS.pathname]: pathname,
+  };
 
- if (!hasSessionHint && isProtectedPath(pathname)) {
- const target = request.nextUrl.clone();
- target.pathname = ROUTES.home;
- target.search = '';
- /**
- * `sanitizeRedirectTo` rejects anything that is not a same-origin absolute path —
- * including protocol-relative `//evil.example`, which looks like a path and is not.
- * Without it, `?redirectTo=` is an open redirect, which is the oldest phishing primitive
- * there is: the victim signs in on the real domain and is handed to the attacker's.
- */
- target.searchParams.set(
- QUERY_PARAMS.redirectTo,
- sanitizeRedirectTo(`${pathname}${search}`, ROUTES.home),
- );
+  const isProtected = isProtectedPath(pathname);
+  const isAuth = isAuthOnlyPath(pathname);
 
- return applyResponseHeaders(NextResponse.redirect(target), correlation);
- }
+  // 1. Fast path: skip Supabase entirely for public routes
+  if (!isProtected && !isAuth) {
+    return applyResponseHeaders(withRequestHeaders(request, requestHeaders), correlation);
+  }
 
- /**
- * The reverse: a signed-in user landing on the sign-in page. Sending them to the app is
- * what every product they have used already does, and doing it here rather than in the
- * page saves a render of a form they will never submit.
- */
- if (hasSessionHint && isAuthOnlyPath(pathname)) {
- const target = request.nextUrl.clone();
- target.pathname = DEFAULT_AUTHENTICATED_ROUTE;
- target.search = '';
+  // 2. Cookie overflow guard
+  const cookieHeader = request.headers.get('cookie') ?? '';
+  if (cookieHeader.length > 7000) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = ROUTES.login;
+    loginUrl.searchParams.set('error', 'session_reset');
+    const recovery = applyResponseHeaders(NextResponse.redirect(loginUrl), correlation);
+    request.cookies.getAll()
+      .filter((c) => c.name.startsWith('sb-'))
+      .forEach((c) => recovery.cookies.delete(c.name));
+    return recovery;
+  }
 
- return applyResponseHeaders(NextResponse.redirect(target), correlation);
- }
+  // 3. Supabase cookie forwarding
+  let supabaseResponse = withRequestHeaders(request, requestHeaders);
 
- return applyResponseHeaders(withRequestHeaders(request, requestHeaders), correlation);
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = withRequestHeaders(request, requestHeaders);
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  // 4. Auth check
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Protected routes
+  if (!user && isProtected) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = ROUTES.login;
+    loginUrl.search = '';
+    loginUrl.searchParams.set(
+      QUERY_PARAMS.redirectTo,
+      sanitizeRedirectTo(`${pathname}${search}`, ROUTES.home)
+    );
+    return applyResponseHeaders(NextResponse.redirect(loginUrl), correlation);
+  }
+
+  // Auth pages
+  if (user && isAuth) {
+    const target = request.nextUrl.clone();
+    target.pathname = DEFAULT_AUTHENTICATED_ROUTE;
+    target.search = '';
+    return applyResponseHeaders(NextResponse.redirect(target), correlation);
+  }
+
+  return applyResponseHeaders(supabaseResponse, correlation);
 }
 
 /**

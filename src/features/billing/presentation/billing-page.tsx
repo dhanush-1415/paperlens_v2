@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button, Heading, Text, Badge, DataTable, type Column } from '@/shared/ui';
 import { CheckCircleIcon, AlertTriangleIcon } from '@/shared/ui/icons';
 import { CreditCardIcon, DownloadIcon } from '@/shared/ui/icons/dashboard-icons';
@@ -16,7 +17,33 @@ const INVOICES = [
   { id: 'INV-2026-001', date: 'Jun 1, 2026', amount: '$49.00', status: 'Paid', downloadUrl: '#' },
 ];
 
-export function BillingPage() {
+export function BillingPage({ planData }: { planData: any }) {
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const handleUpgrade = async (planName: string) => {
+    if (planName === 'Enterprise') {
+      window.location.href = 'mailto:sales@paperlens.com';
+      return;
+    }
+    
+    try {
+      setIsUpgrading(true);
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        alert('Checkout failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (e) {
+      alert('Checkout error');
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
   const invoiceColumns: Column<typeof INVOICES[0]>[] = [
     { id: 'id', header: 'Invoice Number', cell: (inv) => <span className="font-bold text-text-primary">{inv.id}</span> },
     { id: 'date', header: 'Date', cell: (inv) => <span className="font-medium text-text-secondary">{inv.date}</span> },
@@ -51,7 +78,9 @@ export function BillingPage() {
       <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <Heading level={2} size="md" className="font-bold text-text-primary">Current Cycle Usage</Heading>
-          <Badge tone="brand" className="font-bold shadow-sm">Resets in 18 days</Badge>
+          <Badge tone="brand" className="font-bold shadow-sm">
+            Resets {new Date(planData.subscription.usageResetAt).toLocaleDateString()}
+          </Badge>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -59,15 +88,15 @@ export function BillingPage() {
             <div className="flex justify-between items-end">
               <div>
                 <Text size="sm" className="font-bold text-text-primary">Document Scans</Text>
-                <Text size="xs" tone="secondary" className="font-medium mt-0.5">Professional Plan</Text>
+                <Text size="xs" tone="secondary" className="font-medium mt-0.5">{planData.plan.displayName} Plan</Text>
               </div>
               <div className="text-right">
-                <Text size="sm" className="font-bold text-text-primary">42 <span className="text-text-tertiary">/ 500</span></Text>
-                <Text size="xs" tone="secondary" className="font-medium mt-0.5">8% used</Text>
+                <Text size="sm" className="font-bold text-text-primary">{planData.subscription.scansUsed} <span className="text-text-tertiary">/ {planData.plan.quotaScansPerMonth}</span></Text>
+                <Text size="xs" tone="secondary" className="font-medium mt-0.5">{Math.round((planData.subscription.scansUsed / Math.max(1, planData.plan.quotaScansPerMonth)) * 100)}% used</Text>
               </div>
             </div>
             <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
-              <div className="h-full bg-brand-primary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-primary),0.6)]" style={{ width: '8%' }} />
+              <div className="h-full bg-brand-primary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-primary),0.6)]" style={{ width: `${Math.min(100, (planData.subscription.scansUsed / Math.max(1, planData.plan.quotaScansPerMonth)) * 100)}%` }} />
             </div>
           </div>
 
@@ -90,31 +119,33 @@ export function BillingPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">
-        {PLANS.map((plan) => (
+        {PLANS.map((p) => {
+          const isCurrent = p.name.toLowerCase() === planData.plan.displayName.toLowerCase();
+          return (
           <div 
-            key={plan.name} 
-            className={`relative rounded-[1.25rem] border p-6 flex flex-col gap-6 shadow-sm overflow-hidden transition-all duration-300 ${plan.isCurrent ? 'border-brand-primary bg-surface-1 shadow-card hover:shadow-card-hover' : 'border-border-subtle bg-surface-1 hover:border-brand-primary/30'}`}
+            key={p.name} 
+            className={`relative rounded-[1.25rem] border p-6 flex flex-col gap-6 shadow-sm overflow-hidden transition-all duration-300 ${isCurrent ? 'border-brand-primary bg-surface-1 shadow-card hover:shadow-card-hover' : 'border-border-subtle bg-surface-1 hover:border-brand-primary/30'}`}
           >
-            {plan.isCurrent && (
+            {isCurrent && (
               <div className="absolute inset-0 bg-gradient-to-b from-brand-primary/5 to-transparent pointer-events-none" />
             )}
-            {plan.isCurrent && (
+            {isCurrent && (
               <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-brand-primary to-brand-secondary" />
             )}
             
             <div className="relative flex justify-between items-start">
               <div>
-                <Heading level={3} size="md" className="font-bold">{plan.name}</Heading>
+                <Heading level={3} size="md" className="font-bold">{p.name}</Heading>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <Text className="text-4xl font-extrabold text-text-primary tracking-tight">{plan.price}</Text>
-                  {plan.price !== 'Custom' && <Text tone="tertiary" className="font-medium">/month</Text>}
+                  <Text className="text-4xl font-extrabold text-text-primary tracking-tight">{p.price}</Text>
+                  {p.price !== 'Custom' && <Text tone="tertiary" className="font-medium">/month</Text>}
                 </div>
               </div>
-              {plan.isCurrent && <Badge tone="brand" className="font-bold shadow-sm">Current Plan</Badge>}
+              {isCurrent && <Badge tone="brand" className="font-bold shadow-sm">Current Plan</Badge>}
             </div>
 
             <ul className="relative flex-1 space-y-4">
-              {plan.features.map((feature, i) => (
+              {p.features.map((feature, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm font-medium text-text-secondary">
                   <div className="flex size-5 items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary shrink-0 mt-0.5">
                     <CheckCircleIcon className="size-3.5" />
@@ -125,14 +156,15 @@ export function BillingPage() {
             </ul>
 
             <Button 
-              variant={plan.isCurrent ? 'secondary' : 'primary'} 
-              className={`relative font-bold h-11 ${plan.isCurrent ? 'border-border-strong text-text-primary' : 'shadow-md'}`}
-              disabled={plan.isCurrent}
+              variant={isCurrent ? 'secondary' : 'primary'} 
+              className={`relative font-bold h-11 ${isCurrent ? 'border-border-strong text-text-primary' : 'shadow-md'}`}
+              disabled={isCurrent || isUpgrading}
+              onClick={() => handleUpgrade(p.name)}
             >
-              {plan.isCurrent ? 'Current Plan' : plan.price === 'Custom' ? 'Contact Sales' : 'Upgrade to ' + plan.name}
+              {isCurrent ? 'Current Plan' : isUpgrading ? 'Redirecting...' : p.price === 'Custom' ? 'Contact Sales' : 'Upgrade to ' + p.name}
             </Button>
           </div>
-        ))}
+        )})}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">

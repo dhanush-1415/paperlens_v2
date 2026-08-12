@@ -129,6 +129,7 @@ export interface AnalysisDraft {
 /** A persisted analysis. Identity assigned by the repository. */
 export interface DocumentAnalysis extends AnalysisDraft {
  readonly id: string;
+ readonly resolvedFlagIds: readonly string[];
 }
 
 /**

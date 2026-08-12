@@ -10,10 +10,13 @@ import { unwrapOrThrow } from '@/core/result/result';
 import { ROUTES } from '@/shared/constants/routes';
 import { parseFormData } from '@/shared/validation';
 import { action, checkPermissionResult, getServerContainer } from '@/server/bootstrap';
+import { getUserPlan, incrementScanUsage } from '@/server/dal/plan';
+import { forbiddenError, validationError } from '@/core/errors/app-error';
 
 import { ANALYSIS_SOURCE, ANALYZE_RATE_SCOPE } from '../constants';
 import { ANALYZE_DOCUMENT } from '../tokens';
 import { analyzeDocumentSchema } from '../validation';
+import { extractTextFromFile } from '../application';
 
 /**
  * The mutation entry point (requirements 2, 3, 4, 5, 11, 15, 16).
@@ -51,6 +54,12 @@ export const analyzeDocumentAction = action(
  // 1 ─ Authorization. Before anything is parsed, and certainly before anything is stored.
  const session = unwrapOrThrow(await checkPermissionResult('document.create'));
 
+ // 1.5 ─ Subscription Quota Check
+ const planData = await getUserPlan();
+ if (!planData.entitlements.canScan) {
+   throw forbiddenError('Scan quota exceeded. Please upgrade your plan in the Billing dashboard.');
+ }
+
  /**
  * 2 ─ Rate limiting.
  *
@@ -82,6 +91,16 @@ export const analyzeDocumentAction = action(
  * `unwrapOrThrow` hands the boundary a `VALIDATION` error whose `fieldErrors` survive
  * `toClient()` and land straight in the form's `<Field error>` props.
  */
+ const file = formData.get('file') as File | null;
+ if (file && file.size > 0) {
+   try {
+     const extractedText = await extractTextFromFile(file);
+     formData.set('text', extractedText);
+   } catch (error) {
+     throw validationError({ text: ['Failed to extract text from the provided file. Ensure it is a supported format.'] });
+   }
+ }
+
  const input = unwrapOrThrow(parseFormData(analyzeDocumentSchema, formData));
 
  // 4 ─ Intent, measured before the outcome is known, so the funnel has a denominator.
@@ -108,6 +127,9 @@ export const analyzeDocumentAction = action(
  durationMs: container.resolve(CLOCK)().getTime() - startedAt,
  flagCount: analysis.flags.length,
  });
+
+ // 5.5 ─ Increment Usage Tracking
+ await incrementScanUsage(session.userId);
 
  /**
  * 6 ─ Invalidation, before the redirect.
@@ -136,4 +158,39 @@ export const analyzeDocumentAction = action(
  */
  redirect(ROUTES.document(analysis.id));
  },
+);
+
+export const resolveFlagAction = action(
+  'document.resolveFlag',
+  async (_previous: unknown, formData: FormData): Promise<never> => {
+    const session = unwrapOrThrow(await checkPermissionResult('document.read'));
+    const documentId = formData.get('documentId') as string;
+    const flagId = formData.get('flagId') as string;
+    
+    if (!documentId || !flagId) {
+      throw forbiddenError('Missing required identifiers');
+    }
+
+    const { prisma } = await import('@/server/db/prisma');
+    
+    const doc = await prisma.documentAnalysis.findFirst({
+      where: { id: documentId, ownerId: session.userId }
+    });
+    
+    if (!doc) throw forbiddenError('Document not found');
+
+    const isResolved = doc.resolvedFlagIds.includes(flagId);
+    const updatedIds = isResolved 
+      ? doc.resolvedFlagIds.filter(id => id !== flagId)
+      : [...doc.resolvedFlagIds, flagId];
+
+    await prisma.documentAnalysis.update({
+      where: { id: documentId },
+      data: { resolvedFlagIds: updatedIds }
+    });
+
+    expire([...documentTags(documentId, session.userId)]);
+    
+    redirect(ROUTES.document(documentId));
+  }
 );

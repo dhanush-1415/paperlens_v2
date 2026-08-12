@@ -17,12 +17,13 @@ const clientEnvSchema = z.object({
  NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
  NEXT_PUBLIC_APP_ENV: z.enum(['local', 'development', 'preview', 'staging', 'production']).default('local'),
  NEXT_PUBLIC_COMMIT_SHA: z.string().default('unknown'),
- /** Master switch. Individual providers still gate on consent. */
  NEXT_PUBLIC_ANALYTICS_ENABLED: z
  .enum(['true', 'false'])
  .default('false')
  .transform((value) => value === 'true'),
  NEXT_PUBLIC_ERROR_REPORTING_DSN: z.string().optional(),
+ NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
+ NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -33,6 +34,8 @@ const parsed = clientEnvSchema.safeParse({
  NEXT_PUBLIC_COMMIT_SHA: process.env.NEXT_PUBLIC_COMMIT_SHA,
  NEXT_PUBLIC_ANALYTICS_ENABLED: process.env.NEXT_PUBLIC_ANALYTICS_ENABLED,
  NEXT_PUBLIC_ERROR_REPORTING_DSN: process.env.NEXT_PUBLIC_ERROR_REPORTING_DSN,
+ NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+ NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 });
 
 if (!parsed.success) {

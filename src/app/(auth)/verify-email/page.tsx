@@ -12,12 +12,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function VerifyEmailPage({
+export const instant = false;
+
+export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const email = typeof searchParams.email === 'string' ? searchParams.email : '';
+  const params = await searchParams;
+  const email = typeof params.email === 'string' ? params.email : '';
 
   return (
     <div className="w-full">

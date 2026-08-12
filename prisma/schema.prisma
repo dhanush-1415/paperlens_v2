@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model Plan {
+  id                        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tierName                  String             @unique @map("tier_name")
+  displayName               String             @map("display_name")
+  
+  quotaScansPerMonth        Int                @default(10) @map("quota_scans_per_month")
+  quotaChatMessagesPerMonth Int                @default(20) @map("quota_chat_messages_per_month")
+  quotaVaultDocuments       Int                @default(0) @map("quota_vault_documents")
+  quotaActiveShareLinks     Int                @default(1) @map("quota_active_share_links")
+  
+  capVault                  Boolean            @default(false) @map("cap_vault")
+  capReanalysis             Boolean            @default(false) @map("cap_reanalysis")
+  capAllLanguages           Boolean            @default(false) @map("cap_all_languages")
+  capExport                 Boolean            @default(false) @map("cap_export")
+  capShare                  Boolean            @default(true) @map("cap_share")
+  capPrioritySupport        Boolean            @default(false) @map("cap_priority_support")
+  
+  createdAt                 DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                 DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  subscriptions             UserSubscription[]
+
+  @@map("plans")
+}
+
+model UserSubscription {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String    @unique @map("user_id") @db.Uuid // Connects to auth.users in Supabase
+  planId             String    @map("plan_id") @db.Uuid
+  plan               Plan      @relation(fields: [planId], references: [id])
+  
+  status             String    @default("active")
+  
+  scansUsed          Int       @default(0) @map("scans_used")
+  chatMessagesUsed   Int       @default(0) @map("chat_messages_used")
+  
+  usageResetAt       DateTime  @map("usage_reset_at") @db.Timestamptz()
+  currentPeriodEnd   DateTime? @map("current_period_end") @db.Timestamptz()
+  
+  lemonCustomerId          String?   @map("lemon_customer_id")
+  lemonSubscriptionId      String?   @map("lemon_subscription_id")
+  razorpayCustomerId       String?   @map("razorpay_customer_id")
+  razorpaySubscriptionId   String?   @map("razorpay_subscription_id")
+  
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("user_subscriptions")
+}
+
+model DocumentAnalysis {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId      String    @map("owner_id") @db.Uuid
+  title        String
+  documentType String    @map("document_type")
+  charCount    Int       @map("char_count")
+  scoreValue   Int       @map("score_value")
+  scoreLevel   String    @map("score_level")
+  
+  // Storing the flags as JSONB is efficient for retrieval 
+  // since they are always fetched as a complete aggregate.
+  flags           Json      @default("[]")
+  resolvedFlagIds String[]  @default([]) @map("resolved_flag_ids")
+  
+  analyzedAt      DateTime  @map("analyzed_at") @db.Timestamptz()
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
+
+  @@map("document_analyses")
+}
+
+model Document {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  folderId         String?           @map("folder_id") @db.Uuid
+  filename         String
+  fileType         String            @map("file_type")
+  byteSize         Int               @map("byte_size")
+  status           String            @default("processing") // processing, scanned, failed
+  storagePath      String?           @map("storage_path")
+  
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  folder           Folder?           @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  contentChunks    DocumentContent[]
+
+  @@map("documents")
+}
+
+model Folder {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  parentId         String?           @map("parent_id") @db.Uuid
+  name             String
+  
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  parent           Folder?           @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
+  children         Folder[]          @relation("FolderToFolder")
+  documents        Document[]
+
+  @@map("folders")
+}
+
+model ChatSession {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String            @map("user_id") @db.Uuid
+  documentId       String            @map("document_id") @db.Uuid
+  
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  messages         ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId        String            @map("session_id") @db.Uuid
+  role             String            // user, assistant, system
+  content          String
+  
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+
+  session          ChatSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+model DocumentContent {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentId   String    @map("document_id") @db.Uuid
+  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  chunkIndex   Int       @map("chunk_index")
+  textContent  String    @map("text_content")
+  
+  // Note: pgvector vector extension is required for this in the actual DB
+  // embedding    Unsupported("vector(1536)")?
+
+  @@index([documentId])
+  @@map("document_content")
+}
+
+model Profile {
+  id          String   @id @db.Uuid // Matches auth.users.id
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  phoneNumber String?  @map("phone_number")
+  avatarUrl   String?  @map("avatar_url")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("profiles")
+}

@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
-
-import { Container, Heading, PageHeader, Section, Skeleton, Text } from '@/shared/ui';
-import { requireSession } from '@/server/bootstrap';
-import { ScanTabs } from './components/scan-tabs';
-import { ShieldIcon, ClockIcon, DocumentIcon } from '@/shared/ui/icons';
+import { Heading, Text } from '@/shared/ui';
+import { OmniDropzone } from './components/omni-dropzone';
 
 export const metadata: Metadata = {
  title: 'Scan a document',
@@ -12,71 +8,25 @@ export const metadata: Metadata = {
  'Paste a contract, lease or notice and see the clauses that cost you money, ranked by severity.',
 };
 
-/**
- * The gate, isolated in its own component.
- */
-async function AuthGate() {
- await requireSession();
- return null;
-}
-
 export default function ScanPage() {
  return (
- <Container>
- <Section spacing="lg">
- <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-10">
-   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-primary/10 ring-1 ring-brand-primary/20 mb-6">
-     <ScanIcon className="h-6 w-6 text-brand-primary" />
-   </div>
-   <Heading level={1} size="display-md" className="font-extrabold tracking-tight mb-4">
-     Upload Document
+ <div className="flex flex-col w-full min-h-[calc(100vh-80px)] px-4 md:px-8 py-8 bg-canvas">
+ <div className="flex-1 flex flex-col w-full mx-auto">
+ <div className="flex flex-col mb-4">
+   <Heading level={1} size="display-md" className="font-geist font-extrabold tracking-tight text-text-primary mb-3">
+     Scan & Analyze
    </Heading>
-   <Text size="md" tone="secondary" className="font-medium leading-relaxed">
-     Upload a file or paste a URL — AI decodes it instantly. We scan for hidden liabilities, renewal clauses, and critical risks.
+   <Text size="md" tone="secondary" className="font-inter max-w-2xl leading-relaxed">
+     Upload any contract, audio log, or URL. PaperLens automatically routes and analyzes your data.
    </Text>
  </div>
 
- <Suspense
- fallback={
- <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto items-center">
-   <Skeleton className="h-12 w-80 rounded-full" />
-   <Skeleton className="h-96 w-full rounded-[2rem]" />
+ <div className="flex-1 w-full h-full mt-4">
+   <OmniDropzone />
  </div>
- }
- >
- <AuthGate />
- <div className="max-w-4xl mx-auto w-full">
-   <ScanTabs />
- </div>
- </Suspense>
 
- <div className="mt-16 max-w-4xl mx-auto border-t border-border-subtle pt-10">
-   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-     <div className="flex flex-col gap-2 text-center items-center">
-       <div className="flex size-10 rounded-full bg-surface-2 items-center justify-center mb-2">
-         <ShieldIcon className="size-5 text-brand-primary" />
-       </div>
-       <Heading level={3} size="sm">Bank-grade Security</Heading>
-       <Text size="xs" tone="secondary">AES-256 encryption. Documents are immediately deleted after analysis.</Text>
-     </div>
-     <div className="flex flex-col gap-2 text-center items-center">
-       <div className="flex size-10 rounded-full bg-surface-2 items-center justify-center mb-2">
-         <ClockIcon className="size-5 text-brand-primary" />
-       </div>
-       <Heading level={3} size="sm">Instant Extraction</Heading>
-       <Text size="xs" tone="secondary">Proprietary OCR engines parse text, images, and skewed PDFs in seconds.</Text>
-     </div>
-     <div className="flex flex-col gap-2 text-center items-center">
-       <div className="flex size-10 rounded-full bg-surface-2 items-center justify-center mb-2">
-         <DocumentIcon className="size-5 text-brand-primary" />
-       </div>
-       <Heading level={3} size="sm">Multi-format Support</Heading>
-       <Text size="xs" tone="secondary">Process PDFs, DOCX, images, and raw URLs without changing workflows.</Text>
-     </div>
-   </div>
  </div>
- </Section>
- </Container>
+ </div>
  );
 }
 

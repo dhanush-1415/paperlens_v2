@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 import { AppError, unauthenticatedError } from '../errors/app-error';
 import { err, ok, type Result } from '../result/result';
@@ -15,16 +16,32 @@ import type {
 export interface SupabaseAuthOptions {
   supabaseUrl: string;
   supabaseKey: string;
-  store: SessionStore;
+  store: SessionStore; // Kept for interface compatibility
   now: () => Date;
 }
 
 export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthProvider {
-  const { supabaseUrl, supabaseKey, store, now } = options;
+  const { supabaseUrl, supabaseKey, now } = options;
   
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { persistSession: false },
-  });
+  async function getServerClient() {
+    const cookieStore = await cookies();
+    return createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Ignore if called from a Server Component.
+          }
+        },
+      },
+    });
+  }
 
   function mapUserToSession(user: any): Session {
     return {
@@ -41,10 +58,8 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
     name: 'supabase',
 
     async getSession(): Promise<Result<Session | null, AppError>> {
-      const token = await store.read();
-      if (!token) return ok(null);
-
-      const { data, error } = await supabase.auth.getUser(token);
+      const supabase = await getServerClient();
+      const { data, error } = await supabase.auth.getUser();
       if (error || !data.user) {
         return ok(null); 
       }
@@ -53,6 +68,7 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
     },
 
     async signIn(credentials: Credentials): Promise<Result<Session, AppError>> {
+      const supabase = await getServerClient();
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
@@ -62,12 +78,11 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
         return err(new AppError('INVALID_CREDENTIALS', { message: error?.message || 'Sign in failed' }));
       }
 
-      const session = mapUserToSession(data.user);
-      await store.write(data.session.access_token, LIFETIME_SECONDS.session);
-      return ok(session);
+      return ok(mapUserToSession(data.user));
     },
 
     async signUp(input: SignUpInput): Promise<Result<Session, AppError>> {
+      const supabase = await getServerClient();
       const { data, error } = await supabase.auth.signUp({
         email: input.email,
         password: input.password,
@@ -85,23 +100,13 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       if (!data.user) {
         return err(new AppError('INTERNAL_ERROR', { message: 'Signup failed to return user' }));
       }
-
-      const session = mapUserToSession(data.user);
       
-      if (data.session) {
-        await store.write(data.session.access_token, LIFETIME_SECONDS.session);
-      }
-      
-      return ok(session);
+      return ok(mapUserToSession(data.user));
     },
 
     async signOut(): Promise<Result<void, AppError>> {
-      const token = await store.read();
-      if (token) {
-        const { error } = await supabase.auth.admin.signOut(token).catch(() => ({ error: null }));
-        // Ignore errors, we still want to clear the local store
-      }
-      await store.clear();
+      const supabase = await getServerClient();
+      await supabase.auth.signOut();
       return ok(undefined);
     },
 
@@ -110,15 +115,12 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       if (!sessionResult.ok || !sessionResult.value) {
         return err(unauthenticatedError('No session to refresh'));
       }
-      
-      const token = await store.read();
-      if (token) {
-        await store.write(token, LIFETIME_SECONDS.session);
-      }
+      // @supabase/ssr automatically handles refreshing tokens during getUser()
       return ok(sessionResult.value);
     },
 
     async requestPasswordReset(email: string): Promise<Result<void, AppError>> {
+      const supabase = await getServerClient();
       await supabase.auth.resetPasswordForEmail(email);
       return ok(undefined);
     },
@@ -132,17 +134,17 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
     },
 
     async verifyOtp(email: string, token: string): Promise<Result<Session, AppError>> {
+      const supabase = await getServerClient();
       const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
       if (error || !data.session) {
         return err(new AppError('INVALID_CREDENTIALS', { message: error?.message || 'Invalid or expired code.' }));
       }
       
-      const session = mapUserToSession(data.user);
-      await store.write(data.session.access_token, LIFETIME_SECONDS.session);
-      return ok(session);
+      return ok(mapUserToSession(data.user));
     },
 
     async resendOtp(email: string): Promise<Result<void, AppError>> {
+      const supabase = await getServerClient();
       const { error } = await supabase.auth.resend({ type: 'signup', email });
       if (error) {
         return err(new AppError('INTERNAL_ERROR', { message: error.message }));

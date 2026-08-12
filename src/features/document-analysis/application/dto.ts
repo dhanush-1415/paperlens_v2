@@ -52,6 +52,7 @@ export interface RiskFlagDto {
  readonly excerpt: string;
  readonly explanation: string;
  readonly recommendation?: string;
+ readonly isResolved: boolean;
 }
 
 export interface RiskScoreDto {
@@ -87,7 +88,7 @@ export interface AnalysisSummaryDto {
  * rendering today does, and a DTO is an allowlist of what is needed *now*. Adding them back
  * is one line, at the moment there is a component that uses them.
  */
-function toFlagDto(flag: RiskFlag): RiskFlagDto {
+function toFlagDto(flag: RiskFlag, isResolved: boolean): RiskFlagDto {
  return {
  id: flag.id,
  category: flag.category,
@@ -96,6 +97,7 @@ function toFlagDto(flag: RiskFlag): RiskFlagDto {
  excerpt: flag.excerpt,
  explanation: flag.explanation,
  ...(flag.recommendation === undefined ? {} : { recommendation: flag.recommendation }),
+ isResolved,
  };
 }
 
@@ -127,7 +129,7 @@ export function toAnalysisDto(analysis: DocumentAnalysis): AnalysisDto {
  score: toScoreDto(analysis.score),
  // Sorted here, once, rather than in whichever component happens to render them. Two
  // surfaces sorting independently is how a list and its summary end up disagreeing.
- flags: sortFlags(analysis.flags).map(toFlagDto),
+ flags: sortFlags(analysis.flags).map(f => toFlagDto(f, analysis.resolvedFlagIds.includes(f.id))),
  };
 }
 

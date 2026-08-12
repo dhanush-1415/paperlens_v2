@@ -108,19 +108,11 @@ interface VaultDocument {
   size: string;
 }
 
-const MOCK_FOLDERS = [
-  { id: 'f1', name: 'Vendor Contracts', count: 12 },
-  { id: 'f2', name: 'HR Policies 2026', count: 5 },
-  { id: 'f3', name: 'Financial NDAs', count: 8 },
-];
-
-const MOCK_DOCUMENTS: VaultDocument[] = [
-  { id: '1', name: 'Vendor_Agreement_v3.pdf', type: 'Agreement', risk: 'critical', date: '2 hours ago', size: '2.4 MB' },
-  { id: '2', name: 'Employee_Handbook_2026.pdf', type: 'Policy', risk: 'safe', date: '1 day ago', size: '1.1 MB' },
-  { id: '3', name: 'Q3_Financial_Report.pdf', type: 'Report', risk: 'caution', date: '3 days ago', size: '5.6 MB' },
-  { id: '4', name: 'NDA_Acme_Corp.pdf', type: 'NDA', risk: 'safe', date: '1 week ago', size: '0.8 MB' },
-  { id: '5', name: 'Service_Level_Agreement.pdf', type: 'Agreement', risk: 'caution', date: '2 weeks ago', size: '3.2 MB' },
-];
+interface VaultFolder {
+  id: string;
+  name: string;
+  count: number;
+}
 
 export function VaultPage() {
   const [view, setView] = useState<'list' | 'grid'>('list');
@@ -128,17 +120,65 @@ export function VaultPage() {
   const [filterRisk, setFilterRisk] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  const [folders, setFolders] = useState<VaultFolder[]>([]);
+  const [documents, setDocuments] = useState<VaultDocument[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredDocs = MOCK_DOCUMENTS.filter((doc) => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Initial Load
+  useEffect(() => {
+    async function loadVault() {
+      if (searchQuery) return; // handled by search effect
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadVault();
+  }, [searchQuery === '']); // only reload list when search is cleared
+
+  // Search Debounce Effect
+  useEffect(() => {
+    if (!searchQuery) return;
+    
+    const timeout = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/vault/search?q=${encodeURIComponent(searchQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  const filteredDocs = documents.filter((doc) => {
     const matchesRisk = filterRisk === 'all' || doc.risk === filterRisk;
-    return matchesSearch && matchesRisk;
+    return matchesRisk;
   }).sort((a, b) => {
-    if (sortBy === 'newest') return -1; // Mock sort
+    if (sortBy === 'newest') return -1; // Temporary sort logic
     if (sortBy === 'oldest') return 1;
     if (sortBy === 'risk') {
       const riskScore = { critical: 3, caution: 2, safe: 1 };
-      return riskScore[b.risk] - riskScore[a.risk];
+      return riskScore[b.risk as keyof typeof riskScore] - riskScore[a.risk as keyof typeof riskScore];
     }
     return 0;
   });
@@ -247,18 +287,22 @@ export function VaultPage() {
       <div className="flex flex-col gap-3">
         <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Quick Access</Text>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {MOCK_FOLDERS.map(folder => (
-            <div key={folder.id} className="group relative flex items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-gradient-to-br from-surface-1 to-brand-primary/[0.01] p-4 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-md hover:-translate-y-0.5 cursor-pointer overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-primary/[0.03] to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
-              <div className="relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors shadow-sm">
-                <VaultIcon className="size-5" />
+          {folders.length === 0 ? (
+            <Text size="sm" tone="tertiary" className="col-span-full italic ml-1">No folders yet. Create one to start organizing.</Text>
+          ) : (
+            folders.map(folder => (
+              <div key={folder.id} className="group relative flex items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-gradient-to-br from-surface-1 to-brand-primary/[0.01] p-4 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-md hover:-translate-y-0.5 cursor-pointer overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-primary/[0.03] to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
+                <div className="relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors shadow-sm">
+                  <VaultIcon className="size-5" />
+                </div>
+                <div className="relative flex-1">
+                  <Heading level={3} className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors">{folder.name}</Heading>
+                  <Text size="xs" className="mt-0.5 font-medium text-text-tertiary group-hover:text-brand-primary/70">{folder.count} Documents</Text>
+                </div>
               </div>
-              <div className="relative flex-1">
-                <Heading level={3} className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors">{folder.name}</Heading>
-                <Text size="xs" className="mt-0.5 font-medium text-text-tertiary group-hover:text-brand-primary/70">{folder.count} Documents</Text>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -331,7 +375,13 @@ export function VaultPage() {
         )}
 
         <div className="flex-1 mt-2">
-          {filteredDocs.length === 0 ? (
+          {isLoading || isSearching ? (
+            <div className="flex items-center justify-center py-24 rounded-[2rem] border border-dashed border-border-strong bg-surface-1/50">
+              <Text tone="secondary" className="font-medium animate-pulse">
+                {isSearching ? 'Searching Vault...' : 'Loading Vault...'}
+              </Text>
+            </div>
+          ) : filteredDocs.length === 0 ? (
             <div className="flex items-center justify-center py-24 rounded-[2rem] border border-dashed border-border-strong bg-surface-1/50">
               <EmptyState
                 title="No documents found"

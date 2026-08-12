@@ -1,8 +1,11 @@
 'use client';
+import { useActionState } from 'react';
 
 import { ANALYTICS } from '@/core/container';
 import { useService } from '@/core/container/context';
-import { AccordionItem, DocumentExcerpt, RiskBadge, Text } from '@/shared/ui';
+import { AccordionItem, DocumentExcerpt, RiskBadge, Text, Button } from '@/shared/ui';
+import { resolveFlagAction } from './actions';
+import { CheckCircle2Icon } from 'lucide-react';
 
 /**
  * Imported from the file, not from `../application`.
@@ -53,6 +56,7 @@ export interface RiskFlagCardProps {
 
 export function RiskFlagCard({ documentId, flag }: RiskFlagCardProps) {
  const analytics = useService(ANALYTICS);
+ const [state, formAction] = useActionState(resolveFlagAction, null);
 
  return (
  <AccordionItem
@@ -78,10 +82,15 @@ export function RiskFlagCard({ documentId, flag }: RiskFlagCardProps) {
  <span className="flex min-w-0 flex-1 items-center gap-3">
  <RiskBadge level={flag.level} size="sm" />
  <span className="min-w-0 flex-1">
- <Text as="span" size="sm" weight="medium" tone="primary" truncate>
+ <Text as="span" size="sm" weight="medium" tone="primary" truncate className={flag.isResolved ? 'line-through text-text-tertiary' : ''}>
  {flag.title}
  </Text>
  </span>
+ {flag.isResolved && (
+ <span className="hidden sm:inline-flex px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-600 uppercase tracking-wider items-center gap-1">
+ <CheckCircle2Icon className="w-3 h-3" /> Resolved
+ </span>
+ )}
  <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
  {CLAUSE_CATEGORY_LABEL[flag.category]}
  </Text>
@@ -107,6 +116,14 @@ export function RiskFlagCard({ documentId, flag }: RiskFlagCardProps) {
  {flag.recommendation}
  </Text>
  ) : null}
+
+ <form action={formAction} className="pt-2">
+ <input type="hidden" name="documentId" value={documentId} />
+ <input type="hidden" name="flagId" value={flag.id} />
+ <Button variant={flag.isResolved ? 'secondary' : 'premium'} size="sm" type="submit">
+ {flag.isResolved ? 'Reopen Flag' : 'Mark as Resolved'}
+ </Button>
+ </form>
  </div>
  </AccordionItem>
  );

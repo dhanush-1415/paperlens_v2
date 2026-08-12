@@ -1,11 +1,14 @@
 import { requireSession } from '@/server/bootstrap';
-import { AnalyticsPage } from '@/features/dashboard/presentation/analytics-page';
+import { BillingPage } from '@/features/billing/presentation/billing-page';
+import { getUserPlan } from '@/server/dal/plan';
 
 export const metadata = {
-  title: 'Workspace Analytics',
+  title: 'Billing & Usage | PaperLens',
 };
 
 export default async function UsageRoute() {
   await requireSession(); // Ensure user is authenticated
-  return <AnalyticsPage />;
+  const planData = await getUserPlan();
+  
+  return <BillingPage planData={planData} />;
 }

@@ -21,6 +21,7 @@
  * on one and per-tree on the other.
  */
 
+import { useSyncExternalStore } from 'react';
 import { cn } from '@/shared/ui/cn';
 
 import { MoonIcon, SunIcon, SystemIcon } from '../icons';
@@ -47,16 +48,29 @@ export interface ThemeToggleProps {
  className?: string;
 }
 
+const neverChanges = () => () => {};
+
 export function ThemeToggle({ label, optionLabels, className }: ThemeToggleProps) {
- const { preference, isHydrated, toggle } = useTheme();
- const CurrentIcon = ICONS[preference];
+ const { preference, toggle } = useTheme();
+ 
+ // Evaluate hydration state locally so it correctly identifies its own hydration pass 
+ // even when streamed inside a Suspense boundary later than the root provider.
+ const isHydrated = useSyncExternalStore(
+ neverChanges,
+ () => true,
+ () => false,
+ );
+
+ // Force the initial server-side preference during hydration to match the server HTML
+ const effectivePreference = isHydrated ? preference : 'system';
+ const CurrentIcon = ICONS[effectivePreference];
 
  return (
  <button
  type="button"
  onClick={toggle}
  disabled={!isHydrated}
- aria-label={`${label}: ${optionLabels[preference]}`}
+ aria-label={`${label}: ${optionLabels[effectivePreference]}`}
  className={cn(
  // 44px minimum tap target (WCAG 2.5.8), even though the icon is 20px.
  'inline-flex size-11 items-center justify-center rounded-control',

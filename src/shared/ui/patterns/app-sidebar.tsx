@@ -169,14 +169,18 @@ function SidebarNavItem({
 
 function PlanBadge({
   plan,
+  scansUsed,
   isCollapsed,
 }: {
   plan: PlanTier;
+  scansUsed: number;
   isCollapsed: boolean;
 }) {
   const planDef = planOf(plan);
 
   if (isCollapsed) return null;
+
+  const usagePercent = Math.min(100, (scansUsed / Math.max(1, planDef.quotas.scansPerMonth)) * 100);
 
   return (
     <div className="rounded-2xl border border-brand-primary/15 bg-gradient-to-br from-surface-1 to-brand-primary/5 p-4 shadow-lg shadow-brand-primary/5 relative overflow-hidden shrink-0">
@@ -187,11 +191,11 @@ function PlanBadge({
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-border-subtle">
         <div
           className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary shadow-[0_0_10px_rgba(var(--brand-primary),0.8)] transition-all duration-500 ease-brand"
-          style={{ width: '70%' }}
+          style={{ width: `${usagePercent}%` }}
         />
       </div>
       <Text size="xs" tone="tertiary" className="mt-2 font-medium">
-        <span className="text-text-primary">42</span> / {planDef.quotas.scansPerMonth} scans used
+        <span className="text-text-primary">{scansUsed}</span> / {planDef.quotas.scansPerMonth} scans used
       </Text>
     </div>
   );
@@ -204,13 +208,15 @@ export interface AppSidebarProps {
   role: UserRole;
   /** The authenticated user's plan tier. Drives the plan badge. */
   plan: PlanTier;
+  /** Number of scans used this month */
+  scansUsed: number;
   /** The product name from tenant config. */
   productName: string;
   /** Server action for sign-out. Passed as a form action. */
   signOutAction: (formData: FormData) => void;
 }
 
-export function AppSidebar({ role, plan, productName, signOutAction }: AppSidebarProps) {
+export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }: AppSidebarProps) {
   const pathname = usePathname();
   const isCollapsed = useSidebarStore((s) => s.isCollapsed);
   const toggle = useSidebarStore((s) => s.toggle);
@@ -277,7 +283,7 @@ export function AppSidebar({ role, plan, productName, signOutAction }: AppSideba
 
   const renderFooter = (isCollapsedMode: boolean) => (
     <div className={cn("shrink-0 flex flex-col gap-4 w-full", isCollapsedMode && "items-center")}>
-      <PlanBadge plan={plan} isCollapsed={isCollapsedMode} />
+      <PlanBadge plan={plan} scansUsed={scansUsed} isCollapsed={isCollapsedMode} />
 
       <form action={signOutAction} className="w-full flex justify-center">
         {isCollapsedMode ? (

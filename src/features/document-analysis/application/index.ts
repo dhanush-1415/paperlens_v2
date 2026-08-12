@@ -21,3 +21,5 @@ export {
  type RiskFlagDto,
  type RiskScoreDto,
 } from './dto';
+
+export { extractTextFromFile, type FileInput } from './extract-text';

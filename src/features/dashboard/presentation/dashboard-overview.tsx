@@ -16,21 +16,19 @@ interface DashboardOverviewProps {
     scansUsed: number;
     scansLimit: number;
   };
+  dashboardData: {
+    totalScans: number;
+    activeDocuments: number;
+    criticalRisks: number;
+    recentDocuments: { id: string; name: string; risk: string; analyzedAt: string }[];
+    scanActivityData: { label: string; value: number }[];
+  };
 }
 
-export function DashboardOverview({ user, usage }: DashboardOverviewProps) {
+export function DashboardOverview({ user, usage, dashboardData }: DashboardOverviewProps) {
   const usagePercentage = Math.min(100, Math.round((usage.scansUsed / usage.scansLimit) * 100));
 
-  // Mock data for the activity chart
-  const scanActivityData = [
-    { label: 'Mon', value: 12 },
-    { label: 'Tue', value: 19 },
-    { label: 'Wed', value: 15 },
-    { label: 'Thu', value: 25 },
-    { label: 'Fri', value: 22 },
-    { label: 'Sat', value: 8 },
-    { label: 'Sun', value: Math.max(5, usage.scansUsed % 10) },
-  ];
+  const scanActivityData = dashboardData.scanActivityData;
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8 pb-12">
@@ -111,11 +109,11 @@ export function DashboardOverview({ user, usage }: DashboardOverviewProps) {
                   <AlertCircleIcon className="size-5" />
                 </div>
                 <Badge tone="critical" className="border-none font-bold shadow-sm">
-                  <TrendingUpIcon className="size-3 mr-1" /> 2
+                  <TrendingUpIcon className="size-3 mr-1" /> {dashboardData.criticalRisks}
                 </Badge>
               </div>
               <Text size="sm" tone="secondary" className="font-semibold uppercase tracking-wider mb-1">Critical Risks</Text>
-              <Heading level={2} className="text-4xl font-extrabold">3</Heading>
+              <Heading level={2} className="text-4xl font-extrabold">{dashboardData.criticalRisks}</Heading>
               <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-critical scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </div>
 
@@ -129,7 +127,7 @@ export function DashboardOverview({ user, usage }: DashboardOverviewProps) {
                 </Badge>
               </div>
               <Text size="sm" tone="secondary" className="font-semibold uppercase tracking-wider mb-1">Pending Reviews</Text>
-              <Heading level={2} className="text-4xl font-extrabold">5</Heading>
+              <Heading level={2} className="text-4xl font-extrabold">{dashboardData.activeDocuments}</Heading>
               <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-caution scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </div>
           </div>
@@ -176,38 +174,44 @@ export function DashboardOverview({ user, usage }: DashboardOverviewProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle">
-                  {[1, 2, 3, 4].map((i) => (
-                    <tr key={i} className="hover:bg-surface-2/30 transition-colors group">
+                  {dashboardData.recentDocuments.length > 0 ? dashboardData.recentDocuments.map((doc) => (
+                    <tr key={doc.id} className="hover:bg-surface-2/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-tertiary group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors">
                             <DocumentIcon className="size-5" />
                           </div>
                           <div>
-                            <Text className="font-bold text-[14px] text-text-primary group-hover:text-brand-primary transition-colors cursor-pointer">
-                              Vendor_Agreement_v{i}.pdf
-                            </Text>
-                            <Text size="xs" tone="tertiary" className="mt-0.5 font-medium sm:hidden">Analyzed {i * 2}h ago</Text>
+                            <Link href={ROUTES.document(doc.id)} className="font-bold text-[14px] text-text-primary group-hover:text-brand-primary transition-colors cursor-pointer block">
+                              {doc.name}
+                            </Link>
+                            <Text size="xs" tone="tertiary" className="mt-0.5 font-medium sm:hidden">Analyzed {new Date(doc.analyzedAt).toLocaleDateString()}</Text>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge tone={i === 1 ? 'critical' : i === 2 ? 'caution' : 'safe'} className="shadow-sm font-bold">
-                          {i === 1 ? 'High Risk' : i === 2 ? 'Needs Review' : 'Verified Safe'}
+                        <Badge tone={doc.risk as any} className="shadow-sm font-bold">
+                          {doc.risk === 'critical' ? 'High Risk' : doc.risk === 'caution' ? 'Needs Review' : 'Verified Safe'}
                         </Badge>
                       </td>
                       <td className="px-6 py-4 hidden sm:table-cell">
                         <Text size="sm" tone="secondary" className="font-medium">
-                          {i * 2} hours ago
+                          {new Date(doc.analyzedAt).toLocaleDateString()}
                         </Text>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-3 rounded-xl transition-colors" aria-label="More options">
-                          <MoreVerticalIcon className="size-5" />
-                        </button>
+                        <Link href={ROUTES.document(doc.id)} className="p-2 inline-flex text-text-tertiary hover:text-text-primary hover:bg-surface-3 rounded-xl transition-colors" aria-label="More options">
+                          <ArrowRightIcon className="size-4" />
+                        </Link>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-12 text-center text-text-tertiary">
+                        No recent documents found. Upload one to get started!
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
