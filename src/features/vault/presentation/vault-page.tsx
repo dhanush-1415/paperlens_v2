@@ -1,11 +1,103 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, type Column } from '@/shared/ui';
+import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, type Column, cn } from '@/shared/ui';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
 import { DeadlineTimeline } from './deadline-timeline';
+import { toggleResolvedAction, deleteDocumentAction } from '../actions';
+import { Eye, CheckCircle2, Trash2, XCircle } from 'lucide-react';
+
+export interface VaultDocument {
+  id: string;
+  name: string;
+  type: string;
+  risk: 'critical' | 'caution' | 'safe';
+  resolved: boolean;
+  deadlineDate?: string | null;
+  date: string;
+  size: string;
+}
+
+export function ActionDropdown({ doc }: { doc: VaultDocument }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleToggleResolved = () => {
+    startTransition(async () => {
+      try {
+        await toggleResolvedAction(doc.id, !doc.resolved);
+      } catch (e) {
+        console.error(e);
+      }
+      setIsOpen(false);
+    });
+  };
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await deleteDocumentAction(doc.id);
+      } catch (e) {
+        console.error(e);
+      }
+      setIsOpen(false);
+    });
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-3 rounded-xl transition-colors cursor-pointer"
+        onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+      >
+        <MoreVerticalIcon className="size-4" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 rounded-[1rem] bg-surface-1 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] ring-1 ring-border-strong/20 z-50 overflow-hidden py-1">
+          <button 
+            onClick={(e) => { e.stopPropagation(); router.push(`/document/${doc.id}`); setIsOpen(false); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left"
+          >
+            <Eye className="size-4" />
+            View Document
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleToggleResolved(); }}
+            disabled={isPending}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left disabled:opacity-50"
+          >
+            {doc.resolved ? <XCircle className="size-4" /> : <CheckCircle2 className="size-4" />}
+            {doc.resolved ? 'Mark Unresolved' : 'Mark Resolved'}
+          </button>
+          <div className="h-px bg-border-subtle my-1 mx-2" />
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+            disabled={isPending}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left disabled:opacity-50"
+          >
+            <Trash2 className="size-4" />
+            Delete Document
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function useClickOutside<T extends HTMLElement>(onClose: () => void) {
   const ref = useRef<T>(null);
@@ -101,16 +193,7 @@ function SortDropdown({ value, onChange }: { value: string, onChange: (val: stri
   );
 }
 
-export interface VaultDocument {
-  id: string;
-  name: string;
-  type: string;
-  risk: 'critical' | 'caution' | 'safe';
-  resolved: boolean;
-  deadlineDate?: string | null;
-  date: string;
-  size: string;
-}
+
 
 interface VaultFolder {
   id: string;
@@ -272,11 +355,9 @@ export function VaultPage() {
     {
       id: 'actions',
       header: '',
-      cell: () => (
-        <div className="flex justify-end">
-          <button className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-3 rounded-xl transition-colors">
-            <MoreVerticalIcon className="size-4" />
-          </button>
+      cell: (item) => (
+        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+          <ActionDropdown doc={item} />
         </div>
       ),
     },
@@ -471,6 +552,9 @@ export function VaultPage() {
                   <div className="flex items-start justify-between mt-2">
                     <div className="flex size-12 items-center justify-center rounded-xl bg-surface-2 text-text-tertiary group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors">
                       <DocumentIcon className="size-6" />
+                    </div>
+                    <div className="z-10" onClick={(e) => e.stopPropagation()}>
+                      <ActionDropdown doc={doc} />
                     </div>
                   </div>
                   
