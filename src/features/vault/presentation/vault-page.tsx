@@ -20,7 +20,7 @@ export interface VaultDocument {
   size: string;
 }
 
-export function ActionDropdown({ doc }: { doc: VaultDocument }) {
+export function ActionDropdown({ doc, onUpdate, onDelete }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,9 +39,14 @@ export function ActionDropdown({ doc }: { doc: VaultDocument }) {
   const handleToggleResolved = () => {
     startTransition(async () => {
       try {
-        await toggleResolvedAction(doc.id, !doc.resolved);
+        const newResolved = !doc.resolved;
+        // Optimistic local update
+        onUpdate?.(doc.id, { resolved: newResolved });
+        await toggleResolvedAction(doc.id, newResolved);
       } catch (e) {
         console.error(e);
+        // Revert on error
+        onUpdate?.(doc.id, { resolved: doc.resolved });
       }
       setIsOpen(false);
     });
@@ -50,6 +55,8 @@ export function ActionDropdown({ doc }: { doc: VaultDocument }) {
   const handleDelete = () => {
     startTransition(async () => {
       try {
+        // Optimistic local delete
+        onDelete?.(doc.id);
         await deleteDocumentAction(doc.id);
       } catch (e) {
         console.error(e);
@@ -216,6 +223,14 @@ export function VaultPage() {
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleDocumentUpdate = (id: string, updates: Partial<VaultDocument>) => {
+    setDocuments(docs => docs.map(d => d.id === id ? { ...d, ...updates } : d));
+  };
+
+  const handleDocumentDelete = (id: string) => {
+    setDocuments(docs => docs.filter(d => d.id !== id));
+  };
+
   const [isSearching, setIsSearching] = useState(false);
 
   // Initial Load
@@ -354,10 +369,10 @@ export function VaultPage() {
     },
     {
       id: 'actions',
-      header: '',
+      header: 'ACTION',
       cell: (item) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <ActionDropdown doc={item} />
+          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} />
         </div>
       ),
     },
@@ -554,7 +569,7 @@ export function VaultPage() {
                       <DocumentIcon className="size-6" />
                     </div>
                     <div className="z-10" onClick={(e) => e.stopPropagation()}>
-                      <ActionDropdown doc={doc} />
+                      <ActionDropdown doc={doc} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} />
                     </div>
                   </div>
                   
