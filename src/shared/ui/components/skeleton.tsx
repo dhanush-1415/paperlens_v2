@@ -20,30 +20,27 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function Skeleton({ className, variant = 'block', ...props }: SkeletonProps) {
- return (
- <div
- /**
- * Hidden from assistive technology entirely.
- *
- * The container that owns the loading state announces it — a `<Suspense>` boundary's
- * region, or an `aria-busy` on the panel. Announcing each placeholder would read out
- * "blank blank blank" and say nothing about what is loading.
- */
- aria-hidden
- className={cn(
- 'relative overflow-hidden bg-surface-2',
- // Glossy shimmer overlay
- 'after:absolute after:inset-0 after:-translate-x-full',
- 'after:animate-shimmer after:bg-gradient-to-r after:from-transparent after:via-surface-1/40 after:to-transparent',
- // The shimmer is the only place a skeleton differs under reduced motion: a static grey
- // block still communicates "not here yet", so it degrades cleanly.
- 'motion-reduce:after:animate-none',
- variant === 'text' ? 'h-4 rounded-full' : undefined,
- variant === 'block' ? 'h-full w-full rounded-control' : undefined,
- variant === 'circle' ? 'aspect-square rounded-full' : undefined,
- className,
- )}
- {...props}
- />
- );
+  return (
+  <div
+  /**
+  * Hidden from assistive technology entirely.
+  *
+  * The container that owns the loading state announces it — a `<Suspense>` boundary's
+  * region, or an `aria-busy` on the panel. Announcing each placeholder would read out
+  * "blank blank blank" and say nothing about what is loading.
+  */
+  aria-hidden
+  className={cn(
+  'skeleton-premium',
+  // The shimmer is the only place a skeleton differs under reduced motion: a static grey
+  // block still communicates "not here yet", so it degrades cleanly.
+  'motion-reduce:after:animate-none',
+  variant === 'text' ? 'h-4 rounded-full' : undefined,
+  variant === 'block' ? 'h-full w-full rounded-control' : undefined,
+  variant === 'circle' ? 'aspect-square rounded-full' : undefined,
+  className,
+  )}
+  {...props}
+  />
+  );
 }
