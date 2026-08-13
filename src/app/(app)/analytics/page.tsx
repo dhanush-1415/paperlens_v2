@@ -71,11 +71,11 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
     criticalPercentage: Math.round((criticalCount / totalSafeCautionCritical) * 100)
   };
   
-  // 4. Recent Activity
+  // 4. Recent Activity (Fetch up to 1000 for detailed enterprise report)
   const recentDocs = await prisma.documentAnalysis.findMany({
     where: { ownerId: session.userId, deletedAt: null, analyzedAt: { gte: startDate, lte: endOfDay } },
     orderBy: { analyzedAt: 'desc' },
-    take: 5
+    take: 1000
   });
   
   const recentActivity = recentDocs.map(doc => {

@@ -87,8 +87,22 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      let heightLeft = pdfHeight;
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft > 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+      
       pdf.save(`ClearCut-Enterprise-Report-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     } catch (error) {
       console.error('Error generating PDF', error);
@@ -319,7 +333,7 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-subtle">
-                    {analytics.recentActivity.map((activity, i) => (
+                    {analytics.recentActivity.slice(0, 5).map((activity, i) => (
                       <tr key={i} className="hover:bg-surface-2 transition-colors cursor-pointer group">
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">

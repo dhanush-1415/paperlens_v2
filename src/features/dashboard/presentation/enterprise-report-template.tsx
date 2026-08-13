@@ -109,7 +109,7 @@ export const EnterpriseReportTemplate = React.forwardRef<HTMLDivElement, Enterpr
               </tr>
             </thead>
             <tbody>
-              {data.recentActivity.slice(0, 8).map((act, i) => (
+              {data.recentActivity.map((act, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <td style={{ padding: '12px 0', color: '#111827', fontWeight: 600 }}>{act.file}</td>
                   <td style={{ padding: '12px 0', color: '#6b7280' }}>{act.time}</td>
