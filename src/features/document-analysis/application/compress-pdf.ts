@@ -100,7 +100,9 @@ export async function compressPdf(
   let bestBlob: Blob | null = null;
 
   for (let i = 0; i < PASSES.length; i++) {
-    const { scale, quality } = PASSES[i]!;
+    const pass = PASSES[i];
+    if (!pass) break;
+    const { scale, quality } = pass;
 
     // On retries, wrap progress so it doesn't jump back to 0
     const passProgress = (pct: number) => onProgress?.(pct);

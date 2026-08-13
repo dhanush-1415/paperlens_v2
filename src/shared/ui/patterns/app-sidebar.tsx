@@ -28,7 +28,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 import { cn } from '@/shared/ui/cn';
 import { Badge, Text, Tooltip, Drawer } from '@/shared/ui';
@@ -219,7 +219,19 @@ export interface AppSidebarProps {
 export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }: AppSidebarProps) {
   const pathname = usePathname();
   const isCollapsed = useSidebarStore((s) => s.isCollapsed);
+  const userCollapsedPreference = useSidebarStore((s) => s.userCollapsedPreference);
   const toggle = useSidebarStore((s) => s.toggle);
+  const setCollapsed = useSidebarStore((s) => s.setCollapsed);
+
+  // Auto-collapse sidebar on document view, restore preference otherwise
+  useEffect(() => {
+    const isDocumentRoute = pathname.startsWith('/document/');
+    if (isDocumentRoute) {
+      setCollapsed(true, true);
+    } else {
+      setCollapsed(userCollapsedPreference, true);
+    }
+  }, [pathname, userCollapsedPreference, setCollapsed]);
 
   /**
    * Active state: a nav item is active when the pathname matches exactly or starts with
@@ -321,7 +333,7 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
     <>
       <aside
         className={cn(
-          'hidden md:flex flex-col sticky top-0 h-screen z-20 shrink-0',
+          'hidden md:flex flex-col sticky top-0 h-screen z-50 shrink-0',
           'border-e border-brand-primary/10 bg-surface-1/95 backdrop-blur-xl shadow-2xl shadow-brand-primary/5',
           'transition-[width] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]',
           isCollapsed ? 'w-[80px]' : 'w-[280px]',

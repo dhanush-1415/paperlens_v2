@@ -27,6 +27,8 @@ interface DashboardOverviewProps {
 
 export function DashboardOverview({ user, usage, dashboardData }: DashboardOverviewProps) {
   const usagePercentage = Math.min(100, Math.round((usage.scansUsed / usage.scansLimit) * 100));
+  const isLimitReached = usage.scansUsed >= usage.scansLimit;
+  const isNearLimit = !isLimitReached && usagePercentage >= 80;
 
   const scanActivityData = dashboardData.scanActivityData;
 
@@ -228,37 +230,57 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
         <div className="flex flex-col gap-6 lg:gap-8">
           
           {/* Usage Meter - Premium Dark Card */}
-          <Card className="p-1 force-dark bg-canvas text-text-primary border-border-strong shadow-2xl rounded-[2rem] overflow-hidden relative group">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/20 via-transparent to-transparent opacity-50 pointer-events-none" />
+          <Card className={`p-1 force-dark bg-canvas text-text-primary border-border-strong shadow-2xl rounded-[2rem] overflow-hidden relative group ${isLimitReached ? 'ring-2 ring-brand-primary/50' : isNearLimit ? 'ring-1 ring-caution' : ''}`}>
+            <div className={`absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] ${isLimitReached ? 'from-brand-primary/40' : isNearLimit ? 'from-caution/20' : 'from-brand-primary/20'} via-transparent to-transparent opacity-50 pointer-events-none transition-colors duration-500`} />
             
             <div className="bg-surface-1/90 backdrop-blur-xl border border-border-strong rounded-[1.8rem] p-6 sm:p-8 relative z-10 h-full flex flex-col">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-brand-primary/20 text-brand-primary ring-1 ring-brand-primary/30 shadow-[0_0_15px_rgba(var(--color-brand-primary),0.3)]">
+                  <div className={`flex size-10 items-center justify-center rounded-xl ${isLimitReached ? 'bg-brand-primary/30 text-brand-primary ring-1 ring-brand-primary/50 shadow-[0_0_20px_rgba(var(--color-brand-primary),0.5)]' : isNearLimit ? 'bg-caution/20 text-caution ring-1 ring-caution/50' : 'bg-brand-primary/20 text-brand-primary ring-1 ring-brand-primary/30 shadow-[0_0_15px_rgba(var(--color-brand-primary),0.3)]'}`}>
                     <ScanIcon className="size-5" />
                   </div>
                   <Heading level={3} size="sm" className="text-text-primary font-bold tracking-tight">Scanner</Heading>
                 </div>
-                <Badge tone="safe" className="shadow-inner font-bold tracking-wider">
-                  ACTIVE
+                <Badge tone={isLimitReached ? 'critical' : isNearLimit ? 'caution' : 'safe'} className="shadow-inner font-bold tracking-wider">
+                  {isLimitReached ? 'LIMIT REACHED' : isNearLimit ? 'RUNNING LOW' : 'ACTIVE'}
                 </Badge>
               </div>
 
-              <div className="py-6 mb-4 relative flex-1 flex flex-col items-center justify-center">
+              <div className="py-4 mb-2 relative flex-1 flex flex-col items-center justify-center">
                 {/* Radar/Pulse effect */}
                 <div className="relative size-24 flex items-center justify-center mb-6">
-                  <div className="absolute inset-0 rounded-full border border-brand-primary/20" />
-                  <div className="absolute inset-2 rounded-full border border-brand-primary/30" />
-                  <div className="absolute inset-4 rounded-full border border-brand-primary/40 animate-[spin_4s_linear_infinite] border-t-brand-primary" />
+                  <div className={`absolute inset-0 rounded-full border ${isLimitReached ? 'border-brand-primary/40' : isNearLimit ? 'border-caution/30' : 'border-brand-primary/20'}`} />
+                  <div className={`absolute inset-2 rounded-full border ${isLimitReached ? 'border-brand-primary/50' : isNearLimit ? 'border-caution/40' : 'border-brand-primary/30'}`} />
+                  <div className={`absolute inset-4 rounded-full border ${isLimitReached ? 'border-brand-primary/60 border-t-brand-primary' : isNearLimit ? 'border-caution/50 border-t-caution animate-[spin_4s_linear_infinite]' : 'border-brand-primary/40 animate-[spin_4s_linear_infinite] border-t-brand-primary'}`} />
                   
-                  <div className="relative size-12 rounded-full bg-brand-primary/20 backdrop-blur-md border border-brand-primary/50 flex items-center justify-center shadow-[0_0_30px_rgba(var(--color-brand-primary),0.4)] group-hover:scale-110 transition-transform duration-500">
-                    <ScanIcon className="size-6 text-brand-primary" />
+                  <div className={`relative size-12 rounded-full backdrop-blur-md border flex items-center justify-center group-hover:scale-110 transition-transform duration-500 ${isLimitReached ? 'bg-brand-primary/30 border-brand-primary/70 shadow-[0_0_40px_rgba(var(--color-brand-primary),0.6)]' : isNearLimit ? 'bg-caution/20 border-caution/50 shadow-[0_0_30px_rgba(var(--color-caution),0.4)]' : 'bg-brand-primary/20 border-brand-primary/50 shadow-[0_0_30px_rgba(var(--color-brand-primary),0.4)]'}`}>
+                    <ScanIcon className={`size-6 ${isNearLimit && !isLimitReached ? 'text-caution' : 'text-brand-primary'}`} />
                   </div>
                 </div>
                 
-                <Text className="text-text-secondary text-xs font-bold tracking-widest uppercase text-center w-full">
-                  Secure Engine Online
-                </Text>
+                {isLimitReached ? (
+                  <div className="text-center w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <Text className="text-brand-primary text-xs font-black tracking-widest uppercase mb-1">
+                      Engine Locked
+                    </Text>
+                    <Text className="text-text-secondary text-sm font-medium px-2 leading-relaxed">
+                      Don't lose your momentum. Upgrade to <strong className="text-text-primary">Professional</strong> to instantly unlock unmetered AI intelligence.
+                    </Text>
+                  </div>
+                ) : isNearLimit ? (
+                  <div className="text-center w-full animate-in fade-in duration-500">
+                    <Text className="text-caution text-xs font-black tracking-widest uppercase mb-1">
+                      Capacity Low
+                    </Text>
+                    <Text className="text-text-secondary text-sm font-medium px-2 leading-relaxed">
+                      Only {usage.scansLimit - usage.scansUsed} scans remaining. <Link href={ROUTES.billing} className="text-text-primary underline font-bold hover:text-brand-primary">Upgrade now</Link> to prevent disruption.
+                    </Text>
+                  </div>
+                ) : (
+                  <Text className="text-text-secondary text-xs font-bold tracking-widest uppercase text-center w-full">
+                    Secure Engine Online
+                  </Text>
+                )}
               </div>
 
               <div className="mt-auto">
@@ -266,25 +288,44 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
                   <div className="flex flex-col">
                     <Text className="text-text-secondary text-xs font-bold tracking-widest uppercase mb-1">Volume Used</Text>
                     <div className="flex items-baseline gap-1.5">
-                      <Heading level={2} className="text-4xl font-extrabold tracking-tight text-text-primary">{usage.scansUsed}</Heading>
+                      <Heading level={2} className={`text-4xl font-extrabold tracking-tight ${isLimitReached ? 'text-brand-primary' : isNearLimit ? 'text-caution' : 'text-text-primary'}`}>{usage.scansUsed}</Heading>
                       <Text className="text-sm text-text-secondary font-medium">/ {usage.scansLimit}</Text>
                     </div>
                   </div>
-                  <Text className="text-brand-primary font-bold">{usagePercentage}%</Text>
+                  <Text className={`${isLimitReached ? 'text-brand-primary' : isNearLimit ? 'text-caution' : 'text-brand-primary'} font-bold`}>{usagePercentage}%</Text>
                 </div>
                 
                 <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden shadow-inner relative">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full relative overflow-hidden" 
+                    className={`absolute top-0 left-0 h-full rounded-full relative overflow-hidden ${isLimitReached ? 'bg-brand-primary' : isNearLimit ? 'bg-caution' : 'bg-gradient-to-r from-brand-primary to-brand-secondary'}`} 
                     style={{ width: `${usagePercentage}%` }}
                   >
-                    <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress_1s_linear_infinite]" />
+                    {!isLimitReached ? (
+                      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress_1s_linear_infinite]" />
+                    ) : (
+                      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.2)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.2)_50%,rgba(0,0,0,0.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]" />
+                    )}
                   </div>
                 </div>
                 
-                <Button asChild variant="primary" className="mt-8 w-full bg-brand-primary hover:bg-brand-primary-hover text-text-on-brand shadow-md rounded-xl font-bold h-12 text-sm transition-all hover:scale-[1.02]">
-                  <Link href={ROUTES.scan}>Initiate New Scan</Link>
-                </Button>
+                {isLimitReached ? (
+                  <Button asChild variant="premium" className="mt-8 w-full shadow-[0_0_20px_-5px_rgba(var(--brand-primary-rgb),0.6)] font-black h-12 text-sm transition-transform hover:scale-[1.02] group">
+                    <Link href={ROUTES.billing}>
+                      Upgrade & Resume Scans <ArrowRightIcon className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <div className="flex flex-col gap-3 mt-8">
+                    <Button asChild variant="primary" className="w-full bg-brand-primary hover:bg-brand-primary-hover text-text-on-brand shadow-md rounded-xl font-bold h-12 text-sm transition-all hover:scale-[1.02]">
+                      <Link href={ROUTES.scan}>Initiate New Scan</Link>
+                    </Button>
+                    {isNearLimit && (
+                      <Button asChild variant="secondary" className="w-full border-caution/40 text-caution hover:bg-caution/10 font-bold h-10 text-xs">
+                        <Link href={ROUTES.billing}>Increase Capacity</Link>
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </Card>

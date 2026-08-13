@@ -5,12 +5,13 @@ import { Heading, Text, Button } from '@/shared/ui';
 import { Dialog } from '@/shared/ui/components';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { CheckCircle2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
-import { compressPdf } from '@/features/document-analysis/application/compress-pdf';
+
 import { UploadCloudIcon, ScanIcon, VaultIcon } from '@/shared/ui/icons/dashboard-icons';
 import { InfoIcon, ShieldIcon, DocumentIcon } from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
-import { analyzeDocumentAction } from '@/features/document-analysis/presentation/actions';
+import { analyzeDocumentAction, analyzeUrlAction } from '@/features/document-analysis/presentation/actions';
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
 const MAX_COMPRESSIBLE_SIZE = 10 * 1024 * 1024;
@@ -27,6 +28,7 @@ export function OmniDropzone() {
 
   const [oversizedFile, setOversizedFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionPct, setCompressionPct] = useState(0);
 
@@ -54,6 +56,22 @@ export function OmniDropzone() {
     setIsDragging(false);
   }, []);
 
+  const handleAnalysisResult = (result: any) => {
+    if (result && !result.ok && result.error) {
+      if (result.error.code === 'FORBIDDEN' || result.error.message?.toLowerCase().includes('quota') || result.error.message?.toLowerCase().includes('plan')) {
+        setIsUpgradeModalOpen(true);
+      } else {
+        toast.error(result.error.message || 'Failed to process document. Please try again.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (textState && !textState.ok && textState.error) {
+      handleAnalysisResult(textState);
+    }
+  }, [textState]);
+
   const executeUpload = async (file: File) => {
     setIsUploading(true);
     try {
@@ -62,8 +80,10 @@ export function OmniDropzone() {
       analysisFormData.append('documentType', 'other');
       analysisFormData.append('title', file.name);
       
-      await analyzeDocumentAction(null, analysisFormData);
-    } catch (e) {
+      const result = await analyzeDocumentAction(null, analysisFormData) as any;
+      handleAnalysisResult(result);
+    } catch (e: any) {
+      if (e?.message?.includes('NEXT_REDIRECT')) throw e;
       console.error(e);
       toast.error('Failed to process document. Please try again.');
     } finally {
@@ -73,6 +93,19 @@ export function OmniDropzone() {
 
   const processFile = async (file: File) => {
     if (!file) return;
+
+    // Extract file extension safely
+    const extMatch = file.name.match(/\.[0-9a-z]+$/i);
+    const ext = extMatch ? extMatch[0].toLowerCase() : '';
+    
+    // Explicitly reject known problematic binaries that aren't text/media
+    const rejectedBinaryExtensions = ['.exe', '.zip', '.tar', '.gz', '.rar', '.7z', '.iso', '.dmg', '.bin', '.dll', '.so'];
+    
+    // We allow a wide range, but must protect against raw application binaries
+    if (rejectedBinaryExtensions.includes(ext) || (!ext && file.type === 'application/octet-stream')) {
+      toast.error('Unsupported file format. Please upload a document, text file, or media file.');
+      return;
+    }
 
     if (file.size > MAX_COMPRESSIBLE_SIZE) {
       toast.error(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is 10 MB.`);
@@ -94,34 +127,98 @@ export function OmniDropzone() {
     setIsCompressing(true);
     setCompressionPct(0);
     try {
+      let compressed: File | null = null;
+      let extractedText: string | null = null;
       const onProgress = (pct: number) => setCompressionPct(pct);
 
-      const compressed = oversizedFile.type === 'application/pdf'
-        ? await compressPdf(oversizedFile, { targetBytes: MAX_FILE_SIZE, onProgress })
-        : await imageCompression(oversizedFile, {
-            maxSizeMB: 4,
-            maxWidthOrHeight: 2048,
-            initialQuality: 0.7,
-            useWebWorker: true,
+      if (oversizedFile.type === 'application/pdf') {
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+          'pdfjs-dist/build/pdf.worker.min.mjs',
+          import.meta.url,
+        ).toString();
+        
+        const data = await oversizedFile.arrayBuffer();
+        const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          fullText += content.items.map((item: any) => item.str).join(' ') + '\n';
+          onProgress(Math.round((i / pdfDoc.numPages) * 100));
+        }
+        
+        extractedText = fullText.trim();
+        
+        // HEURISTIC
+        const letterCount = (extractedText.match(/\p{L}/gu) ?? []).length;
+        const textIsMeaningful = extractedText.trim().length > 20 && letterCount / extractedText.trim().length > 0.4;
+        
+        if (!textIsMeaningful) {
+          // If the text is garbage or empty, it's likely a scanned PDF. 
+          // We MUST compress it visually (flattening to JPEGs) to bypass the 4.5MB limit 
+          // while preserving visual data for Gemini Vision.
+          extractedText = null;
+          
+          const { compressPdf } = await import('@/features/document-analysis/application');
+          compressed = await compressPdf(oversizedFile, {
+            targetBytes: MAX_FILE_SIZE,
             onProgress,
           });
+        }
+      } else {
+        const { default: imageCompression } = await import('browser-image-compression');
+        compressed = await imageCompression(oversizedFile, {
+          maxSizeMB: 4,
+          maxWidthOrHeight: 2048,
+          initialQuality: 0.7,
+          useWebWorker: true,
+          onProgress,
+        });
+      }
 
       setIsModalOpen(false);
       setOversizedFile(null);
       setIsCompressing(false);
       setCompressionPct(0);
 
-      if (compressed.size > MAX_FILE_SIZE) {
-        toast.error(`Compressed file is still ${(compressed.size / 1024 / 1024).toFixed(1)} MB — try a smaller or simpler file.`);
-        return;
+      if (compressed) {
+        if (compressed.size > MAX_FILE_SIZE) {
+          toast.error(`Compressed file is still ${(compressed.size / 1024 / 1024).toFixed(1)} MB — try a smaller or simpler file.`);
+          return;
+        }
+        await executeUpload(compressed);
+        setIsModalOpen(false);
+        setOversizedFile(null);
+        setIsCompressing(false);
+        setCompressionPct(0);
+      } else if (extractedText) {
+        setIsUploading(true);
+        try {
+          const analysisFormData = new FormData();
+          analysisFormData.append('text', extractedText);
+          analysisFormData.append('documentType', 'other');
+          analysisFormData.append('title', oversizedFile.name);
+          
+          const result = await analyzeDocumentAction(null, analysisFormData) as any;
+          setIsModalOpen(false);
+          setOversizedFile(null);
+          handleAnalysisResult(result);
+        } catch (e: any) {
+          if (e?.message?.includes('NEXT_REDIRECT')) throw e;
+          console.error(e);
+          toast.error('Failed to process document. Please try again.');
+        } finally {
+          setIsUploading(false);
+          setIsCompressing(false);
+          setCompressionPct(0);
+        }
       }
-
-      await executeUpload(compressed);
     } catch (err) {
       console.error('Compression failed:', err);
       setIsCompressing(false);
       setCompressionPct(0);
-      toast.error('Compression failed. Please try selecting a different file.');
+      toast.error('Processing failed. Please try selecting a different file.');
     }
   };
 
@@ -148,29 +245,25 @@ export function OmniDropzone() {
     setIsAnalyzing(true);
     const isUrl = /^https?:\/\//i.test(input);
     try {
-      const res = await fetch(isUrl ? '/api/analyze-url' : '/api/analyze-text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(isUrl ? { url: input } : { text: input }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? 'Analysis failed. Please try again.');
-        return;
-      }
-      if (data.documentId) {
-        router.refresh();
-        router.push(`/document/${data.documentId}`);
+      let result;
+      if (isUrl) {
+        const formData = new FormData();
+        formData.append('url', input);
+        result = await analyzeUrlAction(null, formData) as any;
       } else {
-        // Assuming result handling similar to text submission
-        // For simplicity, we reuse handleResult if defined elsewhere
-        // If not, you may need to integrate accordingly.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        handleResult && handleResult(data.result);
+        const formData = new FormData();
+        formData.append('text', input);
+        formData.append('documentType', 'other');
+        formData.append('title', 'Text Snippet');
+        result = await analyzeDocumentAction(null, formData) as any;
       }
-    } catch {
-      toast.error('Network error. Please check your connection.');
+      handleAnalysisResult(result);
+    } catch (e: any) {
+      if (e?.message?.includes('NEXT_REDIRECT')) {
+        // Redirection error is expected and handled by Next.js
+        throw e;
+      }
+      toast.error('Analysis failed. Please check the input and try again.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -179,16 +272,115 @@ export function OmniDropzone() {
   return (
     <div className="w-full h-full flex flex-col">
       <Dialog
+        size="xl"
+        open={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        title=""
+      >
+        <div className="flex flex-col gap-4 py-2 px-2">
+          {/* CRO: Loss Aversion & Urgency */}
+          <div className="text-center mb-2 px-4">
+            <h2 className="text-2xl md:text-3xl font-black text-text-primary tracking-tight font-geist mb-2">Don't lose your momentum</h2>
+            <p className="text-sm text-text-secondary max-w-2xl mx-auto leading-relaxed">
+              Your document is waiting to be analyzed, but you've exhausted your free scans. 
+              <strong className="text-text-primary font-semibold"> Upgrade now to instantly unlock deep AI extraction and uncover hidden liabilities before it's too late.</strong>
+            </p>
+          </div>
+          
+          {/* CRO: Forced Binary Choice & Contrast (Decoy Effect applied to Enterprise) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch mt-2">
+            {/* Pro Tier (The No-Brainer) */}
+            <div className="flex flex-col rounded-3xl border-[3px] border-brand-primary bg-surface-2 p-6 md:p-8 relative shadow-[0_0_40px_-10px_rgba(var(--brand-primary-rgb),0.4)] transform md:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 bg-brand-primary text-brand-ink text-[10px] font-black px-4 py-1.5 rounded-bl-xl uppercase tracking-widest shadow-lg">Most Popular</div>
+              <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-brand-primary/15 to-transparent pointer-events-none -z-10" />
+              
+              <h3 className="text-xl font-black text-text-primary">Professional</h3>
+              <p className="text-xs text-text-secondary mt-1 min-h-[20px]">Immediate, unmetered AI intelligence.</p>
+              
+              <div className="my-4 flex items-baseline gap-2">
+                <span className="text-4xl font-black text-text-primary tracking-tighter">$29</span>
+                <span className="text-xs font-semibold text-text-tertiary">/ month</span>
+              </div>
+              
+              <Button variant="premium" className="w-full shadow-[0_0_25px_-5px_rgba(var(--brand-primary-rgb),0.6)] py-5 text-sm font-black scale-100 transition-transform hover:scale-[1.02] active:scale-95 group" onClick={() => router.push('/billing')}>
+                Upgrade & Resume Scan <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+              </Button>
+              
+              <ul className="flex flex-col gap-3 mt-6 pt-6 border-t border-brand-primary/20 flex-1">
+                <li className="flex items-start gap-2.5 text-xs font-semibold text-text-primary">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" /> 
+                  <span><strong className="font-bold">500 Scans</strong> per month</span>
+                </li>
+                <li className="flex items-start gap-2.5 text-xs font-semibold text-text-primary">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" /> 
+                  <span><strong className="font-bold">Instant ROI:</strong> Multi-page AI extraction</span>
+                </li>
+                <li className="flex items-start gap-2.5 text-xs font-semibold text-text-primary">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" /> 
+                  <span><strong className="font-bold">Priority</strong> background processing</span>
+                </li>
+                <li className="flex items-start gap-2.5 text-xs font-semibold text-text-primary">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" /> 
+                  <span><strong className="font-bold">Permanent</strong> encrypted vault storage</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Enterprise Tier (The Anchor/Decoy) */}
+            <div className="flex flex-col rounded-3xl border border-border-strong bg-surface-1 p-6 md:p-8 opacity-70 transition-opacity hover:opacity-100">
+              <h3 className="text-lg font-bold text-text-primary">Enterprise</h3>
+              <p className="text-xs text-text-secondary mt-1 min-h-[20px]">Custom deployment for legal teams.</p>
+              
+              <div className="my-4 flex items-baseline gap-2">
+                <span className="text-3xl font-extrabold text-text-primary tracking-tight">Custom</span>
+              </div>
+              
+              <Button variant="secondary" className="w-full py-5 text-sm font-bold border-border-strong hover:bg-surface-2" onClick={() => router.push('/contact')}>
+                Contact Sales
+              </Button>
+              
+              <ul className="flex flex-col gap-3 mt-6 pt-6 border-t border-border-subtle/50 flex-1 text-text-secondary">
+                <li className="flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-text-tertiary shrink-0 mt-0.5" /> 
+                  Unlimited organizational scans
+                </li>
+                <li className="flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-text-tertiary shrink-0 mt-0.5" /> 
+                  Dedicated Account Manager
+                </li>
+                <li className="flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-text-tertiary shrink-0 mt-0.5" /> 
+                  On-Premise / VPC Deployment
+                </li>
+                <li className="flex items-start gap-2.5 text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-text-tertiary shrink-0 mt-0.5" /> 
+                  Custom compliance models
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-border-subtle/50 flex flex-col items-center justify-center">
+            <p className="text-[10px] font-semibold text-text-tertiary tracking-widest uppercase">
+              100% secure • AES-256 Encryption • Cancel anytime
+            </p>
+          </div>
+        </div>
+      </Dialog>
+      
+      <Dialog
         open={isModalOpen}
         onClose={() => { if (!isCompressing) { setIsModalOpen(false); setOversizedFile(null); } }}
         dismissOnBackdropClick={!isCompressing}
         title="File Too Large"
-        description={oversizedFile ? `The file you selected is ${(oversizedFile.size / 1024 / 1024).toFixed(1)} MB, which exceeds the 4.5 MB upload limit. ${oversizedFile.type === 'application/pdf' ? "We'll compress it before uploading." : "We can securely compress this image for you right now."}` : ''}
+        description={oversizedFile ? `The file you selected is ${(oversizedFile.size / 1024 / 1024).toFixed(1)} MB, which exceeds the 4.5 MB upload limit. ${oversizedFile.type === 'application/pdf' ? "We will extract the text locally before uploading to save bandwidth." : "We can securely compress this image for you right now."}` : ''}
         footer={
           <>
             <Button variant="ghost" onClick={() => { setIsModalOpen(false); setOversizedFile(null); }} disabled={isCompressing}>Cancel</Button>
             <Button variant="premium" onClick={handleCompressAndScan} loading={isCompressing}>
-              {isCompressing ? `Compressing (${compressionPct}%)` : 'Compress & Continue'}
+              {isCompressing 
+                ? oversizedFile?.type === 'application/pdf' ? `Extracting (${compressionPct}%)` : `Compressing (${compressionPct}%)` 
+                : oversizedFile?.type === 'application/pdf' ? 'Extract & Continue' : 'Compress & Continue'}
             </Button>
           </>
         }
@@ -196,7 +388,7 @@ export function OmniDropzone() {
         {isCompressing && (
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-xs font-semibold text-text-secondary">
-              <span>Compressing...</span>
+              <span>{oversizedFile?.type === 'application/pdf' ? 'Extracting text...' : 'Compressing...'}</span>
               <span>{compressionPct}%</span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
@@ -418,7 +610,7 @@ export function OmniDropzone() {
                 <Text size="md" tone="secondary" className="font-inter max-w-sm mx-auto mb-10 leading-relaxed pointer-events-auto">
                   {activeTab === 'audio' 
                     ? "We extract speech from MP3 or WAV files and run our legal risk analysis against the transcription instantly."
-                    : "We natively support PDFs, DOCX, TXT, and Images. Our engine will auto-route it."}
+                    : "We natively support PDFs, Docs, Media, Code, and Config logs. Our engine will auto-route it."}
                 </Text>
                 
                 <input 
@@ -426,7 +618,7 @@ export function OmniDropzone() {
                   ref={fileInputRef}
                   className="hidden" 
                   onChange={onFileChange} 
-                  accept=".pdf,.docx,.txt,.md"
+                  accept=".pdf,.docx,.rtf,.md,.txt,.csv,.tsv,.xlsx,.xls,.json,.jpeg,.jpg,.png,.webp,.heic,.heif,.gif,.bmp,.tiff,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus,.mp4,.mov,.avi,.mkv,.js,.ts,.css,.html,.py,.go,.rs,.java,.cpp,.cs,.php,.rb,.swift,.kt,.sh,.sql,.xml,.yml,.yaml,.toml,.ini,.conf,.env,.log"
                 />
                 
                 <div className="flex flex-col sm:flex-row items-center gap-4">

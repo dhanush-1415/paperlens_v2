@@ -85,13 +85,21 @@ async function DynamicShell({ children, themeLabels }: { children: React.ReactNo
 
   // Fetch real scans used
   let scansUsed = 0;
+  let scansLimit = 0;
   if (session?.userId) {
-    const { connection } = await import('next/server');
-    await connection();
-    const { getUserPlan } = await import('@/server/dal/plan');
-    const { subscription } = await getUserPlan();
-    scansUsed = subscription.scansUsed;
+    try {
+      const { connection } = await import('next/server');
+      await connection();
+      const { getUserPlan } = await import('@/server/dal/plan');
+      const { subscription, plan: dbPlan } = await getUserPlan();
+      scansUsed = subscription.scansUsed;
+      scansLimit = dbPlan.quotaScansPerMonth;
+    } catch (e) {
+      // Ignored for unauthenticated or DB issues
+    }
   }
+
+  const isLimitReached = scansLimit > 0 && scansUsed >= scansLimit;
 
   return (
     <AuthProvider initialUser={session}>
@@ -108,6 +116,28 @@ async function DynamicShell({ children, themeLabels }: { children: React.ReactNo
             themeLabels={themeLabels}
             sessionChip={<SessionChip session={session} />}
           />
+          {isLimitReached && (
+            <div className="bg-gradient-to-r from-rose-600 via-fuchsia-600 to-indigo-600 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-16 z-30 shadow-[0_4px_20px_-5px_rgba(225,29,72,0.5)]">
+              <div className="flex items-center gap-4">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-rose-600 shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse">
+                  <span className="font-black text-xl">!</span>
+                </div>
+                <div className="flex flex-col">
+                  <Text size="md" className="font-extrabold text-white tracking-tight uppercase drop-shadow-sm">
+                    Workspace Scan Limit Exceeded
+                  </Text>
+                  <Text size="sm" className="font-bold text-white/90 drop-shadow-sm mt-0.5">
+                    Your {plan} tier has reached its maximum capacity. Upgrade to unlock unmetered multi-page analysis.
+                  </Text>
+                </div>
+              </div>
+              <Button asChild variant="primary" size="lg" className="shrink-0 bg-white text-rose-600 hover:bg-surface-1 shadow-[0_0_20px_rgba(255,255,255,0.3)] font-black text-[15px] tracking-wide transition-all hover:scale-105 group w-full sm:w-auto h-12">
+                <Link href={ROUTES.billing}>
+                  UPGRADE WORKSPACE <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </Button>
+            </div>
+          )}
           <main className="flex-1 relative">
             <div className="p-4 sm:p-6 lg:p-8 w-full">
               <AppBreadcrumbs />
