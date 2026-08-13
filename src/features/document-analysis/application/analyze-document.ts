@@ -47,6 +47,10 @@ export interface AnalyzeDocumentDeps {
 export interface AnalyzeDocumentInput {
  readonly ownerId: string;
  readonly text: string;
+ readonly media?: {
+   readonly data: string;
+   readonly mimeType: string;
+ };
  readonly documentType: DocumentType;
  /** Optional. Derived from the document's own first line when absent. */
  readonly title?: string;
@@ -101,19 +105,21 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
  * by hand. Validation at the edge is for messages; validation at the core is for
  * invariants.
  */
- if (text.length < INPUT_LIMITS.minDocumentChars) {
- return err(
- validationError({ text: [`Needs at least ${INPUT_LIMITS.minDocumentChars} characters.`] }),
- );
+ if (!input.media) {
+  if (text.length < INPUT_LIMITS.minDocumentChars) {
+  return err(
+  validationError({ text: [`Needs at least ${INPUT_LIMITS.minDocumentChars} characters.`] }),
+  );
+  }
+
+  if (text.length > INPUT_LIMITS.maxDocumentChars) {
+  return err(
+  validationError({ text: [`Exceeds ${INPUT_LIMITS.maxDocumentChars} characters.`] }),
+  );
+  }
  }
 
- if (text.length > INPUT_LIMITS.maxDocumentChars) {
- return err(
- validationError({ text: [`Exceeds ${INPUT_LIMITS.maxDocumentChars} characters.`] }),
- );
- }
-
- const flags = await deps.analyzer.analyze({ text, documentType: input.documentType });
+ const flags = await deps.analyzer.analyze({ text, documentType: input.documentType, media: input.media });
 
  /**
  * Propagated, not swallowed. The analyzer's failure is the operation's failure, and the
@@ -122,17 +128,19 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
  */
  if (isErr(flags)) return flags;
 
+ const rawText = flags.value.transcription || text || '[Media File: No text extracted]';
+
  const draft: AnalysisDraft = {
  ownerId: input.ownerId,
- title: input.title?.trim() || deriveTitle(text, input.documentType),
+ title: input.title?.trim() || deriveTitle(rawText, input.documentType),
  documentType: input.documentType,
- charCount: text.length,
+ charCount: rawText.length,
  flags: flags.value.flags,
  score: scoreOf(flags.value.flags),
  summary: flags.value.summary,
  actionPlan: flags.value.actionPlan,
  urgency: flags.value.urgency,
- rawText: text,
+ rawText: rawText,
  entities: flags.value.entities,
  legitimacy: flags.value.legitimacy,
  confidence: flags.value.confidence,

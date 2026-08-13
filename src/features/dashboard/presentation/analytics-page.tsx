@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Heading, Text, Badge } from '@/shared/ui';
 import { BarChartIcon, ScanIcon, VaultIcon, TrendingUpIcon, CalendarIcon, DownloadIcon } from '@/shared/ui/icons/dashboard-icons';
 import { ShieldIcon } from '@/shared/ui/icons';
+import { AnalyticsSkeleton } from '@/shared/ui/patterns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
@@ -31,6 +32,7 @@ export interface AnalyticsData {
 export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   
   const [showDatePicker, setShowDatePicker] = useState(false);
   
@@ -67,8 +69,14 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
     const params = new URLSearchParams(searchParams.toString());
     params.set('start', start);
     params.set('end', end);
-    router.push(`?${params.toString()}`);
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
   };
+
+  if (isPending) {
+    return <AnalyticsSkeleton />;
+  }
 
   return (
     <div className="flex flex-col gap-6 pb-8">

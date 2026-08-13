@@ -18,14 +18,16 @@ import { createStore } from '@/shared/state/create-store';
 import { STORAGE_KEYS } from '@/shared/constants/storage-keys';
 
 export interface SidebarState {
-  /** Whether the sidebar is in collapsed (icon-only) mode. */
+  /** Whether the sidebar is currently collapsed (icon-only) mode. */
   isCollapsed: boolean;
+  /** The user's explicit preference for collapse state, preserved across route overrides. */
+  userCollapsedPreference: boolean;
   /** Whether the mobile drawer is open. */
   isMobileOpen: boolean;
-  /** Toggle between expanded and collapsed sidebar. */
+  /** Toggle between expanded and collapsed sidebar. Updates user preference. */
   toggle: () => void;
-  /** Explicitly set the collapsed state. */
-  setCollapsed: (collapsed: boolean) => void;
+  /** Explicitly set the collapsed state. Set isRouteOverride=true if this is an automatic route change. */
+  setCollapsed: (collapsed: boolean, isRouteOverride?: boolean) => void;
   /** Open the mobile navigation drawer. */
   openMobile: () => void;
   /** Close the mobile navigation drawer. */
@@ -35,9 +37,16 @@ export interface SidebarState {
 export const useSidebarStore = createStore<SidebarState>(
   (set) => ({
     isCollapsed: false,
+    userCollapsedPreference: false,
     isMobileOpen: false,
-    toggle: () => set((s) => ({ isCollapsed: !s.isCollapsed })),
-    setCollapsed: (collapsed) => set({ isCollapsed: collapsed }),
+    toggle: () => set((s) => {
+      const newState = !s.isCollapsed;
+      return { isCollapsed: newState, userCollapsedPreference: newState };
+    }),
+    setCollapsed: (collapsed, isRouteOverride = false) => set((s) => ({
+      isCollapsed: collapsed,
+      userCollapsedPreference: isRouteOverride ? s.userCollapsedPreference : collapsed,
+    })),
     openMobile: () => set({ isMobileOpen: true }),
     closeMobile: () => set({ isMobileOpen: false }),
   }),
@@ -45,8 +54,12 @@ export const useSidebarStore = createStore<SidebarState>(
     name: 'sidebar',
     persist: {
       key: STORAGE_KEYS.sidebarCollapsed,
-      version: 1,
-      partialize: (s) => ({ isCollapsed: s.isCollapsed }),
+      version: 2,
+      partialize: (s) => ({ 
+        userCollapsedPreference: s.userCollapsedPreference,
+        // We still save isCollapsed to prevent hydration mismatch before effect runs
+        isCollapsed: s.userCollapsedPreference 
+      }),
     },
   },
 );

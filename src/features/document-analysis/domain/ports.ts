@@ -27,8 +27,12 @@ import {
 
 /** What the analyzer is asked to look at. Text only — file parsing happens above it. */
 export interface AnalysisRequest {
- readonly text: string;
+ readonly text: string; // The extracted text, or an empty string if it's media-only
  readonly documentType: DocumentType;
+ readonly media?: {
+   readonly data: string; // Base64 encoded string
+   readonly mimeType: string;
+ };
 }
 
 /**
@@ -52,6 +56,7 @@ export interface AnalyzerResult {
  readonly legitimacy: string | null;
  readonly confidence: string | null;
  readonly suggestedQuestions: readonly string[];
+ readonly transcription?: string;
 }
 
 export interface DocumentAnalyzer {

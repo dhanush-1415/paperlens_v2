@@ -1,0 +1,19 @@
+src/app/(app)/analytics/page.tsx(103,23): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/(app)/analytics/page.tsx(108,27): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/(app)/analytics/page.tsx(109,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/app/(app)/analytics/page.tsx(109,52): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/features/dashboard/presentation/analytics-page.tsx(62,19): error TS2532: Object is possibly 'undefined'.
+src/features/dashboard/presentation/analytics-page.tsx(63,17): error TS2532: Object is possibly 'undefined'.
+src/features/dashboard/presentation/analytics-page.tsx(93,29): error TS2532: Object is possibly 'undefined'.
+src/features/dashboard/presentation/analytics-page.tsx(93,79): error TS2532: Object is possibly 'undefined'.
+src/features/dashboard/presentation/analytics-page.tsx(102,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: DateRangePickerProps): DateRangePicker', gave the following error.
+    Type '{ ranges: { startDate: Date; endDate: Date; key: string; }[]; onChange: (ranges: any) => void; rangeColors: string[]; showSelectionPreview: boolean; moveRangeOnFirstSelection: false; direction: "horizontal"; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<DateRangePicker> & Readonly<DateRangePickerProps>'.
+      Property 'showSelectionPreview' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<DateRangePicker> & Readonly<DateRangePickerProps>'.
+  Overload 2 of 2, '(props: DateRangePickerProps, context: any): DateRangePicker', gave the following error.
+    Type '{ ranges: { startDate: Date; endDate: Date; key: string; }[]; onChange: (ranges: any) => void; rangeColors: string[]; showSelectionPreview: boolean; moveRangeOnFirstSelection: false; direction: "horizontal"; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<DateRangePicker> & Readonly<DateRangePickerProps>'.
+      Property 'showSelectionPreview' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<DateRangePicker> & Readonly<DateRangePickerProps>'.

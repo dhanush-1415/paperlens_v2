@@ -60,6 +60,7 @@ const RISK_FLAG_SCHEMA = z.object({
   legitimacy: z.enum(['VERIFIED_FORMAT', 'UNVERIFIABLE', 'SUSPICIOUS']),
   confidence: z.enum(['HIGH', 'MEDIUM', 'LOW']),
   suggestedQuestions: z.array(z.string()).length(4).describe('Exactly 4 questions the user could ask the copilot about this document.'),
+  transcription: z.string().optional().describe('If the input is an image or media file without text, provide the fully transcribed text (OCR) here so the user can read what you analyzed. If text was already provided, leave this empty.'),
 });
 
 export function createGeminiAnalyzer(): DocumentAnalyzer {
@@ -68,13 +69,32 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
 
     async analyze(request: AnalysisRequest) {
       return attempt(async () => {
-        const { text, documentType } = request;
+        const { text, documentType, media } = request;
+
+        const promptContent: any[] = [
+          { type: 'text', text: `Analyze the following document (Type: ${documentType}). Extract the risk flags.\n\nDocument text:\n${text || '[See attached media]'}` }
+        ];
+
+        if (media) {
+          // Send image/media inline to Gemini
+          promptContent.push({
+            type: 'file',
+            data: media.data,
+            mimeType: media.mimeType, // newer ai sdk versions
+            mediaType: media.mimeType, // older ai sdk versions
+          } as any);
+        }
 
         const { object } = await generateObject({
           model: google('gemini-2.5-flash'),
           system: SYSTEM_PROMPT,
           schema: RISK_FLAG_SCHEMA,
-          prompt: `Analyze the following document (Type: ${documentType}). Extract the risk flags.\n\nDocument text:\n${text}`,
+          messages: [
+            {
+              role: 'user',
+              content: promptContent,
+            }
+          ],
           temperature: 0.1,
         });
 
@@ -121,6 +141,7 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
           legitimacy: object.legitimacy,
           confidence: object.confidence,
           suggestedQuestions: object.suggestedQuestions,
+          transcription: object.transcription,
         };
       });
     },

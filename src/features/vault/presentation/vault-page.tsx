@@ -290,7 +290,9 @@ export function VaultPage() {
         <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Quick Access</Text>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {folders.length === 0 ? (
-            <Text size="sm" tone="tertiary" className="col-span-full italic ml-1">No folders yet. Create one to start organizing.</Text>
+            <div className="col-span-full py-8 text-center rounded-[1.25rem] border border-dashed border-border-strong bg-surface-1/50">
+              <Text size="sm" tone="tertiary" className="italic">No folders yet. Create one to start organizing.</Text>
+            </div>
           ) : (
             folders.map(folder => (
               <div key={folder.id} className="group relative flex items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-gradient-to-br from-surface-1 to-brand-primary/[0.01] p-4 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-md hover:-translate-y-0.5 cursor-pointer overflow-hidden">

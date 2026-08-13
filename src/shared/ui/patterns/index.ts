@@ -67,3 +67,5 @@ export type { ProfileDropdownProps } from './profile-dropdown';
 
 export { DataTable } from './data-table';
 export type { DataTableProps, Column } from './data-table';
+
+export { AnalyticsSkeleton } from './analytics-skeleton';

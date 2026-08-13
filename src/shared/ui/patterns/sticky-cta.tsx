@@ -180,7 +180,7 @@ export function StickyCta({
         </div>
 
         <div className="flex w-full sm:w-auto items-center shrink-0 relative z-10">
-          <Button asChild variant="premium" className="w-full sm:w-auto font-bold shadow-xl shadow-brand-primary/25 hover:shadow-brand-primary/40 transition-shadow">
+          <Button asChild variant="premium" className="w-full sm:w-auto font-bold hover:shadow-brand-primary/40">
             <Link href={ctaHref} className="whitespace-nowrap">{ctaLabel}</Link>
           </Button>
         </div>

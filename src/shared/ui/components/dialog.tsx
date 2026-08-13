@@ -51,7 +51,7 @@ import { Text } from './text';
  */
 const dialogVariants = cva(
  [
- 'group m-0 max-h-dvh w-dvw max-w-dvw bg-transparent p-0',
+ 'group m-0 h-dvh max-h-dvh w-dvw max-w-dvw bg-transparent p-0',
  /*
  * `hidden open:grid`, and not a bare `grid`.
  *

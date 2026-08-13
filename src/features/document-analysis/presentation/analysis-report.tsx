@@ -97,71 +97,80 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
         <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-brand-primary/5 to-transparent pointer-events-none" />
         
         {/* -- Header — badge + headline ---------------------------------- */}
-        <div className="flex flex-col gap-4 relative z-10 bg-surface-1 border border-border-strong rounded-2xl overflow-hidden shadow-md">
+        <div className="flex flex-col gap-3 relative z-20 bg-surface-1 border border-border-strong rounded-2xl overflow-hidden shadow-md sticky top-0 mt-[-8px]">
           {/* Badge row + scanned date */}
-          <div className="px-5 pt-5 pb-3.5 flex items-center justify-between gap-3 border-b border-border-subtle/50">
+          <div className={`px-5 pt-4 pb-3 flex items-center justify-between gap-3 border-b ${
+            analysis.score.level === 'critical' ? 'bg-risk-critical-bg border-risk-critical-border' :
+            analysis.score.level === 'caution' ? 'bg-risk-caution-bg border-risk-caution-border' :
+            'bg-risk-safe-bg border-risk-safe-border'
+          }`}>
             {/* Priority badge */}
             <div className="relative shrink-0">
-              <Badge tone={SCORE_TONE[analysis.score.level]} dot className="font-semibold text-xs py-1 px-3">
-                {analysis.score.level === 'critical' ? 'CRITICAL — ACT NOW' : analysis.score.level === 'caution' ? 'REVIEW RECOMMENDED' : 'SAFE TO PROCEED'}
+              <Badge tone={SCORE_TONE[analysis.score.level]} dot className="font-semibold text-xs py-1 px-3 uppercase tracking-wide border-current/30">
+                {analysis.score.level === 'critical' ? 'Critical — Act Now' : analysis.score.level === 'caution' ? 'Review Recommended' : 'Safe to Proceed'}
               </Badge>
             </div>
-            <span className="text-xs text-text-tertiary shrink-0">
+            <span className="text-[11px] font-medium opacity-80 shrink-0">
               {labels.analyzedAt(analysis.analyzedAt)}
             </span>
           </div>
 
           {/* Headline */}
-          <div className="px-5 pb-5 pt-2">
+          <div className="px-5 pb-5 pt-1 bg-surface-1">
             <Heading level={1} size="lg" className="font-geist tracking-tight text-text-primary leading-snug">
               {analysis.title || 'Document Analysis'}
             </Heading>
             {/* Category + specialized intelligence badges */}
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-2 px-3 py-1 text-xs font-semibold text-text-secondary shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-2 px-2.5 py-0.5 text-[10px] font-semibold text-text-secondary">
                 {DOCUMENT_TYPE_LABEL[analysis.documentType]}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-ink shadow-sm">
-                Specialized analysis · Standard Pack
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-primary/30 bg-brand-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-brand-ink">
+                Specialized analysis
               </span>
             </div>
           </div>
         </div>
 
-        {/* -- Relief moment — emotional reassurance ------------------ */}
-        <div className={`mx-1 flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm ${
-          analysis.score.level === 'critical' ? 'bg-risk-critical-bg border-risk-critical-border text-risk-critical-fg' :
-          analysis.score.level === 'caution' ? 'bg-risk-caution-bg border-risk-caution-border text-risk-caution-fg' :
-          'bg-risk-safe-bg border-risk-safe-border text-risk-safe-fg'
-        }`}>
-          <div className="mt-0.5 text-current opacity-90">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
-          <p className="text-sm font-medium leading-relaxed">
-            {analysis.score.level === 'critical' 
-              ? 'This document contains critical risks. Please review the recommended actions before proceeding.' 
-              : analysis.score.level === 'caution'
-              ? 'We found some clauses that require your attention. Review the action plan below.'
-              : 'This document appears safe to proceed. No predatory clauses were found.'}
-          </p>
-        </div>
-
-        {/* -- Legitimacy Banner --------------------------------------- */}
-        {analysis.legitimacy && (
-          <div className={`mx-1 flex items-start gap-3 rounded-xl border px-4 py-3 shadow-sm ${
-            analysis.legitimacy === 'SUSPICIOUS' ? 'bg-risk-critical-bg border-risk-critical-border text-risk-critical-fg' : 'bg-risk-safe-bg border-risk-safe-border text-risk-safe-fg'
+        <div className="flex flex-col md:flex-row gap-4 mt-2">
+          {/* -- Relief moment — emotional reassurance ------------------ */}
+          <div className={`flex-1 flex flex-col justify-center gap-1.5 rounded-xl border px-4 py-3.5 shadow-sm ${
+            analysis.score.level === 'critical' ? 'bg-risk-critical-bg border-risk-critical-border text-risk-critical-fg' :
+            analysis.score.level === 'caution' ? 'bg-risk-caution-bg border-risk-caution-border text-risk-caution-fg' :
+            'bg-risk-safe-bg border-risk-safe-border text-risk-safe-fg'
           }`}>
-            <div className="mt-0.5 text-current opacity-90">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="flex items-center gap-2 font-bold text-sm">
+              <ShieldCheck className="w-4 h-4 opacity-90" />
+              Analysis Status
             </div>
-            <div className="min-w-0 flex flex-col gap-1">
-              <p className="text-sm font-bold leading-tight">Authenticity Signal</p>
-              <p className="text-xs font-medium opacity-90 leading-relaxed">
-                {analysis.legitimacy === 'SUSPICIOUS' ? 'Warning: This document shows potential markers of fraud or an unfair scam.' : 'This document appears to be legitimate and standard.'}
+            <p className="text-xs font-medium leading-relaxed opacity-90 pl-6">
+              {analysis.score.level === 'critical' 
+                ? 'This document contains critical risks. Please review the recommended actions before proceeding.' 
+                : analysis.score.level === 'caution'
+                ? 'We found some clauses that require your attention. Review the action plan below.'
+                : 'This document appears safe to proceed. No predatory clauses were found.'}
+            </p>
+          </div>
+
+          {/* -- Legitimacy Banner --------------------------------------- */}
+          {analysis.legitimacy && (
+            <div className={`flex-1 flex flex-col justify-center gap-1.5 rounded-xl border px-4 py-3.5 shadow-sm ${
+              analysis.legitimacy === 'SUSPICIOUS' ? 'bg-risk-critical-bg border-risk-critical-border text-risk-critical-fg' : 
+              analysis.legitimacy === 'UNVERIFIABLE' ? 'bg-surface-2 border-border-subtle text-text-secondary' :
+              'bg-risk-safe-bg border-risk-safe-border text-risk-safe-fg'
+            }`}>
+              <div className="flex items-center gap-2 font-bold text-sm">
+                <ShieldCheck className="w-4 h-4 opacity-90" />
+                Authenticity Signal
+              </div>
+              <p className="text-xs font-medium opacity-90 leading-relaxed pl-6">
+                {analysis.legitimacy === 'SUSPICIOUS' ? 'Warning: This document shows potential markers of fraud or an unfair scam.' : 
+                 analysis.legitimacy === 'UNVERIFIABLE' ? 'Not enough signal to judge. Confirm through official channels.' :
+                 'This document appears to be legitimate and standard.'}
               </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Summary — Markdown rendered */}
         <div className="px-1 mt-2">
@@ -171,10 +180,12 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
             </div>
             <p className="text-sm font-bold text-text-primary leading-none">Executive Summary</p>
           </div>
-          <div className="prose prose-sm prose-neutral max-w-none prose-p:leading-relaxed prose-p:text-text-secondary prose-strong:text-text-primary prose-ul:text-text-secondary prose-ul:list-disc prose-ul:pl-5 prose-li:my-1 p-5 rounded-2xl bg-surface-2 border border-border-subtle/50">
-            <Markdown>
-              {summary.includes('- ') || summary.includes('* ') ? summary : `${summary}\n\n**Key Takeaways:**\n- The document type is classified as **${DOCUMENT_TYPE_LABEL[analysis.documentType]}**.\n- Detected **${analysis.flags.length}** specific clauses requiring review.\n- Authenticity signal indicates the document is **${analysis.legitimacy === 'SUSPICIOUS' ? 'Suspicious' : 'Standard'}**.\n- Priority level for this review is set to **${urgency.toUpperCase()}**.`}
-            </Markdown>
+          <div className="p-5 rounded-2xl bg-surface-2 border border-border-subtle/50 shadow-sm">
+            <div className="prose prose-sm prose-neutral max-w-none prose-p:leading-relaxed prose-p:text-text-secondary prose-strong:text-text-primary prose-ul:text-text-secondary prose-ul:list-disc prose-ul:pl-5 prose-li:marker:text-text-tertiary prose-li:my-1.5 prose-headings:text-text-primary prose-headings:font-bold prose-headings:text-[10px] prose-headings:uppercase prose-headings:tracking-wider prose-headings:mb-2 prose-headings:mt-4 first:prose-headings:mt-0">
+              <Markdown>
+                {summary.includes('- ') || summary.includes('* ') ? summary : `${summary}\n\n**Key Takeaways:**\n- The document type is classified as **${DOCUMENT_TYPE_LABEL[analysis.documentType]}**.\n- Detected **${analysis.flags.length}** specific clauses requiring review.\n- Authenticity signal indicates the document is **${analysis.legitimacy === 'SUSPICIOUS' ? 'Suspicious' : 'Standard'}**.\n- Priority level for this review is set to **${urgency.toUpperCase()}**.`}
+              </Markdown>
+            </div>
           </div>
         </div>
 

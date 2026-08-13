@@ -94,6 +94,7 @@ export function siteFooterGroups({
  { href: ROUTES.howItWorks, label: t.t('nav.howItWorks') },
  { href: ROUTES.pricing, label: t.t('nav.pricing') },
  { href: ROUTES.security, label: t.t('nav.security') },
+ { href: ROUTES.supportedFormats as Route, label: 'Supported Formats' },
 				{ href: ROUTES.about, label: 'About Us' },
 			],
 		},

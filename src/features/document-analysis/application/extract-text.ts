@@ -1,7 +1,6 @@
 import * as mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
-// @ts-expect-error pdf-parse lacks typing
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 // Types for input files since we might handle browser `File` objects or Node `Buffer`s in v2.1
 export type FileInput = {
   name: string;
@@ -42,13 +41,16 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
   // PDF
   if (type === 'application/pdf' || name.endsWith('.pdf')) {
     const buffer = Buffer.from(await file.arrayBuffer());
+    
+    const parser = new PDFParse({ data: buffer });
     try {
-      // pdfParse is a function that takes a buffer and returns a promise resolving to an object with a text property
-      const parsed = await pdfParse(buffer);
+      const parsed = await parser.getText();
       return parsed.text.trim();
     } catch (e) {
       console.warn('pdf-parse failed, returning empty string', e);
       return '';
+    } finally {
+      await parser.destroy();
     }
   }
 
@@ -90,6 +92,11 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
   if (type === 'text/html' || name.endsWith('.html') || name.endsWith('.htm')) {
     const text = await file.text();
     return stripHtml(text);
+  }
+
+  // Explicitly block images, audio, and video to prevent raw binary from being sent to the AI
+  if (type.startsWith('image/') || type.startsWith('audio/') || type.startsWith('video/')) {
+    throw new Error(`Extraction for ${type} is not yet supported in this version. OCR and Media processing are pending implementation.`);
   }
 
   // Everything else (TXT, MD, CSV, JSON, etc.)

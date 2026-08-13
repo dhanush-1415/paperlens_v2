@@ -92,12 +92,39 @@ export const analyzeDocumentAction = action(
  * `toClient()` and land straight in the form's `<Field error>` props.
  */
  const file = formData.get('file') as File | null;
+ let media: { data: string; mimeType: string } | undefined = undefined;
+
  if (file && file.size > 0) {
-   try {
-     const extractedText = await extractTextFromFile(file);
-     formData.set('text', extractedText);
-   } catch (error) {
-     throw validationError({ text: ['Failed to extract text from the provided file. Ensure it is a supported format.'] });
+   if (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+     const buffer = await file.arrayBuffer();
+     media = {
+       data: Buffer.from(buffer).toString('base64'),
+       mimeType: file.type,
+     };
+     formData.set('text', '[Media File Analysis]'); // Satisfy Zod schema
+   } else {
+     try {
+       const extractedText = await extractTextFromFile(file);
+       
+       // HEURISTIC: For PDFs, check if the extracted text is meaningful. 
+       // If it's mostly garbage (e.g. from embedded fonts) or empty, fall back to Vision.
+       const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+       const letterCount = (extractedText.match(/\p{L}/gu) ?? []).length;
+       const textIsMeaningful = extractedText.trim().length > 20 && letterCount / extractedText.trim().length > 0.4;
+       
+       if (isPdf && !textIsMeaningful) {
+         const buffer = await file.arrayBuffer();
+         media = {
+           data: Buffer.from(buffer).toString('base64'),
+           mimeType: 'application/pdf',
+         };
+         formData.set('text', '[Scanned PDF sent as media for native AI OCR]');
+       } else {
+         formData.set('text', extractedText);
+       }
+     } catch (error) {
+       throw validationError({ text: ['Failed to extract text from the provided file. Ensure it is a supported format.'] });
+     }
    }
  }
 
@@ -117,6 +144,7 @@ export const analyzeDocumentAction = action(
  await container.resolve(ANALYZE_DOCUMENT)({
  ownerId: session.userId,
  text: input.text,
+ media: media,
  documentType: input.documentType,
  ...(input.title === undefined ? {} : { title: input.title }),
  }),
@@ -192,5 +220,62 @@ export const resolveFlagAction = action(
     expire([...documentTags(documentId, session.userId)]);
     
     redirect(ROUTES.document(documentId));
+  }
+);
+
+export const analyzeUrlAction = action(
+  'document.analyzeUrl',
+  async (_previous: unknown, formData: FormData): Promise<never> => {
+    const container = getServerContainer();
+    const session = unwrapOrThrow(await checkPermissionResult('document.create'));
+
+    const planData = await getUserPlan();
+    if (!planData.entitlements.canScan) {
+      throw forbiddenError('Scan quota exceeded. Please upgrade your plan in the Billing dashboard.');
+    }
+
+    const decision = await container.resolve(RATE_LIMITER).consume(ANALYZE_RATE_SCOPE, session.userId);
+    if (!decision.allowed) {
+      const nowMs = container.resolve(CLOCK)().getTime();
+      const retryAfter = Math.max(1, Math.ceil((decision.resetAt - nowMs) / 1_000));
+      throw rateLimitError(retryAfter, ANALYZE_RATE_SCOPE);
+    }
+
+    const url = formData.get('url') as string;
+    if (!url || !/^https?:\/\//i.test(url)) {
+      throw validationError({ url: ['Invalid URL provided.'] });
+    }
+
+    let extractedText = '';
+    try {
+      const response = await fetch(url, { headers: { 'User-Agent': 'PaperLensBot/1.0' } });
+      if (!response.ok) throw new Error('Failed to fetch URL');
+      const html = await response.text();
+      
+      const fakeFile = {
+        name: 'url.html',
+        type: 'text/html',
+        arrayBuffer: async () => Buffer.from(html).buffer as ArrayBuffer,
+        text: async () => html,
+      };
+      extractedText = await extractTextFromFile(fakeFile as any);
+    } catch (e) {
+      throw validationError({ url: ['Could not read the contents of this URL. Ensure it is public and accessible.'] });
+    }
+
+    const startedAt = container.resolve(CLOCK)().getTime();
+
+    const analysis = unwrapOrThrow(
+      await container.resolve(ANALYZE_DOCUMENT)({
+        ownerId: session.userId,
+        text: extractedText,
+        documentType: 'other',
+        title: url,
+      }),
+    );
+
+    await incrementScanUsage(session.userId);
+    expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
+    redirect(ROUTES.document(analysis.id));
   }
 );
