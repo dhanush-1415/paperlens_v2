@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Heading, Text, Badge } from '@/shared/ui';
 import { BarChartIcon, ScanIcon, VaultIcon, TrendingUpIcon, CalendarIcon, DownloadIcon } from '@/shared/ui/icons/dashboard-icons';
@@ -11,6 +11,9 @@ import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { format } from 'date-fns';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+import { EnterpriseReportTemplate } from './enterprise-report-template';
 
 export interface AnalyticsData {
   totalScans: number;
@@ -33,6 +36,8 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [isExporting, setIsExporting] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
   
   const [showDatePicker, setShowDatePicker] = useState(false);
   
@@ -72,6 +77,24 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
+  };
+
+  const exportPDF = async () => {
+    if (!reportRef.current) return;
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`ClearCut-Enterprise-Report-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isPending) {
@@ -131,9 +154,13 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
             )}
           </div>
           
-          <button className="flex h-9 items-center gap-2 rounded-xl border border-border-strong/50 bg-surface-2 px-3 text-sm font-semibold text-text-primary shadow-sm hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all">
+          <button 
+            onClick={exportPDF}
+            disabled={isExporting}
+            className="flex h-9 items-center gap-2 rounded-xl border border-border-strong/50 bg-surface-2 px-3 text-sm font-semibold text-text-primary shadow-sm hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <DownloadIcon className="size-4" />
-            <span className="hidden sm:inline">Export CSV</span>
+            <span className="hidden sm:inline">{isExporting ? 'Generating...' : 'Export Report'}</span>
           </button>
         </div>
       </div>
@@ -327,6 +354,12 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
           </div>
         </div>
       </div>
+      
+      <EnterpriseReportTemplate 
+        ref={reportRef} 
+        data={analytics} 
+        dateRange={{ startDate: dateRange[0]!.startDate, endDate: dateRange[0]!.endDate }} 
+      />
     </div>
   );
 }

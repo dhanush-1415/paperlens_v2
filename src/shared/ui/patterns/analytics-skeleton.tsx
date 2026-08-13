@@ -1,4 +1,3 @@
-import { Heading, Text } from '@/shared/ui/components/heading'; // Actually just import Skeleton
 import { Skeleton } from '@/shared/ui/components/skeleton';
 
 export function AnalyticsSkeleton() {
