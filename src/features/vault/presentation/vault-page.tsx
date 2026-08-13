@@ -105,6 +105,7 @@ interface VaultDocument {
   name: string;
   type: string;
   risk: 'critical' | 'caution' | 'safe';
+  resolved: boolean;
   date: string;
   size: string;
 }
@@ -122,6 +123,9 @@ export function VaultPage() {
   const [filterRisk, setFilterRisk] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   
   const [folders, setFolders] = useState<VaultFolder[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
@@ -185,6 +189,13 @@ export function VaultPage() {
     return 0;
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterRisk, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredDocs.length / pageSize));
+  const paginatedDocs = filteredDocs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const toggleSelectAll = () => {
     if (selectedIds.size === filteredDocs.length) {
       setSelectedIds(new Set());
@@ -239,6 +250,15 @@ export function VaultPage() {
       cell: (item) => (
         <Badge tone={item.risk} className="shadow-sm font-bold">
           {item.risk === 'critical' ? 'High Risk' : item.risk === 'caution' ? 'Needs Review' : 'Verified Safe'}
+        </Badge>
+      ),
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      cell: (item) => (
+        <Badge tone={item.resolved ? 'safe' : 'caution'} className="shadow-sm font-bold bg-opacity-10 border-none">
+          {item.resolved ? 'Resolved' : 'Action Needed'}
         </Badge>
       ),
     },
@@ -395,17 +415,44 @@ export function VaultPage() {
               />
             </div>
           ) : view === 'list' ? (
-            <div className="overflow-hidden rounded-xl border border-border-subtle shadow-sm bg-surface-1">
-              <DataTable
-                data={filteredDocs}
-                columns={columns}
-                keyExtractor={(item) => item.id}
-                className="border-none shadow-none rounded-none"
-              />
-            </div>
-          ) : (
+          <>
+            <DataTable 
+              data={paginatedDocs} 
+              columns={columns} 
+              keyExtractor={(item) => item.id}
+            />
+            {filteredDocs.length > 0 && (
+              <div className="flex items-center justify-between border-t border-border-subtle pt-4 mt-2 px-1">
+                <Text size="sm" tone="secondary" className="font-medium">
+                  Showing <span className="font-bold text-text-primary">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-bold text-text-primary">{Math.min(currentPage * pageSize, filteredDocs.length)}</span> of <span className="font-bold text-text-primary">{filteredDocs.length}</span> results
+                </Text>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Previous
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+            <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredDocs.map((doc) => (
+              {paginatedDocs.map((doc) => (
                 <div key={doc.id} onClick={() => router.push(`/document/${doc.id}`)} className="group relative flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-1 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-primary/30 hover:shadow-md cursor-pointer">
                   
                   <div className="absolute top-4 right-4 z-10">
@@ -442,6 +489,34 @@ export function VaultPage() {
                 </div>
               ))}
             </div>
+            {filteredDocs.length > 0 && (
+              <div className="flex items-center justify-between border-t border-border-subtle pt-4 mt-2 px-1">
+                <Text size="sm" tone="secondary" className="font-medium">
+                  Showing <span className="font-bold text-text-primary">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-bold text-text-primary">{Math.min(currentPage * pageSize, filteredDocs.length)}</span> of <span className="font-bold text-text-primary">{filteredDocs.length}</span> results
+                </Text>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Previous
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </div>
       </div>

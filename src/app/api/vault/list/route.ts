@@ -32,12 +32,15 @@ export async function GET(req: Request) {
 
     const mappedDocuments = analyses.map(a => {
       const risk = scoreOf(a.flags as any).level;
+      const allFlags = Array.isArray(a.flags) ? a.flags : [];
+      const resolved = a.resolvedFlagIds.length >= allFlags.length;
       
       return {
         id: a.id,
         name: a.title || 'Untitled Document',
         type: a.documentType.toUpperCase(),
         risk: risk,
+        resolved: resolved,
         date: a.analyzedAt.toISOString(),
         size: 'Text Only' // Zero retention indicator
       };
