@@ -32,6 +32,11 @@ export function AppBreadcrumbs() {
     return null;
   }
 
+  // Document pages have their own custom topbar with back navigation.
+  if (segments[0] === 'document') {
+    return null;
+  }
+
   return (
     <nav aria-label="Breadcrumb" className="mb-6 flex items-center text-sm">
       <ol className="flex items-center gap-2">

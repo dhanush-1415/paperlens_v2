@@ -22,6 +22,7 @@ import {
  type DocumentAnalysisSummary,
  type DocumentType,
  type RiskFlag,
+ type KeyEntity,
 } from './document';
 
 /** What the analyzer is asked to look at. Text only — file parsing happens above it. */
@@ -42,10 +43,21 @@ export interface AnalysisRequest {
  * async by nature, and a synchronous port would force every call site to be rewritten the day
  * one arrives. `Result` puts "the upstream was down" in the type rather than in a stack trace.
  */
+export interface AnalyzerResult {
+ readonly flags: readonly RiskFlag[];
+ readonly summary: string | null;
+ readonly actionPlan: readonly string[];
+ readonly urgency: string | null;
+ readonly entities: readonly KeyEntity[];
+ readonly legitimacy: string | null;
+ readonly confidence: string | null;
+ readonly suggestedQuestions: readonly string[];
+}
+
 export interface DocumentAnalyzer {
  /** Stable identifier for logs and analytics: `heuristic-v1`, `claude-opus-5`. */
  readonly name: string;
- analyze(request: AnalysisRequest): Promise<Result<readonly RiskFlag[], AppError>>;
+ analyze(request: AnalysisRequest): Promise<Result<AnalyzerResult, AppError>>;
 }
 
 /**

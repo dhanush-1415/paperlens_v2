@@ -18,19 +18,11 @@ export async function GET(req: Request) {
       }
     });
 
-    // Fetch documents
-    const documents = await prisma.document.findMany({
-      where: { userId: session.userId, folderId: parentId },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    // We also need the analysis for these documents to get the risk level
-    const documentIds = documents.map(d => d.id);
+    // Fetch analyzed documents (zero retention means physical documents might not exist, so we show analyses)
     const analyses = await prisma.documentAnalysis.findMany({
-      where: { ownerId: session.userId, deletedAt: null }
+      where: { ownerId: session.userId, deletedAt: null },
+      orderBy: { analyzedAt: 'desc' }
     });
-
-    const analysisMap = new Map(analyses.map(a => [a.title, a])); // fallback since title is original filename
 
     const mappedFolders = folders.map(f => ({
       id: f.id,
@@ -38,17 +30,16 @@ export async function GET(req: Request) {
       count: f._count.documents
     }));
 
-    const mappedDocuments = documents.map(d => {
-      const analysis = analysisMap.get(d.filename);
-      const risk = analysis ? scoreOf(analysis.flags as any).level : 'safe';
+    const mappedDocuments = analyses.map(a => {
+      const risk = scoreOf(a.flags as any).level;
       
       return {
-        id: d.id,
-        name: d.filename,
-        type: d.fileType,
+        id: a.id,
+        name: a.title || 'Untitled Document',
+        type: a.documentType.toUpperCase(),
         risk: risk,
-        date: d.createdAt.toISOString(),
-        size: `${(d.byteSize / (1024 * 1024)).toFixed(1)} MB`
+        date: a.analyzedAt.toISOString(),
+        size: 'Text Only' // Zero retention indicator
       };
     });
 

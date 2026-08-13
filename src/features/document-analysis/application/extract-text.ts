@@ -1,6 +1,7 @@
 import * as mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
-import { PDFParse } from 'pdf-parse';
+// @ts-expect-error pdf-parse lacks typing
+import pdfParse from 'pdf-parse';
 // Types for input files since we might handle browser `File` objects or Node `Buffer`s in v2.1
 export type FileInput = {
   name: string;
@@ -42,10 +43,9 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
   if (type === 'application/pdf' || name.endsWith('.pdf')) {
     const buffer = Buffer.from(await file.arrayBuffer());
     try {
-      const parser = new PDFParse({ data: buffer });
-      const result = await parser.getText();
-      await parser.destroy();
-      return result.text.trim();
+      // pdfParse is a function that takes a buffer and returns a promise resolving to an object with a text property
+      const parsed = await pdfParse(buffer);
+      return parsed.text.trim();
     } catch (e) {
       console.warn('pdf-parse failed, returning empty string', e);
       return '';

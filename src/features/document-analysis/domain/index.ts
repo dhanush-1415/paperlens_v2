@@ -18,6 +18,7 @@ export {
  type RiskFlag,
  type RiskLevel,
  type RiskScore,
+ type KeyEntity,
 } from './document';
 
 export { countByLevel, highestLevel, RISK_SEVERITY, scoreOf, sortFlags } from './risk';

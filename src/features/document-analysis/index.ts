@@ -110,6 +110,8 @@ export {
  AnalysisForm,
  AnalysisReport,
  analyzeDocumentAction,
+ DocumentActions,
+ SidebarCollapser,
  RiskFlagCard,
  type AnalysisFormLabels,
  type AnalysisFormProps,

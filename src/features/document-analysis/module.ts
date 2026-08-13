@@ -10,7 +10,7 @@ import {
 import {
  createDocumentAnalysisRepository,
  createFakeAnalysisDataSource,
- createHeuristicAnalyzer,
+ createGeminiAnalyzer,
 } from './infrastructure';
 import {
  ANALYZE_DOCUMENT,
@@ -50,7 +50,7 @@ import {
  * resolved through `getRequestScope()` rather than smuggled into a singleton's closure.
  */
 export function registerDocumentAnalysis(container: Container): void {
- container.register(DOCUMENT_ANALYZER, () => createHeuristicAnalyzer(), 'singleton');
+ container.register(DOCUMENT_ANALYZER, () => createGeminiAnalyzer(), 'singleton');
 
  container.register(
  DOCUMENT_ANALYSIS_REPOSITORY,

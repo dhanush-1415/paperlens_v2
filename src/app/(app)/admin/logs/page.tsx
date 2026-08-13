@@ -8,11 +8,20 @@ export const metadata = {
 export default async function AdminLogsPage() {
   await requireSession();
 
-  const MOCK_LOGS = [
-    { id: 'L1', time: '10 mins ago', user: 'Alex Mercer', action: 'Downloaded Invoice INV-2026-003', type: 'Billing' },
-    { id: 'L2', time: '1 hour ago', user: 'Sarah Jenkins', action: 'Changed workspace name', type: 'Settings' },
-    { id: 'L3', time: '2 hours ago', user: 'System', action: 'Automated backup completed', type: 'System' },
-  ];
+  const { prisma } = await import('@/server/db/prisma');
+  
+  const recentDocs = await prisma.documentAnalysis.findMany({
+    take: 50,
+    orderBy: { analyzedAt: 'desc' },
+  });
+
+  const MOCK_LOGS = recentDocs.map(doc => ({
+    id: doc.id,
+    time: doc.analyzedAt.toLocaleString(),
+    user: doc.ownerId.slice(0, 8),
+    action: `Analyzed document: ${doc.title}`,
+    type: 'System'
+  }));
 
   const columns = [
     { id: 'time', header: 'Time', cell: (l: any) => <span className="font-medium text-text-secondary">{l.time}</span> },

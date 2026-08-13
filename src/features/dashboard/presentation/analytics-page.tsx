@@ -4,7 +4,24 @@ import { Heading, Text, Badge } from '@/shared/ui';
 import { BarChartIcon, ScanIcon, VaultIcon, TrendingUpIcon, CalendarIcon, DownloadIcon } from '@/shared/ui/icons/dashboard-icons';
 import { ShieldIcon } from '@/shared/ui/icons';
 
-export function AnalyticsPage() {
+export interface AnalyticsData {
+  totalScans: number;
+  vaultDocs: number;
+  highRisk: number;
+  recentActivity: { file: string; time: string; status: string; risk: 'safe' | 'caution' | 'critical' }[];
+  processingVolume: number[]; // 12 values
+}
+
+export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
+  // Fallback to empty if not provided yet, but the page route will provide it
+  const analytics = data || {
+    totalScans: 0,
+    vaultDocs: 0,
+    highRisk: 0,
+    recentActivity: [],
+    processingVolume: Array(12).fill(0)
+  };
+
   return (
     <div className="flex flex-col gap-6 pb-8">
       {/* Header */}
@@ -44,7 +61,7 @@ export function AnalyticsPage() {
             <Badge tone="safe" className="font-bold">+12% this week</Badge>
           </div>
           <div className="relative">
-            <Heading level={2} size="md" className="font-extrabold text-3xl">4,281</Heading>
+            <Heading level={2} size="md" className="font-extrabold text-3xl">{analytics.totalScans.toLocaleString()}</Heading>
             <Text size="sm" tone="secondary" className="font-medium mt-1">Total Scans Performed</Text>
           </div>
         </div>
@@ -55,10 +72,10 @@ export function AnalyticsPage() {
             <div className="flex size-12 items-center justify-center rounded-xl bg-brand-secondary/10 text-brand-secondary">
               <VaultIcon className="size-6" />
             </div>
-            <Badge tone="neutral" className="font-bold">2.4 GB used</Badge>
+            <Badge tone="neutral" className="font-bold">Active</Badge>
           </div>
           <div className="relative">
-            <Heading level={2} size="md" className="font-extrabold text-3xl">1,204</Heading>
+            <Heading level={2} size="md" className="font-extrabold text-3xl">{analytics.vaultDocs.toLocaleString()}</Heading>
             <Text size="sm" tone="secondary" className="font-medium mt-1">Documents in Vault</Text>
           </div>
         </div>
@@ -69,10 +86,10 @@ export function AnalyticsPage() {
             <div className="flex size-12 items-center justify-center rounded-xl bg-risk-critical/10 text-risk-critical">
               <ShieldIcon className="size-6" />
             </div>
-            <Badge tone="critical" className="font-bold">-4% this week</Badge>
+            <Badge tone="critical" className="font-bold">Attention</Badge>
           </div>
           <div className="relative">
-            <Heading level={2} size="md" className="font-extrabold text-3xl">142</Heading>
+            <Heading level={2} size="md" className="font-extrabold text-3xl">{analytics.highRisk}</Heading>
             <Text size="sm" tone="secondary" className="font-medium mt-1">High Risk Contracts</Text>
           </div>
         </div>
@@ -98,8 +115,8 @@ export function AnalyticsPage() {
           </div>
           <div className="flex-1 flex items-center justify-center rounded-xl border border-dashed border-border-strong bg-surface-2/50 relative overflow-hidden">
              <div className="absolute inset-0 flex items-end justify-between px-6 pt-10 pb-6 opacity-30">
-                {[40, 70, 45, 90, 65, 85, 120, 95, 110, 80, 130, 100].map((h, i) => (
-                  <div key={i} className="w-[6%] bg-brand-primary rounded-t-sm" style={{ height: `${h}%` }} />
+                {analytics.processingVolume.map((h, i) => (
+                  <div key={i} className="w-[6%] bg-brand-primary rounded-t-sm" style={{ height: `${Math.max(5, Math.min(100, h * 10))}%` }} />
                 ))}
              </div>
              <Text tone="tertiary" className="font-medium relative z-10 bg-surface-1 px-4 py-1.5 rounded-full border border-border-subtle shadow-sm">Chart Data Loading...</Text>
@@ -150,12 +167,7 @@ export function AnalyticsPage() {
             <button className="text-xs font-bold text-brand-primary hover:underline">View All</button>
           </div>
           <div className="flex flex-col gap-4">
-            {[
-              { file: 'Vendor_Agreement_v3.pdf', time: '10 mins ago', status: 'Safe', risk: 'safe' },
-              { file: 'Q3_Financial_Report.pdf', time: '2 hours ago', status: 'Review', risk: 'caution' },
-              { file: 'Employee_Handbook.pdf', time: '5 hours ago', status: 'Safe', risk: 'safe' },
-              { file: 'Merger_Term_Sheet.pdf', time: '1 day ago', status: 'Critical', risk: 'critical' },
-            ].map((activity, i) => (
+            {analytics.recentActivity.length > 0 ? analytics.recentActivity.map((activity, i) => (
               <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border-subtle hover:bg-surface-2 transition-colors cursor-pointer group">
                 <div className="flex items-center gap-3">
                   <div className={`flex size-10 items-center justify-center rounded-lg ${
@@ -174,7 +186,9 @@ export function AnalyticsPage() {
                   {activity.status}
                 </Badge>
               </div>
-            ))}
+            )) : (
+              <div className="p-4 text-center text-text-tertiary">No recent activity</div>
+            )}
           </div>
         </div>
 

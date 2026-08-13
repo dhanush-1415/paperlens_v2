@@ -56,6 +56,7 @@ export const ROUTES = {
  vaultFolder: (folderId: string) => `/vault/folder/${segment(folderId)}`,
  document: (id: string) => `/document/${segment(id)}`,
  usage: '/usage',
+ analytics: '/analytics',
  settings: '/settings',
  profile: '/profile',
  billing: '/billing',
@@ -79,7 +80,7 @@ export const ROUTES = {
  */
 export const ROUTE_ACCESS = {
  /** Requires a session. Prefix match. */
- protected: ['/welcome', '/scan', '/vault', '/document', '/usage', '/settings', '/profile', '/billing', '/admin'],
+ protected: ['/welcome', '/scan', '/vault', '/document', '/usage', '/analytics', '/settings', '/profile', '/billing', '/admin'],
  /** Signed-in users are bounced away from these. */
  authOnly: ['/login', '/signup', '/forgot-password'],
  /** Never redirected, never gated. */

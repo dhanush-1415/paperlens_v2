@@ -9,10 +9,10 @@ export interface DocumentResultCardProps {
 }
 
 const URGENCY_CONFIG = {
-  low: { color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', label: 'Low Urgency' },
-  medium: { color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', label: 'Medium Urgency' },
-  high: { color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/20', label: 'High Urgency' },
-  critical: { color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20', label: 'Critical Action Required' },
+  low: { color: 'text-risk-safe', bg: 'bg-risk-safe/10', border: 'border-risk-safe/20', label: 'Low Urgency' },
+  medium: { color: 'text-risk-caution', bg: 'bg-risk-caution/10', border: 'border-risk-caution/20', label: 'Medium Urgency' },
+  high: { color: 'text-risk-critical', bg: 'bg-risk-critical/10', border: 'border-risk-critical/20', label: 'High Urgency' },
+  critical: { color: 'text-risk-critical', bg: 'bg-risk-critical/10', border: 'border-risk-critical/20', label: 'Critical Action Required' },
 };
 
 export function DocumentResultCard({

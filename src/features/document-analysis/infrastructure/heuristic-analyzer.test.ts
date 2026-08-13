@@ -31,7 +31,7 @@ function request(text: string): AnalysisRequest {
 async function analyze(text: string): Promise<readonly RiskFlag[]> {
  const result = await analyzer.analyze(request(text));
  expect(isOk(result)).toBe(true);
- return isOk(result) ? result.value : [];
+ return isOk(result) ? result.value.flags : [];
 }
 
 const ARBITRATION = 'Any dispute shall be resolved by binding arbitration.';

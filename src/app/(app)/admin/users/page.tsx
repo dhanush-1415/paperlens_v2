@@ -8,11 +8,21 @@ export const metadata = {
 export default async function AdminUsersPage() {
   await requireSession();
 
-  const MOCK_USERS = [
-    { id: '1', name: 'Alex Mercer', email: 'alex@acmecorp.com', role: 'Owner', plan: 'Enterprise', status: 'Active' },
-    { id: '2', name: 'Sarah Jenkins', email: 'sarah@acmecorp.com', role: 'Admin', plan: 'Enterprise', status: 'Active' },
-    { id: '3', name: 'Elena Rostova', email: 'elena@acmecorp.com', role: 'User', plan: 'Enterprise', status: 'Invited' },
-  ];
+  const { prisma } = await import('@/server/db/prisma');
+  
+  const profiles = await prisma.profile.findMany({
+    take: 50,
+    orderBy: { updatedAt: 'desc' }
+  });
+
+  const MOCK_USERS = profiles.map(p => ({
+    id: p.id,
+    name: p.firstName ? `${p.firstName} ${p.lastName || ''}` : 'Unknown',
+    email: p.id, // Auth email isn't in profile, fallback to ID
+    role: 'User',
+    plan: 'Enterprise',
+    status: 'Active'
+  }));
 
   const columns = [
     { id: 'name', header: 'Name', cell: (u: any) => <span className="font-bold">{u.name}</span> },

@@ -65,6 +65,16 @@ model DocumentAnalysis {
   scoreValue   Int       @map("score_value")
   scoreLevel   String    @map("score_level")
   
+  summary      String?
+  actionPlan   String[]  @default([]) @map("action_plan")
+  urgency      String?
+  
+  rawText      String    @default("") @map("raw_text")
+  entities     Json      @default("[]")
+  legitimacy   String?
+  confidence   String?
+  suggestedQuestions String[] @default([]) @map("suggested_questions")
+  
   // Storing the flags as JSONB is efficient for retrieval 
   // since they are always fetched as a complete aggregate.
   flags           Json      @default("[]")

@@ -59,6 +59,14 @@ describe('cache declarations', () => {
  flags: [],
  score: { value: 100, level: 'safe', counts: { critical: 0, caution: 0, safe: 0 } },
  analyzedAt: FIXED_NOW.toISOString(),
+ summary: null,
+ actionPlan: [],
+ urgency: null,
+ rawText: '',
+ entities: [],
+ legitimacy: null,
+ confidence: null,
+ suggestedQuestions: [],
  }),
  );
 
@@ -119,6 +127,14 @@ describe('row/entity mapping', () => {
  // Deliberately inconsistent with the flags — a "perfect" score on a critical finding.
  score: { value: 100, level: 'safe', counts: { critical: 0, caution: 0, safe: 0 } },
  analyzedAt: FIXED_NOW.toISOString(),
+ summary: null,
+ actionPlan: [],
+ urgency: null,
+ rawText: '',
+ entities: [],
+ legitimacy: null,
+ confidence: null,
+ suggestedQuestions: [],
  }),
  );
 
@@ -151,6 +167,14 @@ describe('row/entity mapping', () => {
  ],
  score: { value: 70, level: 'caution', counts: { critical: 0, caution: 1, safe: 0 } },
  analyzedAt: FIXED_NOW.toISOString(),
+ summary: null,
+ actionPlan: [],
+ urgency: null,
+ rawText: '',
+ entities: [],
+ legitimacy: null,
+ confidence: null,
+ suggestedQuestions: [],
  }),
  );
 

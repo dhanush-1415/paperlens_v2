@@ -28,6 +28,8 @@ export {
  type AnalysisReportProps,
 } from './analysis-report';
 export { RiskFlagCard, type RiskFlagCardProps } from './risk-flag-card';
+export { DocumentActions } from './document-actions';
+export { SidebarCollapser } from './sidebar-collapser';
 
 /**
  * The action is exported so a route can pass it to a `<form action={…}>` without deep-importing

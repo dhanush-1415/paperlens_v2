@@ -2,12 +2,18 @@
 
 import { useState, useCallback, useEffect, useActionState, useRef } from 'react';
 import { Heading, Text, Button } from '@/shared/ui';
+import { Dialog } from '@/shared/ui/components';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import imageCompression from 'browser-image-compression';
+import { compressPdf } from '@/features/document-analysis/application/compress-pdf';
 import { UploadCloudIcon, ScanIcon, VaultIcon } from '@/shared/ui/icons/dashboard-icons';
 import { InfoIcon, ShieldIcon, DocumentIcon } from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
 import { analyzeDocumentAction } from '@/features/document-analysis/presentation/actions';
+
+const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
+const MAX_COMPRESSIBLE_SIZE = 10 * 1024 * 1024;
 
 export function OmniDropzone() {
   const [isDragging, setIsDragging] = useState(false);
@@ -18,6 +24,11 @@ export function OmniDropzone() {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [oversizedFile, setOversizedFile] = useState<File | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionPct, setCompressionPct] = useState(0);
 
   useEffect(() => {
     // Strictly auto-scroll to the bottom of the page when landed.
@@ -43,17 +54,14 @@ export function OmniDropzone() {
     setIsDragging(false);
   }, []);
 
-  const handleFile = async (file: File) => {
-    if (!file) return;
+  const executeUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      // Direct integration with the zero-dependency text extraction server action
       const analysisFormData = new FormData();
       analysisFormData.append('file', file);
       analysisFormData.append('documentType', 'other');
       analysisFormData.append('title', file.name);
       
-      // analyzeDocumentAction will extract text (PDF, DOCX, XLSX, etc.), run analysis, and redirect
       await analyzeDocumentAction(null, analysisFormData);
     } catch (e) {
       console.error(e);
@@ -63,19 +71,73 @@ export function OmniDropzone() {
     }
   };
 
+  const processFile = async (file: File) => {
+    if (!file) return;
+
+    if (file.size > MAX_COMPRESSIBLE_SIZE) {
+      toast.error(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is 10 MB.`);
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setOversizedFile(file);
+      setCompressionPct(0);
+      setIsModalOpen(true);
+      return;
+    }
+
+    await executeUpload(file);
+  };
+
+  const handleCompressAndScan = async () => {
+    if (!oversizedFile) return;
+    setIsCompressing(true);
+    setCompressionPct(0);
+    try {
+      const onProgress = (pct: number) => setCompressionPct(pct);
+
+      const compressed = oversizedFile.type === 'application/pdf'
+        ? await compressPdf(oversizedFile, { targetBytes: MAX_FILE_SIZE, onProgress })
+        : await imageCompression(oversizedFile, {
+            maxSizeMB: 4,
+            maxWidthOrHeight: 2048,
+            initialQuality: 0.7,
+            useWebWorker: true,
+            onProgress,
+          });
+
+      setIsModalOpen(false);
+      setOversizedFile(null);
+      setIsCompressing(false);
+      setCompressionPct(0);
+
+      if (compressed.size > MAX_FILE_SIZE) {
+        toast.error(`Compressed file is still ${(compressed.size / 1024 / 1024).toFixed(1)} MB — try a smaller or simpler file.`);
+        return;
+      }
+
+      await executeUpload(compressed);
+    } catch (err) {
+      console.error('Compression failed:', err);
+      setIsCompressing(false);
+      setCompressionPct(0);
+      toast.error('Compression failed. Please try selecting a different file.');
+    }
+  };
+
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      if (file) processFile(file);
     }
   }, []);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      if (file) handleFile(file);
+      if (file) processFile(file);
     }
   };
 
@@ -116,6 +178,36 @@ export function OmniDropzone() {
 
   return (
     <div className="w-full h-full flex flex-col">
+      <Dialog
+        open={isModalOpen}
+        onClose={() => { if (!isCompressing) { setIsModalOpen(false); setOversizedFile(null); } }}
+        dismissOnBackdropClick={!isCompressing}
+        title="File Too Large"
+        description={oversizedFile ? `The file you selected is ${(oversizedFile.size / 1024 / 1024).toFixed(1)} MB, which exceeds the 4.5 MB upload limit. ${oversizedFile.type === 'application/pdf' ? "We'll compress it before uploading." : "We can securely compress this image for you right now."}` : ''}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => { setIsModalOpen(false); setOversizedFile(null); }} disabled={isCompressing}>Cancel</Button>
+            <Button variant="premium" onClick={handleCompressAndScan} loading={isCompressing}>
+              {isCompressing ? `Compressing (${compressionPct}%)` : 'Compress & Continue'}
+            </Button>
+          </>
+        }
+      >
+        {isCompressing && (
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between text-xs font-semibold text-text-secondary">
+              <span>Compressing...</span>
+              <span>{compressionPct}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
+              <div
+                className="h-full rounded-full bg-brand-primary transition-all duration-300 ease-out"
+                style={{ width: `${compressionPct}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </Dialog>
       {/* Capability Segmented Control */}
       <div className="flex items-center justify-center sm:justify-start mb-8">
         <div className="inline-flex items-center p-1.5 bg-brand-primary/[0.03] backdrop-blur-md border border-brand-primary/10 rounded-2xl shadow-inner">
@@ -295,8 +387,10 @@ export function OmniDropzone() {
             <div key="default" className="relative z-10 flex flex-col w-full h-full items-center justify-center text-center animate-fade-in-up">
               
               {/* Massive Dashed Dropzone Area */}
-              <div className={cn(
-                "w-full max-w-3xl flex flex-col items-center justify-center p-12 sm:p-16 rounded-3xl border-2 border-dashed transition-all duration-300",
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                "w-full max-w-3xl flex flex-col items-center justify-center p-12 sm:p-16 rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer group",
                 isDragging 
                   ? "border-brand-primary bg-brand-primary/[0.05]" 
                   : "border-border-strong/50 bg-surface-1/50 hover:border-brand-primary/50 hover:bg-brand-primary/[0.02]"

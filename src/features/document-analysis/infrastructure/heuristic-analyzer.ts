@@ -1,10 +1,11 @@
 import 'server-only';
 
 import { attempt } from '@/core/errors/boundaries';
+import { ok } from '@/core/result/result';
 import { uuid } from '@/shared/utils/id';
 
 import { CLAUSE_CATEGORY_LABEL } from '../constants';
-import { type AnalysisRequest, type ClauseCategory, type DocumentAnalyzer, type RiskFlag, type RiskLevel } from '../domain';
+import { type AnalysisRequest, type ClauseCategory, type DocumentAnalyzer, type RiskFlag, type RiskLevel, type KeyEntity } from '../domain';
 
 /**
  * A rule-based `DocumentAnalyzer`. **This is a stand-in, and it is named like one.**
@@ -222,7 +223,16 @@ export function createHeuristicAnalyzer(): DocumentAnalyzer {
  }
  }
 
- return found as readonly RiskFlag[];
+ return { 
+  flags: found,
+  summary: null,
+  actionPlan: [] as string[],
+  urgency: null,
+  entities: [] as KeyEntity[],
+  legitimacy: null,
+  confidence: null,
+  suggestedQuestions: [] as string[]
+ };
  });
  },
  };

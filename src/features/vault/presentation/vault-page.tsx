@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, type Column } from '@/shared/ui';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
@@ -115,6 +116,7 @@ interface VaultFolder {
 }
 
 export function VaultPage() {
+  const router = useRouter();
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRisk, setFilterRisk] = useState<string>('all');
@@ -218,7 +220,7 @@ export function VaultPage() {
       id: 'name',
       header: 'Name',
       cell: (item) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" onClick={() => router.push(`/document/${item.id}`)}>
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-2 text-text-tertiary">
             <DocumentIcon className="size-4" />
           </div>
@@ -402,7 +404,7 @@ export function VaultPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredDocs.map((doc) => (
-                <div key={doc.id} className="group relative flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-1 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-primary/30 hover:shadow-md cursor-pointer">
+                <div key={doc.id} onClick={() => router.push(`/document/${doc.id}`)} className="group relative flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-1 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-primary/30 hover:shadow-md cursor-pointer">
                   
                   <div className="absolute top-4 right-4 z-10">
                     <Checkbox 

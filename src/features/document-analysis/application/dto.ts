@@ -34,6 +34,7 @@ import {
  type RiskFlag,
  type RiskLevel,
  type RiskScore,
+ type KeyEntity,
 } from '../domain';
 
 export interface RiskFlagDto {
@@ -70,6 +71,14 @@ export interface AnalysisDto {
  readonly charCount: number;
  readonly analyzedAt: string;
  readonly score: RiskScoreDto;
+ readonly summary: string | null;
+ readonly actionPlan: readonly string[];
+ readonly urgency: string | null;
+ readonly rawText: string;
+ readonly entities: readonly KeyEntity[];
+ readonly legitimacy: string | null;
+ readonly confidence: string | null;
+ readonly suggestedQuestions: readonly string[];
  readonly flags: readonly RiskFlagDto[];
 }
 
@@ -127,6 +136,14 @@ export function toAnalysisDto(analysis: DocumentAnalysis): AnalysisDto {
  charCount: analysis.charCount,
  analyzedAt: analysis.analyzedAt,
  score: toScoreDto(analysis.score),
+ summary: analysis.summary,
+ actionPlan: analysis.actionPlan,
+ urgency: analysis.urgency,
+ rawText: analysis.rawText,
+ entities: analysis.entities,
+ legitimacy: analysis.legitimacy,
+ confidence: analysis.confidence,
+ suggestedQuestions: analysis.suggestedQuestions,
  // Sorted here, once, rather than in whichever component happens to render them. Two
  // surfaces sorting independently is how a list and its summary end up disagreeing.
  flags: sortFlags(analysis.flags).map(f => toFlagDto(f, analysis.resolvedFlagIds.includes(f.id))),

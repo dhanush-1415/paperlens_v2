@@ -58,6 +58,13 @@ const nextConfig: NextConfig = {
     },
   },
 
+  // @ts-expect-error - Next 15+ has serverActions at the root, but the typings might not reflect it
+  serverActions: {
+    bodySizeLimit: '10mb',
+  },
+
+  serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
+
   /**
    * React Compiler is stable in Next 16 but off here deliberately: it is a performance
    * optimization that should be measured against a real bundle, not assumed, and it

@@ -21,4 +21,4 @@ export {
  type DocumentAnalysisRepositoryDeps,
 } from './document-analysis-repository';
 
-export { createHeuristicAnalyzer } from './heuristic-analyzer';
+export { createGeminiAnalyzer } from './gemini-analyzer';

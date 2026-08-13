@@ -37,7 +37,7 @@ const criticalFlag: RiskFlag = {
 };
 
 function fakeAnalyzer(flags: readonly RiskFlag[] = []): DocumentAnalyzer {
- return { name: 'fake', analyze: async () => ok(flags) };
+ return { name: 'fake', analyze: async () => ok({ flags, summary: null, actionPlan: [], urgency: null, entities: [], legitimacy: null, confidence: null, suggestedQuestions: [] }) };
 }
 
 function failingAnalyzer(): DocumentAnalyzer {
@@ -116,7 +116,7 @@ describe('validation — the invariant, not the form message', () => {
  name: 'spy',
  analyze: async () => {
  called = true;
- return ok([]);
+ return ok({ flags: [], summary: null, actionPlan: [], urgency: null, entities: [], legitimacy: null, confidence: null, suggestedQuestions: [] });
  },
  };
 

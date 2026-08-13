@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 import {
  AnalysisReport,
  GET_DOCUMENT_ANALYSIS,
  toAnalysisDto,
+ DocumentActions,
+ SidebarCollapser,
  type AnalysisReportLabels,
 } from '@/features/document-analysis';
 import { getServerContainer, requirePermission } from '@/server/bootstrap';
@@ -76,27 +80,37 @@ async function Report({ id }: { readonly id: string }) {
  return <AnalysisReport analysis={toAnalysisDto(result.value)} labels={LABELS} />;
 }
 
-export default async function DocumentPage(props: PageProps<'/document/[id]'>) {
- const { id } = await props.params;
+async function DocumentContainer({ params }: { params: Promise<{ id: string }> }) {
+ const { id } = await params;
 
  return (
- <Container>
- <Section spacing="lg">
- <PageHeader
- title="Analysis"
- description="Worst clause first. Open a finding to see the exact wording it came from."
- />
+ <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[800px] w-full overflow-hidden bg-surface-1 rounded-2xl border border-border-subtle shadow-sm">
+  {/* Document Topbar */}
+  <header className="flex h-16 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-2 px-6">
+    <div className="flex items-center gap-4">
+      <Link href="/scan" className="flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+        <ChevronLeft className="size-4" />
+        Back to Scan
+      </Link>
+    </div>
+    
+    {/* Actions: Re-analyze, Translate, Delete etc. */}
+    <DocumentActions documentId={id} />
+  </header>
 
- {/*
- * Everything above is static and streams immediately; only the report waits on the
- * session and the read. Under `cacheComponents` this is not a nicety — a request API
- * outside a Suspense boundary is a build error, and the boundary's placement is
- * literally the line between the prerendered shell and the dynamic hole in it.
- */}
- <Suspense fallback={<LoadingState label="Loading your analysis" />}>
- <Report id={id} />
- </Suspense>
- </Section>
- </Container>
+  <main className="flex-1 min-h-0 overflow-hidden">
+    <Report id={id} />
+  </main>
+  
+  <SidebarCollapser />
+ </div>
+ );
+}
+
+export default function DocumentPage(props: PageProps<'/document/[id]'>) {
+ return (
+  <Suspense fallback={<LoadingState label="Loading your analysis" />}>
+    <DocumentContainer params={props.params} />
+  </Suspense>
  );
 }

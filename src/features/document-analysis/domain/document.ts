@@ -34,6 +34,24 @@ export type RiskLevel = 'critical' | 'caution' | 'safe';
  * in the UI, translated, and counted in analytics. A free string would let an adapter invent
  * `'auto-renew'` alongside `'auto_renewal'` and quietly split the metric in two.
  */
+export type ClauseCategory =
+  | 'auto_renewal'
+  | 'arbitration'
+  | 'liability_cap'
+  | 'unilateral_change'
+  | 'termination_penalty'
+  | 'data_sharing'
+  | 'late_fee'
+  | 'indemnity'
+  | 'non_compete'
+  | 'jurisdiction';
+
+export interface KeyEntity {
+  readonly label: string;
+  readonly value: string;
+  readonly iconHint: string;
+}
+
 export const CLAUSE_CATEGORIES = [
  'auto_renewal',
  'arbitration',
@@ -46,8 +64,6 @@ export const CLAUSE_CATEGORIES = [
  'non_compete',
  'jurisdiction',
 ] as const;
-
-export type ClauseCategory = (typeof CLAUSE_CATEGORIES)[number];
 
 /**
  * The kind of document being analysed.
@@ -122,6 +138,14 @@ export interface AnalysisDraft {
  readonly charCount: number;
  readonly flags: readonly RiskFlag[];
  readonly score: RiskScore;
+ readonly summary: string | null;
+ readonly actionPlan: readonly string[];
+ readonly urgency: string | null;
+ readonly rawText: string;
+ readonly entities: readonly KeyEntity[];
+ readonly legitimacy: string | null;
+ readonly confidence: string | null;
+ readonly suggestedQuestions: readonly string[];
  /** ISO 8601. Produced from an injected clock, never from `new Date()` inside a rule. */
  readonly analyzedAt: string;
 }

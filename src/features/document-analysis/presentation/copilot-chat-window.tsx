@@ -6,9 +6,10 @@ import { SendIcon, SparklesIcon, BotIcon, UserIcon } from 'lucide-react';
 
 export interface CopilotChatWindowProps {
   documentId: string;
+  suggestedQuestions?: readonly string[];
 }
 
-export function CopilotChatWindow({ documentId }: CopilotChatWindowProps) {
+export function CopilotChatWindow({ documentId, suggestedQuestions = [] }: CopilotChatWindowProps) {
   const [messages, setMessages] = useState<{ id: string, role: string, content: string }[]>([
     {
       id: '1',
@@ -72,10 +73,10 @@ export function CopilotChatWindow({ documentId }: CopilotChatWindowProps) {
   };
 
   return (
-    <Card className="flex flex-col h-[600px] border-border-strong/50 shadow-lg bg-surface-1/50 backdrop-blur-xl relative overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-1/50 backdrop-blur-xl relative overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-border-subtle bg-surface-2/80">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary">
+        <div className="flex size-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary ring-1 ring-brand-primary/20 shadow-inner">
           <SparklesIcon className="size-4" />
         </div>
         <div>
@@ -88,14 +89,14 @@ export function CopilotChatWindow({ documentId }: CopilotChatWindowProps) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scroll-smooth">
         {messages.map((m) => (
           <div key={m.id} className={`flex gap-4 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-            <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${m.role === 'user' ? 'bg-surface-3 text-text-secondary' : 'bg-brand-primary text-white shadow-md'}`}>
+            <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${m.role === 'user' ? 'bg-surface-3 text-text-secondary ring-1 ring-border-subtle' : 'bg-brand-primary text-white shadow-md ring-2 ring-brand-primary/20'}`}>
               {m.role === 'user' ? <UserIcon className="size-4" /> : <BotIcon className="size-4" />}
             </div>
             
             <div className={`flex flex-col max-w-[80%] ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div className={`px-4 py-3 rounded-2xl ${
                 m.role === 'user' 
-                  ? 'bg-surface-3 text-text-primary rounded-tr-sm' 
+                  ? 'bg-surface-3 text-text-primary rounded-tr-sm shadow-sm' 
                   : 'bg-brand-primary/5 border border-brand-primary/20 text-text-primary rounded-tl-sm shadow-sm'
               }`}>
                 <Text size="sm" className="font-inter leading-relaxed whitespace-pre-wrap">
@@ -110,7 +111,7 @@ export function CopilotChatWindow({ documentId }: CopilotChatWindowProps) {
             <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-primary text-white shadow-md">
               <BotIcon className="size-4" />
             </div>
-            <div className="px-4 py-3 rounded-2xl bg-brand-primary/5 border border-brand-primary/20 rounded-tl-sm flex items-center gap-1.5">
+            <div className="px-4 py-3 rounded-2xl bg-brand-primary/5 border border-brand-primary/20 rounded-tl-sm flex items-center gap-1.5 shadow-sm">
               <span className="size-2 rounded-full bg-brand-primary/50 animate-bounce" style={{ animationDelay: '0ms' }} />
               <span className="size-2 rounded-full bg-brand-primary/50 animate-bounce" style={{ animationDelay: '150ms' }} />
               <span className="size-2 rounded-full bg-brand-primary/50 animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -119,13 +120,27 @@ export function CopilotChatWindow({ documentId }: CopilotChatWindowProps) {
         )}
       </div>
 
-      {/* Input */}
-      <div className="p-4 bg-surface-1 border-t border-border-subtle">
+      {/* Input Area */}
+      <div className="p-4 bg-surface-1 border-t border-border-subtle flex flex-col gap-3">
+        {messages.length === 1 && suggestedQuestions.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {suggestedQuestions.map(prompt => (
+              <button 
+                key={prompt}
+                type="button"
+                onClick={() => setInput(prompt)}
+                className="whitespace-nowrap px-3 py-1.5 rounded-full bg-surface-2 border border-border-subtle hover:bg-surface-3 hover:border-brand-primary/30 text-xs font-medium text-text-secondary hover:text-text-primary transition-all"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="relative flex items-center">
           <Input 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about liabilities, terms, or renegotiation strategies..."
+            placeholder="Ask about liabilities or terms..."
             className="w-full pr-14 pl-5 py-4 rounded-[1.5rem] bg-surface-2 border-border-strong focus:ring-2 focus:ring-brand-primary/30 focus:border-brand-primary shadow-inner"
           />
           <Button 
@@ -137,7 +152,7 @@ export function CopilotChatWindow({ documentId }: CopilotChatWindowProps) {
           </Button>
         </form>
       </div>
-    </Card>
+    </div>
   );
 }
 

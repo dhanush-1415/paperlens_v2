@@ -17,7 +17,7 @@ const INVOICES = [
   { id: 'INV-2026-001', date: 'Jun 1, 2026', amount: '$49.00', status: 'Paid', downloadUrl: '#' },
 ];
 
-export function BillingPage({ planData }: { planData: any }) {
+export function BillingPage({ planData, usageData }: { planData: any, usageData: any }) {
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const handleUpgrade = async (planName: string) => {
@@ -74,48 +74,88 @@ export function BillingPage({ planData }: { planData: any }) {
         </div>
       </div>
 
-      {/* Usage Overview */}
-      <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <Heading level={2} size="md" className="font-bold text-text-primary">Current Cycle Usage</Heading>
-          <Badge tone="brand" className="font-bold shadow-sm">
-            Resets {new Date(planData.subscription.usageResetAt).toLocaleDateString()}
-          </Badge>
-        </div>
+      {/* Usage & Analytics Fusion */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="flex flex-col gap-3">
-            <div className="flex justify-between items-end">
-              <div>
-                <Text size="sm" className="font-bold text-text-primary">Document Scans</Text>
-                <Text size="xs" tone="secondary" className="font-medium mt-0.5">{planData.plan.displayName} Plan</Text>
+        {/* Usage Overview */}
+        <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
+          <div className="flex justify-between items-center">
+            <Heading level={2} size="md" className="font-bold text-text-primary">Current Cycle Usage</Heading>
+            <Badge tone="brand" className="font-bold shadow-sm">
+              Resets {new Date(planData.subscription.usageResetAt).toLocaleDateString()}
+            </Badge>
+          </div>
+          
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-end">
+                <div>
+                  <Text size="sm" className="font-bold text-text-primary">Document Scans</Text>
+                  <Text size="xs" tone="secondary" className="font-medium mt-0.5">{planData.plan.displayName} Plan</Text>
+                </div>
+                <div className="text-right">
+                  <Text size="sm" className="font-bold text-text-primary">{planData.subscription.scansUsed} <span className="text-text-tertiary">/ {planData.plan.quotaScansPerMonth}</span></Text>
+                  <Text size="xs" tone="secondary" className="font-medium mt-0.5">{Math.round((planData.subscription.scansUsed / Math.max(1, planData.plan.quotaScansPerMonth)) * 100)}% used</Text>
+                </div>
               </div>
-              <div className="text-right">
-                <Text size="sm" className="font-bold text-text-primary">{planData.subscription.scansUsed} <span className="text-text-tertiary">/ {planData.plan.quotaScansPerMonth}</span></Text>
-                <Text size="xs" tone="secondary" className="font-medium mt-0.5">{Math.round((planData.subscription.scansUsed / Math.max(1, planData.plan.quotaScansPerMonth)) * 100)}% used</Text>
+              <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
+                <div className="h-full bg-brand-primary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-primary),0.6)]" style={{ width: `${Math.min(100, (planData.subscription.scansUsed / Math.max(1, planData.plan.quotaScansPerMonth)) * 100)}%` }} />
               </div>
             </div>
-            <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
-              <div className="h-full bg-brand-primary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-primary),0.6)]" style={{ width: `${Math.min(100, (planData.subscription.scansUsed / Math.max(1, planData.plan.quotaScansPerMonth)) * 100)}%` }} />
+
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="flex flex-col gap-1 p-3 rounded-xl bg-surface-2/50 border border-border-subtle">
+                <Text size="xs" tone="secondary" className="font-medium uppercase tracking-wider">Member Since</Text>
+                <Text size="sm" className="font-bold text-text-primary">
+                  {new Date(usageData.memberSince).toLocaleDateString()}
+                </Text>
+              </div>
+              <div className="flex flex-col gap-1 p-3 rounded-xl bg-surface-2/50 border border-border-subtle">
+                <Text size="xs" tone="secondary" className="font-medium uppercase tracking-wider">Last Scan</Text>
+                <Text size="sm" className="font-bold text-text-primary">
+                  {usageData.lastScanDate ? new Date(usageData.lastScanDate).toLocaleDateString() : 'None'}
+                </Text>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Vault Analytics */}
+        <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
+          <div className="flex justify-between items-center">
+            <Heading level={2} size="md" className="font-bold text-text-primary">Vault Analytics</Heading>
+            <Badge tone="neutral" className="font-bold shadow-sm">{usageData.totalDocuments} Total Docs</Badge>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="flex justify-between items-end">
-              <div>
-                <Text size="sm" className="font-bold text-text-primary">Vault Storage</Text>
-                <Text size="xs" tone="secondary" className="font-medium mt-0.5">Professional Plan</Text>
+          <div className="flex flex-col gap-5">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-risk-critical/20 bg-risk-critical/5">
+                <Text className="text-2xl font-bold text-risk-critical">{usageData.criticalCount}</Text>
+                <Text size="xs" className="font-semibold text-risk-critical/80 mt-1 uppercase tracking-wider">High Risk</Text>
               </div>
-              <div className="text-right">
-                <Text size="sm" className="font-bold text-text-primary">2.4 GB <span className="text-text-tertiary">/ 10 GB</span></Text>
-                <Text size="xs" tone="secondary" className="font-medium mt-0.5">24% used</Text>
+              <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-risk-caution/20 bg-risk-caution/5">
+                <Text className="text-2xl font-bold text-risk-caution">{usageData.cautionCount}</Text>
+                <Text size="xs" className="font-semibold text-risk-caution/80 mt-1 uppercase tracking-wider">Caution</Text>
+              </div>
+              <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-risk-safe/20 bg-risk-safe/5">
+                <Text className="text-2xl font-bold text-risk-safe">{usageData.safeCount}</Text>
+                <Text size="xs" className="font-semibold text-risk-safe/80 mt-1 uppercase tracking-wider">Safe</Text>
               </div>
             </div>
-            <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
-              <div className="h-full bg-brand-secondary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-secondary),0.6)]" style={{ width: '24%' }} />
+
+            <div className="flex flex-col gap-2 mt-2">
+              <div className="flex justify-between items-center">
+                <Text size="sm" className="font-bold text-text-primary">Risk Distribution</Text>
+              </div>
+              <div className="h-3 w-full bg-surface-2 rounded-full overflow-hidden flex">
+                <div className="h-full bg-risk-critical transition-all" style={{ width: `${(usageData.criticalCount / Math.max(1, usageData.totalDocuments)) * 100}%` }} />
+                <div className="h-full bg-risk-caution transition-all" style={{ width: `${(usageData.cautionCount / Math.max(1, usageData.totalDocuments)) * 100}%` }} />
+                <div className="h-full bg-risk-safe transition-all" style={{ width: `${(usageData.safeCount / Math.max(1, usageData.totalDocuments)) * 100}%` }} />
+              </div>
             </div>
           </div>
         </div>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-2">

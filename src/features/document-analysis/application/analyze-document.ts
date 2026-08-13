@@ -127,8 +127,16 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
  title: input.title?.trim() || deriveTitle(text, input.documentType),
  documentType: input.documentType,
  charCount: text.length,
- flags: flags.value,
- score: scoreOf(flags.value),
+ flags: flags.value.flags,
+ score: scoreOf(flags.value.flags),
+ summary: flags.value.summary,
+ actionPlan: flags.value.actionPlan,
+ urgency: flags.value.urgency,
+ rawText: text,
+ entities: flags.value.entities,
+ legitimacy: flags.value.legitimacy,
+ confidence: flags.value.confidence,
+ suggestedQuestions: flags.value.suggestedQuestions,
  analyzedAt: deps.now().toISOString(),
  };
 
