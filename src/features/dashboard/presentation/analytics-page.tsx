@@ -1,25 +1,73 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Heading, Text, Badge } from '@/shared/ui';
 import { BarChartIcon, ScanIcon, VaultIcon, TrendingUpIcon, CalendarIcon, DownloadIcon } from '@/shared/ui/icons/dashboard-icons';
 import { ShieldIcon } from '@/shared/ui/icons';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import { format } from 'date-fns';
 
 export interface AnalyticsData {
   totalScans: number;
+  totalScansGrowth: string;
   vaultDocs: number;
   highRisk: number;
+  avgProcessingTime: string;
   recentActivity: { file: string; time: string; status: string; risk: 'safe' | 'caution' | 'critical' }[];
-  processingVolume: number[]; // 12 values
+  processingVolume: { date: string; count: number }[];
+  riskDistribution: {
+    safePercentage: number;
+    cautionPercentage: number;
+    criticalPercentage: number;
+  };
+  startDate: string;
+  endDate: string;
 }
 
 export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
-  // Fallback to empty if not provided yet, but the page route will provide it
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
   const analytics = data || {
     totalScans: 0,
+    totalScansGrowth: '0% this period',
     vaultDocs: 0,
     highRisk: 0,
+    avgProcessingTime: '0.0s',
     recentActivity: [],
-    processingVolume: Array(12).fill(0)
+    processingVolume: [],
+    riskDistribution: { safePercentage: 100, cautionPercentage: 0, criticalPercentage: 0 },
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date().toISOString()
+  };
+
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(analytics.startDate),
+      endDate: new Date(analytics.endDate),
+      key: 'selection'
+    }
+  ]);
+
+  const handleSelect = (ranges: any) => {
+    setDateRange([ranges.selection]);
+  };
+
+  const applyDateRange = () => {
+    setShowDatePicker(false);
+    if (!dateRange[0]) return;
+    const start = dateRange[0].startDate.toISOString();
+    const end = dateRange[0].endDate.toISOString();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('start', start);
+    params.set('end', end);
+    router.push(`?${params.toString()}`);
   };
 
   return (
@@ -39,10 +87,41 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
             <TrendingUpIcon className="size-4" /> Systems Nominal
           </div>
           
-          <button className="flex h-9 items-center gap-2 rounded-xl border border-border-subtle bg-surface-1 px-3 text-sm font-semibold text-text-secondary shadow-sm hover:border-brand-primary/30 hover:text-brand-primary transition-all">
-            <CalendarIcon className="size-4" />
-            <span>Last 30 Days</span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className="flex h-9 items-center gap-2 rounded-xl border border-border-subtle bg-surface-1 px-3 text-sm font-semibold text-text-secondary shadow-sm hover:border-brand-primary/30 hover:text-brand-primary transition-all"
+            >
+              <CalendarIcon className="size-4" />
+              <span>{format(dateRange[0]!.startDate, 'MMM d, yyyy')} - {format(dateRange[0]!.endDate, 'MMM d, yyyy')}</span>
+            </button>
+            
+            {showDatePicker && (
+              <div className="absolute top-12 right-0 z-50 bg-surface-1 border border-border-subtle rounded-xl shadow-xl overflow-hidden p-2">
+                <DateRangePicker
+                  ranges={dateRange}
+                  onChange={handleSelect}
+                  rangeColors={['#8b5cf6']}
+                  moveRangeOnFirstSelection={false}
+                  direction="horizontal"
+                />
+                <div className="flex justify-end gap-2 p-2 pt-4 border-t border-border-subtle">
+                  <button 
+                    onClick={() => setShowDatePicker(false)}
+                    className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={applyDateRange}
+                    className="px-4 py-2 text-sm font-bold bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover shadow-md transition-all hover:-translate-y-0.5"
+                  >
+                    Apply Filter
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           
           <button className="flex h-9 items-center gap-2 rounded-xl border border-border-strong/50 bg-surface-2 px-3 text-sm font-semibold text-text-primary shadow-sm hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all">
             <DownloadIcon className="size-4" />
@@ -58,7 +137,7 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
             <div className="flex size-12 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <ScanIcon className="size-6" />
             </div>
-            <Badge tone="safe" className="font-bold">+12% this week</Badge>
+            <Badge tone="safe" className="font-bold">{analytics.totalScansGrowth}</Badge>
           </div>
           <div className="relative">
             <Heading level={2} size="md" className="font-extrabold text-3xl">{analytics.totalScans.toLocaleString()}</Heading>
@@ -81,9 +160,9 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
         </div>
 
         <div className="relative flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-1 p-5 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-risk-critical/5 to-transparent opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-50" />
           <div className="relative flex items-center justify-between">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-risk-critical/10 text-risk-critical">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
               <ShieldIcon className="size-6" />
             </div>
             <Badge tone="critical" className="font-bold">Attention</Badge>
@@ -95,14 +174,14 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
         </div>
 
         <div className="relative flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-1 p-5 shadow-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-risk-safe/5 to-transparent opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-50" />
           <div className="relative flex items-center justify-between">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-safe/10 text-safe">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
               <BarChartIcon className="size-6" />
             </div>
           </div>
           <div className="relative">
-            <Heading level={2} size="md" className="font-extrabold text-3xl">1.2s</Heading>
+            <Heading level={2} size="md" className="font-extrabold text-3xl">{analytics.avgProcessingTime}</Heading>
             <Text size="sm" tone="secondary" className="font-medium mt-1">Avg. Processing Time</Text>
           </div>
         </div>
@@ -110,16 +189,43 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
         <div className="lg:col-span-2 rounded-[1.25rem] border border-border-subtle bg-surface-1 p-6 shadow-sm flex flex-col min-h-[400px]">
-          <div className="mb-6">
-            <Heading level={2} size="sm" className="font-bold uppercase tracking-wider text-text-tertiary">Processing Volume (30 Days)</Heading>
+          <div className="mb-6 flex justify-between items-center">
+            <Heading level={2} size="sm" className="font-bold uppercase tracking-wider text-text-tertiary">Processing Volume</Heading>
           </div>
-          <div className="flex-1 flex items-center justify-center rounded-xl border border-dashed border-border-strong bg-surface-2/50 relative overflow-hidden">
-             <div className="absolute inset-0 flex items-end justify-between px-6 pt-10 pb-6 opacity-30">
-                {analytics.processingVolume.map((h, i) => (
-                  <div key={i} className="w-[6%] bg-brand-primary rounded-t-sm" style={{ height: `${Math.max(5, Math.min(100, h * 10))}%` }} />
-                ))}
-             </div>
-             <Text tone="tertiary" className="font-medium relative z-10 bg-surface-1 px-4 py-1.5 rounded-full border border-border-subtle shadow-sm">Chart Data Loading...</Text>
+          <div className="flex-1 flex items-center justify-center rounded-xl border border-dashed border-border-strong bg-surface-2/30 p-4">
+            {analytics.processingVolume.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={analytics.processingVolume} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(150, 150, 150, 0.2)" />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#888888', fontSize: 12, fontWeight: 500 }}
+                    minTickGap={30}
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#888888', fontSize: 12, fontWeight: 500 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: '1px solid rgba(150, 150, 150, 0.2)', backgroundColor: 'var(--color-surface-1)', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', color: 'var(--color-text-primary)', fontWeight: 'bold' }}
+                    itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
+                  />
+                  <Area type="monotone" dataKey="count" name="Scans" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 6, fill: '#8b5cf6', stroke: 'white', strokeWidth: 2 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <Text tone="tertiary" className="font-medium">No activity recorded for this period</Text>
+            )}
           </div>
         </div>
         
@@ -127,39 +233,39 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
           <div className="mb-6">
             <Heading level={2} size="sm" className="font-bold uppercase tracking-wider text-text-tertiary">Risk Distribution</Heading>
           </div>
-          <div className="flex-1 flex flex-col gap-5">
+          <div className="flex-1 flex flex-col gap-6 justify-center">
             <div>
               <div className="flex justify-between text-sm font-bold text-text-secondary mb-2">
                 <span>Verified Safe</span>
-                <span className="text-safe">65%</span>
+                <span className="text-emerald-500">{analytics.riskDistribution.safePercentage}%</span>
               </div>
-              <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
-                <div className="h-full bg-safe rounded-full shadow-[0_0_8px_rgba(var(--color-safe),0.6)]" style={{ width: '65%' }} />
+              <div className="h-3 w-full bg-surface-2 rounded-full overflow-hidden shadow-inner">
+                <div className="h-full bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000" style={{ width: `${analytics.riskDistribution.safePercentage}%` }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between text-sm font-bold text-text-secondary mb-2">
                 <span>Needs Review</span>
-                <span className="text-risk-caution">25%</span>
+                <span className="text-amber-500">{analytics.riskDistribution.cautionPercentage}%</span>
               </div>
-              <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
-                <div className="h-full bg-risk-caution rounded-full shadow-[0_0_8px_rgba(var(--color-risk-caution),0.6)]" style={{ width: '25%' }} />
+              <div className="h-3 w-full bg-surface-2 rounded-full overflow-hidden shadow-inner">
+                <div className="h-full bg-amber-500 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-all duration-1000" style={{ width: `${analytics.riskDistribution.cautionPercentage}%` }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between text-sm font-bold text-text-secondary mb-2">
                 <span>High Risk</span>
-                <span className="text-risk-critical">10%</span>
+                <span className="text-rose-500">{analytics.riskDistribution.criticalPercentage}%</span>
               </div>
-              <div className="h-2.5 w-full bg-surface-2 rounded-full overflow-hidden">
-                <div className="h-full bg-risk-critical rounded-full shadow-[0_0_8px_rgba(var(--color-risk-critical),0.6)]" style={{ width: '10%' }} />
+              <div className="h-3 w-full bg-surface-2 rounded-full overflow-hidden shadow-inner">
+                <div className="h-full bg-rose-500 rounded-full shadow-[0_0_10px_rgba(244,63,94,0.5)] transition-all duration-1000" style={{ width: `${analytics.riskDistribution.criticalPercentage}%` }} />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+      <div className="grid grid-cols-1 mt-4">
         {/* Recent Activity */}
         <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-6 shadow-sm flex flex-col">
           <div className="mb-6 flex justify-between items-center">
@@ -167,84 +273,49 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
             <button className="text-xs font-bold text-brand-primary hover:underline">View All</button>
           </div>
           <div className="flex flex-col gap-4">
-            {analytics.recentActivity.length > 0 ? analytics.recentActivity.map((activity, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border-subtle hover:bg-surface-2 transition-colors cursor-pointer group">
-                <div className="flex items-center gap-3">
-                  <div className={`flex size-10 items-center justify-center rounded-lg ${
-                    activity.risk === 'safe' ? 'bg-safe/10 text-safe' : 
-                    activity.risk === 'caution' ? 'bg-risk-caution/10 text-risk-caution' : 
-                    'bg-risk-critical/10 text-risk-critical'
-                  }`}>
-                    <ScanIcon className="size-5" />
-                  </div>
-                  <div>
-                    <Text size="sm" className="font-bold text-text-primary group-hover:text-brand-primary transition-colors">{activity.file}</Text>
-                    <Text size="xs" tone="secondary" className="font-medium mt-0.5">{activity.time}</Text>
-                  </div>
-                </div>
-                <Badge tone={activity.risk as 'safe' | 'caution' | 'critical'} className="font-bold">
-                  {activity.status}
-                </Badge>
+            {analytics.recentActivity.length > 0 ? (
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border-subtle bg-surface-2/10 text-xs uppercase tracking-wider text-text-tertiary">
+                      <th className="px-4 py-3 font-bold">Document</th>
+                      <th className="px-4 py-3 font-bold">Date</th>
+                      <th className="px-4 py-3 font-bold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-subtle">
+                    {analytics.recentActivity.map((activity, i) => (
+                      <tr key={i} className="hover:bg-surface-2 transition-colors cursor-pointer group">
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
+                              activity.risk === 'safe' ? 'bg-emerald-500/10 text-emerald-500' : 
+                              activity.risk === 'caution' ? 'bg-amber-500/10 text-amber-500' : 
+                              'bg-rose-500/10 text-rose-500'
+                            }`}>
+                              <ScanIcon className="size-5" />
+                            </div>
+                            <Text size="sm" className="font-bold text-text-primary group-hover:text-brand-primary transition-colors max-w-[200px] sm:max-w-xs md:max-w-md lg:max-w-xl truncate">{activity.file}</Text>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <Text size="sm" tone="secondary" className="font-medium whitespace-nowrap">{activity.time}</Text>
+                        </td>
+                        <td className="px-4 py-4">
+                          <Badge tone={activity.risk as 'safe' | 'caution' | 'critical'} className="font-bold">
+                            {activity.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )) : (
-              <div className="p-4 text-center text-text-tertiary">No recent activity</div>
+            ) : (
+              <div className="p-8 text-center text-text-tertiary rounded-xl border border-dashed border-border-strong bg-surface-2/30">
+                No recent activity found for this period.
+              </div>
             )}
-          </div>
-        </div>
-
-        {/* Storage Breakdown */}
-        <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-6 shadow-sm flex flex-col">
-          <div className="mb-6">
-            <Heading level={2} size="sm" className="font-bold uppercase tracking-wider text-text-tertiary">Storage Breakdown</Heading>
-          </div>
-          
-          <div className="flex-1 flex flex-col justify-center gap-8">
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-end">
-                <div className="flex items-center gap-2">
-                  <div className="size-3 rounded-full bg-brand-primary" />
-                  <Text size="sm" className="font-bold text-text-primary">Legal Contracts</Text>
-                </div>
-                <Text size="sm" className="font-bold text-text-secondary">1.2 GB (50%)</Text>
-              </div>
-              <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                <div className="h-full bg-brand-primary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-primary),0.6)]" style={{ width: '50%' }} />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-end">
-                <div className="flex items-center gap-2">
-                  <div className="size-3 rounded-full bg-brand-secondary" />
-                  <Text size="sm" className="font-bold text-text-primary">Financial Reports</Text>
-                </div>
-                <Text size="sm" className="font-bold text-text-secondary">0.7 GB (30%)</Text>
-              </div>
-              <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                <div className="h-full bg-brand-secondary rounded-full shadow-[0_0_8px_rgba(var(--color-brand-secondary),0.6)]" style={{ width: '30%' }} />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-end">
-                <div className="flex items-center gap-2">
-                  <div className="size-3 rounded-full bg-border-strong" />
-                  <Text size="sm" className="font-bold text-text-primary">Other Documents</Text>
-                </div>
-                <Text size="sm" className="font-bold text-text-secondary">0.5 GB (20%)</Text>
-              </div>
-              <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
-                <div className="h-full bg-border-strong rounded-full" style={{ width: '20%' }} />
-              </div>
-            </div>
-            
-            <div className="mt-4 p-4 rounded-xl bg-surface-2/50 border border-border-subtle flex justify-between items-center">
-              <div>
-                <Text size="sm" className="font-bold text-text-primary">Total Capacity</Text>
-                <Text size="xs" tone="secondary" className="font-medium">Professional Plan Limit</Text>
-              </div>
-              <Heading level={3} size="sm" className="text-brand-primary">10 GB</Heading>
-            </div>
           </div>
         </div>
       </div>
