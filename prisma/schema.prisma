@@ -68,6 +68,7 @@ model DocumentAnalysis {
   summary      String?
   actionPlan   String[]  @default([]) @map("action_plan")
   urgency      String?
+  deadlineDate DateTime? @map("deadline_date") @db.Timestamptz()
   
   rawText      String    @default("") @map("raw_text")
   entities     Json      @default("[]")

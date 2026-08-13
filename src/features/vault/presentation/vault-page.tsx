@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, type Column } from '@/shared/ui';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
+import { DeadlineTimeline } from './deadline-timeline';
 
 function useClickOutside<T extends HTMLElement>(onClose: () => void) {
   const ref = useRef<T>(null);
@@ -100,12 +101,13 @@ function SortDropdown({ value, onChange }: { value: string, onChange: (val: stri
   );
 }
 
-interface VaultDocument {
+export interface VaultDocument {
   id: string;
   name: string;
   type: string;
   risk: 'critical' | 'caution' | 'safe';
   resolved: boolean;
+  deadlineDate?: string | null;
   date: string;
   size: string;
 }
@@ -304,6 +306,9 @@ export function VaultPage() {
           </button>
         </div>
       </div>
+
+      {/* Deadline Timeline */}
+      <DeadlineTimeline docs={documents} />
 
       {/* Folders Section */}
       <div className="flex flex-col gap-3">

@@ -41,6 +41,7 @@ export async function GET(req: Request) {
         type: a.documentType.toUpperCase(),
         risk: risk,
         resolved: resolved,
+        deadlineDate: a.deadlineDate?.toISOString() || null,
         date: a.analyzedAt.toISOString(),
         size: 'Text Only' // Zero retention indicator
       };
