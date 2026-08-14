@@ -146,6 +146,7 @@ export interface AnalysisDraft {
  readonly legitimacy: string | null;
  readonly confidence: string | null;
  readonly suggestedQuestions: readonly string[];
+ readonly deadlineDate?: string | null;
  /** ISO 8601. Produced from an injected clock, never from `new Date()` inside a rule. */
  readonly analyzedAt: string;
 }

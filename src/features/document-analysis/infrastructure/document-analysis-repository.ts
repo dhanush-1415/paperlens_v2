@@ -66,6 +66,7 @@ function toEntity(record: any): DocumentAnalysis {
     legitimacy: record.legitimacy,
     confidence: record.confidence,
     suggestedQuestions: record.suggestedQuestions || [],
+    deadlineDate: record.deadlineDate?.toISOString() || null,
     analyzedAt: record.analyzedAt.toISOString(),
   };
 
@@ -114,6 +115,7 @@ export function createDocumentAnalysisRepository(
             legitimacy: draft.legitimacy,
             confidence: draft.confidence,
             suggestedQuestions: draft.suggestedQuestions as string[],
+            deadlineDate: draft.deadlineDate ? new Date(draft.deadlineDate) : null,
             analyzedAt: new Date(draft.analyzedAt),
             flags: draft.flags.map(f => ({
               id: f.id,

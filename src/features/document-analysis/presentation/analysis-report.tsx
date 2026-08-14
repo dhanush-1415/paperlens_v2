@@ -66,6 +66,11 @@ import { Copy, RefreshCw, Archive, Trash2, ShieldCheck, Scale, Globe, CheckCircl
 import { WorkspacePane } from './workspace-pane';
 import { DocumentSettings } from './document-settings';
 import { SmartActionPlan } from './smart-action-plan';
+import { ExpertEscalation } from './expert-escalation';
+import { shouldOfferEscalation } from '../application/experts';
+import { ShareExportMenu } from './share-button';
+import { CalendarMenu } from './calendar-menu';
+import { ReminderButton } from './reminder-button';
 
 const SCORE_TONE = {
  critical: 'critical',
@@ -192,6 +197,18 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
         {/* -- Smart action plan (interactive checklist) -------------------- */}
         <SmartActionPlan actions={actionPlan} />
 
+        {/* -- Expert escalation (high-risk docs only) ------------------- */}
+        {shouldOfferEscalation({ category: null, docPack: null, urgency: urgency as any }) && (
+          <div className="mt-6 mb-3">
+            <ExpertEscalation
+              documentId={analysis.id}
+              category={null}
+              docPack={null}
+              urgency={urgency as any}
+            />
+          </div>
+        )}
+
         {/* -- Trust Layer: evidence quotes --------------------- */}
         {analysis.flags.length > 0 && (
           <details className="group relative z-10 rounded-2xl border border-border-subtle bg-surface-2 px-5 py-4 shadow-sm">
@@ -271,20 +288,35 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
         {/* -- BOTTOM SECTION — Quick Actions ----------------------------- */}
         <div className="border-t border-border-subtle pt-6 pb-2 mt-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary mb-3">Quick Actions</p>
-          <div className="grid grid-cols-4 gap-2">
-            <button title="Copy summary" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150">
+          <div className="flex flex-wrap items-center gap-2">
+            <ShareExportMenu documentId={analysis.id} title={analysis.title} />
+            <CalendarMenu 
+              title={`Review Document: ${analysis.title}`} 
+              dateString={new Date().toISOString().split('T')[0] as string} 
+              options={{ urgency: analysis.score.level, summary: analysis.summary ?? '', documentUrl: `https://paperlens.app/document/${analysis.id}` }} 
+              variant="icon" 
+              className="flex-1 min-w-[70px]"
+            />
+            <div className="flex-1 min-w-[70px]">
+              <ReminderButton 
+                document={{ id: analysis.id, title: analysis.title, score: { level: analysis.score.level } }}
+                deadlineDate={null}
+                variant="icon"
+              />
+            </div>
+            <button title="Copy summary" className="flex-1 min-w-[70px] group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150">
               <Copy className="h-4 w-4" />
               <span className="text-[10px] font-medium leading-none">Copy</span>
             </button>
-            <button title="Re-analyze document" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/20 transition-all duration-150">
+            <button title="Re-analyze document" className="flex-1 min-w-[70px] group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/20 transition-all duration-150">
               <RefreshCw className="h-4 w-4" />
               <span className="text-[10px] font-medium leading-none">Re-analyze</span>
             </button>
-            <button title="Archive document" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150">
+            <button title="Archive document" className="flex-1 min-w-[70px] group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150">
               <Archive className="h-4 w-4" />
               <span className="text-[10px] font-medium leading-none">Archive</span>
             </button>
-            <button title="Delete document" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-risk-critical-fg hover:bg-risk-critical-bg border border-transparent hover:border-risk-critical-border transition-all duration-150">
+            <button title="Delete document" className="flex-1 min-w-[70px] group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-risk-critical-fg hover:bg-risk-critical-bg border border-transparent hover:border-risk-critical-border transition-all duration-150">
               <Trash2 className="h-4 w-4" />
               <span className="text-[10px] font-medium leading-none">Delete</span>
             </button>

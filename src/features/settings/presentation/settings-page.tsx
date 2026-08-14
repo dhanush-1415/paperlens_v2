@@ -6,6 +6,8 @@ import { SettingsIcon, BellIcon, UsersIcon, MailIcon } from '@/shared/ui/icons/d
 import { ShieldIcon } from '@/shared/ui/icons';
 import { Trash2 } from 'lucide-react';
 import { DeleteAccountButton, CancelDeletionButton } from './delete-account-dialog';
+import { InboxAddress } from '@/features/document-analysis/presentation/inbox-address';
+import { formatInboxAddress } from '@/shared/utils/inbox';
 
 interface SettingsPageProps {
   profile?: any;
@@ -77,6 +79,23 @@ export function SettingsPage({ profile, userEmail, displayName }: SettingsPagePr
                       <Text size="xs" tone="secondary" className="mt-0.5">Occasional emails regarding platform updates.</Text>
                     </div>
                   </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 border-t border-border-subtle pt-8">
+                <div className="md:col-span-1">
+                   <div className="flex items-center gap-2 text-text-primary font-semibold text-sm">
+                     <MailIcon className="size-4 text-text-secondary" />
+                     Email-to-Vault
+                   </div>
+                   <Text size="xs" tone="secondary" className="mt-1.5 leading-relaxed">
+                     Forward attachments directly into your PaperLens workspace for background analysis.
+                   </Text>
+                </div>
+                <div className="md:col-span-2">
+                   <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 px-6 shadow-sm">
+                      <InboxAddress initialAddress={profile?.inboxToken ? formatInboxAddress(profile.inboxToken) : null} />
+                   </div>
                 </div>
               </div>
 

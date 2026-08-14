@@ -38,8 +38,8 @@ export function AnalyticsSkeleton() {
           <Skeleton className="h-6 w-48 mb-6" />
           <div className="flex-1 rounded-xl border border-dashed border-border-strong bg-surface-2/30 p-4 flex items-end gap-2 px-6 pb-6 pt-10">
             {/* Bars */}
-            {Array(12).fill(0).map((_, i) => (
-              <Skeleton key={i} className="w-[6%] rounded-t-sm" style={{ height: `${Math.max(10, Math.random() * 90)}%` }} />
+            {[40, 65, 30, 80, 50, 95, 20, 60, 85, 45, 75, 55].map((h, i) => (
+              <Skeleton key={i} className="w-[6%] rounded-t-sm" style={{ height: `${h}%` }} />
             ))}
           </div>
         </div>

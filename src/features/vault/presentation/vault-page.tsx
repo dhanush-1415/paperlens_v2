@@ -36,7 +36,7 @@ const formatDisplayDate = (isoString: string) => {
   }
 };
 
-export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void, onMoveRequest?: (id: string) => void }) {
+export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest, onRemoveFromFolder }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void, onMoveRequest?: (id: string) => void, onRemoveFromFolder?: (id: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -118,6 +118,16 @@ export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc
             <FolderInput className="size-4" />
             Move to Folder
           </button>
+          {doc.folderId && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsOpen(false); onRemoveFromFolder?.(doc.id); }}
+              disabled={isPending}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left disabled:opacity-50"
+            >
+              <LayoutDashboardIcon className="size-4" />
+              Remove from Folder
+            </button>
+          )}
           <div className="h-px bg-border-subtle my-1 mx-2" />
           <button 
             onClick={(e) => { e.stopPropagation(); handleDelete(); }}
@@ -275,6 +285,23 @@ export function VaultPage() {
   const handleOpenMoveDialog = (docIds: string[]) => {
     setDocsToMove(docIds);
     setIsMoveDialogOpen(true);
+  };
+
+  const handleRemoveFromFolder = (docId: string) => {
+    startMoveTransition(async () => {
+      try {
+        await bulkMoveToFolderAction([docId], null);
+        // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
   };
 
   const handleMoveDocuments = (folderId: string | null) => {
@@ -435,10 +462,12 @@ export function VaultPage() {
     const matchesRisk = filterRisk === 'all' || doc.risk === filterRisk;
     
     let matchesFolder = false;
-    if (selectedFolderId) {
+    if (showAllDocuments) {
+      matchesFolder = true;
+    } else if (selectedFolderId) {
       matchesFolder = doc.folderId === selectedFolderId;
     } else {
-      matchesFolder = showAllDocuments || !doc.folderId;
+      matchesFolder = !doc.folderId;
     }
     
     return matchesRisk && matchesFolder;
@@ -527,7 +556,7 @@ export function VaultPage() {
       header: 'ACTION',
       cell: (item) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} />
+          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} onRemoveFromFolder={handleRemoveFromFolder} />
         </div>
       ),
     },
@@ -626,13 +655,13 @@ export function VaultPage() {
       <div className="flex items-center gap-4">
         <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Documents</Text>
         
-        {!selectedFolderId && documents.some(d => d.folderId) && (
-          <div className="flex items-center gap-2">
+        {documents.some(d => d.folderId) && (
+          <div className="flex items-center gap-2" onClick={() => setShowAllDocuments(p => !p)}>
             <Switch 
                id="show-all"
                checked={showAllDocuments}
                onChange={(e) => setShowAllDocuments(e.target.checked)}
-               className="scale-75"
+               className="scale-75 pointer-events-none"
             />
             <label htmlFor="show-all" className="text-xs font-medium text-text-secondary cursor-pointer select-none">
               Show all
@@ -777,7 +806,7 @@ export function VaultPage() {
                       <DocumentIcon className="size-6" />
                     </div>
                     <div className="z-10" onClick={(e) => e.stopPropagation()}>
-                      <ActionDropdown doc={doc} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} />
+                      <ActionDropdown doc={doc} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} onRemoveFromFolder={handleRemoveFromFolder} />
                     </div>
                   </div>
                   
