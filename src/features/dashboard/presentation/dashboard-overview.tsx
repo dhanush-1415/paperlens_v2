@@ -52,7 +52,7 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
               Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user.name || user.email.split('@')[0]} 👋
             </Heading>
             <Text className="max-w-xl text-sm sm:text-base text-white/90 font-medium tracking-wide">
-              {user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Tier • Engineering & Legal Workspace
+              {user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Tier • Personal Workspace
             </Text>
           </div>
           
@@ -151,7 +151,7 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
             </div>
           </Card>
 
-          {/* Enterprise Data Table: Recent Documents */}
+          {/* Recent Documents Table */}
           <Card className="flex flex-col overflow-hidden shadow-[0_4px_30px_-10px_rgba(0,0,0,0.1)] border-border-subtle rounded-[2rem]">
             <div className="flex items-center justify-between border-b border-border-subtle bg-surface-2/30 px-6 py-6">
               <div>
@@ -368,8 +368,8 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
                   <SettingsIcon className="size-6" />
                 </div>
                 <div className="flex-1">
-                  <Text className="text-[15px] font-bold text-text-primary group-hover:text-brand-primary transition-colors">Workspace Settings</Text>
-                  <Text size="xs" tone="secondary" className="mt-0.5">Manage team preferences</Text>
+                  <Text className="text-[15px] font-bold text-text-primary group-hover:text-brand-primary transition-colors">Account Settings</Text>
+                  <Text size="xs" tone="secondary" className="mt-0.5">Manage your preferences</Text>
                 </div>
                 <div className="flex size-8 items-center justify-center rounded-full bg-surface-3 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                   <ArrowRightIcon className="size-4 text-text-primary" />

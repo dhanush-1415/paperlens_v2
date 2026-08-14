@@ -10,6 +10,7 @@ import {
  toAnalysisDto,
  DocumentActions,
  SidebarCollapser,
+ BackButton,
  type AnalysisReportLabels,
 } from '@/features/document-analysis';
 import { getServerContainer, requirePermission } from '@/server/bootstrap';
@@ -80,10 +81,7 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
   {/* Document Topbar */}
   <header className="flex h-16 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-2 px-6">
     <div className="flex items-center gap-4">
-      <Link href="/scan" className="flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
-        <ChevronLeft className="size-4" />
-        Back to Scan
-      </Link>
+      <BackButton />
     </div>
     
     {/* Actions: Re-analyze, Translate, Delete etc. */}

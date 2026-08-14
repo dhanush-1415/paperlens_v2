@@ -145,39 +145,7 @@ export function ProfilePage({ profile, userEmail, displayName }: ProfilePageProp
             </form>
           </div>
 
-          <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 sm:p-6 shadow-sm">
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <Heading level={2} size="md" className="font-bold text-text-primary">API Keys & Integrations</Heading>
-                <Text size="sm" tone="secondary" className="mt-1">Manage your developer access tokens.</Text>
-              </div>
-              <Button variant="secondary" className="h-9 font-bold bg-brand-primary/10 text-brand-primary border-brand-primary/20 hover:bg-brand-primary/20">Generate Key</Button>
-            </div>
 
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border-subtle bg-surface-2/50 gap-3">
-                <div>
-                  <Text size="sm" className="font-bold text-text-primary">Production API Key</Text>
-                  <Text size="xs" tone="secondary" className="font-medium mt-0.5">Created on Oct 12, 2025 • Never used</Text>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge tone="safe">Active</Badge>
-                  <button className="text-sm font-bold text-brand-primary hover:underline ml-2">Revoke</button>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border-subtle bg-surface-2/50 gap-3 opacity-70 grayscale">
-                <div>
-                  <Text size="sm" className="font-bold text-text-primary">Legacy Zapier Webhook</Text>
-                  <Text size="xs" tone="secondary" className="font-medium mt-0.5">Created on Jan 05, 2025 • Last used 2 weeks ago</Text>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge tone="neutral">Revoked</Badge>
-                  <button className="text-sm font-bold text-brand-primary hover:underline ml-2">Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
           
           <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 sm:p-6 shadow-sm">
             <div className="mb-6">

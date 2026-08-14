@@ -112,6 +112,7 @@ export {
  analyzeDocumentAction,
  DocumentActions,
  SidebarCollapser,
+ BackButton,
  RiskFlagCard,
  type AnalysisFormLabels,
  type AnalysisFormProps,

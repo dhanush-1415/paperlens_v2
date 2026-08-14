@@ -150,7 +150,10 @@ async function DynamicShell({ children, themeLabels }: { children: React.ReactNo
   );
 }
 
-export default function AppLayout({ children }: LayoutProps<'/'>) {
+import { connection } from 'next/server';
+
+export default async function AppLayout({ children }: LayoutProps<'/'>) {
+  await connection();
   const t = getRequestScope().resolve(TRANSLATOR);
   
   const themeLabels = {

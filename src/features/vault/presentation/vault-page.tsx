@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, type Column, cn } from '@/shared/ui';
+import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, Switch, type Column, cn } from '@/shared/ui';
 import { Dialog } from '@/shared/ui/components/dialog';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
@@ -21,6 +21,20 @@ export interface VaultDocument {
   date: string;
   size: string;
 }
+
+const formatDisplayDate = (isoString: string) => {
+  try {
+    return new Date(isoString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (e) {
+    return isoString;
+  }
+};
 
 export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void, onMoveRequest?: (id: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,7 +96,8 @@ export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc
         <div className="absolute right-0 mt-2 w-48 rounded-[1rem] bg-surface-1 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] ring-1 ring-border-strong/20 z-50 overflow-hidden py-1">
           <button 
             onClick={(e) => { e.stopPropagation(); router.push(`/document/${doc.id}`); setIsOpen(false); }}
-            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left"
+            disabled={isPending}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left disabled:opacity-50"
           >
             <Eye className="size-4" />
             View Document
@@ -233,6 +248,7 @@ export function VaultPage() {
   
   const [folders, setFolders] = useState<VaultFolder[]>([]);
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
+  const [showAllDocuments, setShowAllDocuments] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
@@ -380,9 +396,12 @@ export function VaultPage() {
           const data = await res.json();
           setFolders(data.folders || []);
           setDocuments(data.documents || []);
+        } else {
+          const text = await res.text();
+          console.error('Vault API Error Body:', text);
         }
       } catch (err) {
-        console.error(err);
+        console.error('Vault Fetch Exception:', err);
       } finally {
         setIsLoading(false);
       }
@@ -414,7 +433,14 @@ export function VaultPage() {
 
   const filteredDocs = documents.filter((doc) => {
     const matchesRisk = filterRisk === 'all' || doc.risk === filterRisk;
-    const matchesFolder = doc.folderId === selectedFolderId || (!doc.folderId && !selectedFolderId);
+    
+    let matchesFolder = false;
+    if (selectedFolderId) {
+      matchesFolder = doc.folderId === selectedFolderId;
+    } else {
+      matchesFolder = showAllDocuments || !doc.folderId;
+    }
+    
     return matchesRisk && matchesFolder;
   }).sort((a, b) => {
     if (sortBy === 'newest') return -1; // Temporary sort logic
@@ -494,7 +520,7 @@ export function VaultPage() {
     {
       id: 'date',
       header: 'Date Added',
-      cell: (item) => <span className="font-medium text-text-secondary">{item.date}</span>,
+      cell: (item) => <span className="font-medium text-text-secondary">{formatDisplayDate(item.date)}</span>,
     },
     {
       id: 'actions',
@@ -523,12 +549,14 @@ export function VaultPage() {
           <Button 
             variant="secondary" 
             onClick={() => setIsFolderDialogOpen(true)}
-            className="font-bold hidden sm:flex border-border-subtle bg-surface-1 shadow-sm hover:border-brand-primary/40 hover:text-brand-primary transition-all h-10"
+            disabled={isLoading}
+            className="font-bold hidden sm:flex border-border-subtle bg-surface-1 shadow-sm hover:border-brand-primary/40 hover:text-brand-primary transition-all h-10 disabled:opacity-50"
           >
             New Folder
           </Button>
           <button 
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-primary to-brand-secondary text-white shadow-lg shadow-brand-primary/25 hover:shadow-brand-primary/40 hover:-translate-y-0.5 transition-all group"
+            disabled={isLoading}
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-primary to-brand-secondary text-white shadow-lg shadow-brand-primary/25 hover:shadow-brand-primary/40 hover:-translate-y-0.5 transition-all group disabled:opacity-50 disabled:pointer-events-none"
             title="Upload Document"
           >
             <UploadCloudIcon className="size-5 group-hover:scale-110 transition-transform" />
@@ -595,7 +623,23 @@ export function VaultPage() {
 
       {/* Main Content Area */}
       <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-4">
         <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Documents</Text>
+        
+        {!selectedFolderId && documents.some(d => d.folderId) && (
+          <div className="flex items-center gap-2">
+            <Switch 
+               id="show-all"
+               checked={showAllDocuments}
+               onChange={(e) => setShowAllDocuments(e.target.checked)}
+               className="scale-75"
+            />
+            <label htmlFor="show-all" className="text-xs font-medium text-text-secondary cursor-pointer select-none">
+              Show all
+            </label>
+          </div>
+        )}
+      </div>
         
         {/* Controls Bar */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between rounded-xl border border-border-subtle bg-surface-1 p-2 shadow-sm">
@@ -751,7 +795,7 @@ export function VaultPage() {
                       {doc.risk === 'critical' ? 'High Risk' : doc.risk === 'caution' ? 'Needs Review' : 'Verified Safe'}
                     </Badge>
                     <div className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
-                      {doc.date}
+                      {formatDisplayDate(doc.date)}
                     </div>
                   </div>
                 </div>
@@ -828,7 +872,7 @@ export function VaultPage() {
           {folders.length === 0 && (
             <Text size="sm" tone="tertiary" className="italic text-center py-4">No folders exist. Create one first.</Text>
           )}
-          {folders.length > 0 && (
+          {folders.length > 0 && docsToMove.some(id => documents.find(d => d.id === id)?.folderId) && (
             <button
               onClick={() => handleMoveDocuments(null)}
               disabled={isMoving}

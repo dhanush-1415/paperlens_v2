@@ -78,21 +78,21 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Main',
     items: [
       { label: 'Dashboard', href: ROUTES.welcome, icon: LayoutDashboardIcon },
-      { label: 'Analytics', href: ROUTES.analytics, icon: BarChartIcon },
       { label: 'Scan Document', href: ROUTES.scan, icon: ScanIcon },
       { label: 'Document Vault', href: ROUTES.vault, icon: VaultIcon },
+      { label: 'Usage', href: ROUTES.usage, icon: BarChartIcon },
     ],
   },
   {
     title: 'Account',
     items: [
       { label: 'Profile', href: ROUTES.profile, icon: UserIcon },
-      { label: 'Billing & Usage', href: ROUTES.billing, icon: CreditCardIcon },
+      { label: 'Billing', href: ROUTES.billing, icon: CreditCardIcon },
       { label: 'Settings', href: ROUTES.settings, icon: SettingsIcon },
     ],
   },
   {
-    title: 'Admin',
+    title: 'System Admin',
     roles: ['admin'],
     items: [
       { label: 'User Management', href: ROUTES.adminUsers, icon: UsersIcon },

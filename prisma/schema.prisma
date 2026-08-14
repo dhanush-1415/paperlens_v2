@@ -169,12 +169,13 @@ model DocumentContent {
 }
 
 model Profile {
-  id          String   @id @db.Uuid // Matches auth.users.id
-  firstName   String?  @map("first_name")
-  lastName    String?  @map("last_name")
-  phoneNumber String?  @map("phone_number")
-  avatarUrl   String?  @map("avatar_url")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  id                  String    @id @db.Uuid // Matches auth.users.id
+  firstName           String?   @map("first_name")
+  lastName            String?   @map("last_name")
+  phoneNumber         String?   @map("phone_number")
+  avatarUrl           String?   @map("avatar_url")
+  deletionRequestedAt DateTime? @map("deletion_requested_at") @db.Timestamptz()
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@map("profiles")
 }
