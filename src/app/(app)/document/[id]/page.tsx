@@ -59,29 +59,21 @@ const LABELS: AnalysisReportLabels = {
  * oracle that confirms which documents exist by returning 403 for the ones that do. Rendering
  * the same 404 for both is the other half of that decision.
  */
-async function Report({ id }: { readonly id: string }) {
- /**
- * Permission, not just authentication. `document.read` is in the policy matrix for every
- * role today, which is exactly why it is checked by name: the day a restricted role is added
- * the change is one line in `core/auth/policy.ts`, not an audit of every page.
- */
- const session = await requirePermission('document.read');
-
- const result = await getServerContainer().resolve(GET_DOCUMENT_ANALYSIS)(id, session.userId);
-
- if (!result.ok) notFound();
-
- /**
- * `toAnalysisDto` is not optional politeness. The entity is tainted with
- * `experimental_taintObjectReference`, so passing `result.value` straight into a component
- * tree containing a Client Component throws at render — the mapper is the boundary, and the
- * runtime enforces it rather than trusting this line to be written correctly.
- */
- return <AnalysisReport analysis={toAnalysisDto(result.value)} labels={LABELS} />;
+function Report({ analysis }: { readonly analysis: any }) {
+ return <AnalysisReport analysis={analysis} labels={LABELS} />;
 }
 
 async function DocumentContainer({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params;
+ const session = await requirePermission('document.read');
+ const result = await getServerContainer().resolve(GET_DOCUMENT_ANALYSIS)(id, session.userId);
+
+ if (!result.ok) notFound();
+
+ const analysisData = result.value;
+ const analysisDto = toAnalysisDto(analysisData);
+ 
+ const isResolved = analysisData.flags.length > 0 && analysisData.resolvedFlagIds.length >= analysisData.flags.length;
 
  return (
  <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[800px] w-full overflow-hidden bg-surface-1 rounded-2xl border border-border-subtle shadow-sm">
@@ -95,11 +87,11 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
     </div>
     
     {/* Actions: Re-analyze, Translate, Delete etc. */}
-    <DocumentActions documentId={id} />
+    <DocumentActions documentId={id} initialResolved={isResolved} />
   </header>
 
   <main className="flex-1 min-h-0 overflow-hidden">
-    <Report id={id} />
+    <Report analysis={analysisDto} />
   </main>
   
   <SidebarCollapser />

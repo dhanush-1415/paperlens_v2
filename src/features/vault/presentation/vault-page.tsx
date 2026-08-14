@@ -53,6 +53,8 @@ export function ActionDropdown({ doc, onUpdate, onDelete }: { doc: VaultDocument
   };
 
   const handleDelete = () => {
+    if (!window.confirm("Are you sure you want to delete this document? This cannot be undone.")) return;
+    
     startTransition(async () => {
       try {
         // Optimistic local delete
