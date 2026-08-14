@@ -14,7 +14,7 @@ export async function GET(req: Request) {
       where: { userId: session.userId, parentId },
       orderBy: { createdAt: 'desc' },
       include: {
-        _count: { select: { documents: true } }
+        _count: { select: { analyses: true } }
       }
     });
 
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     const mappedFolders = folders.map(f => ({
       id: f.id,
       name: f.name,
-      count: f._count.documents
+      count: f._count.analyses
     }));
 
     const mappedDocuments = analyses.map(a => {
@@ -37,6 +37,7 @@ export async function GET(req: Request) {
       
       return {
         id: a.id,
+        folderId: a.folderId,
         name: a.title || 'Untitled Document',
         type: a.documentType.toUpperCase(),
         risk: risk,

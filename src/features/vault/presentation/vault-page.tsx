@@ -7,8 +7,8 @@ import { Dialog } from '@/shared/ui/components/dialog';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
 import { DeadlineTimeline } from './deadline-timeline';
-import { toggleResolvedAction, deleteDocumentAction, createFolderAction, bulkMoveToFolderAction } from '../actions';
-import { Eye, CheckCircle2, Trash2, XCircle, Loader2, FolderInput } from 'lucide-react';
+import { toggleResolvedAction, deleteDocumentAction, createFolderAction, bulkMoveToFolderAction, renameFolderAction, deleteFolderOnlyAction, deleteFolderAndDocsAction } from '../actions';
+import { Eye, CheckCircle2, Trash2, XCircle, Loader2, FolderInput, FolderX, Pencil, ChevronLeft } from 'lucide-react';
 
 export interface VaultDocument {
   id: string;
@@ -16,6 +16,7 @@ export interface VaultDocument {
   type: string;
   risk: 'critical' | 'caution' | 'safe';
   resolved: boolean;
+  folderId?: string | null;
   deadlineDate?: string | null;
   date: string;
   size: string;
@@ -238,6 +239,19 @@ export function VaultPage() {
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreatingFolder, startFolderTransition] = useTransition();
 
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [renameFolderId, setRenameFolderId] = useState<string | null>(null);
+  const [renameFolderName, setRenameFolderName] = useState('');
+  const [isRenamingFolder, startRenameTransition] = useTransition();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteFolderId, setDeleteFolderId] = useState<string | null>(null);
+  const [deleteMode, setDeleteMode] = useState<'only' | 'all'>('only');
+  const [deleteTypedName, setDeleteTypedName] = useState('');
+  const [isDeletingFolder, startDeleteTransition] = useTransition();
+
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [docsToMove, setDocsToMove] = useState<string[]>([]);
   const [isMoving, startMoveTransition] = useTransition();
@@ -254,6 +268,63 @@ export function VaultPage() {
         setIsMoveDialogOpen(false);
         setSelectedIds(new Set());
         // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  };
+
+  const handleRenameFolder = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!renameFolderName.trim() || !renameFolderId) return;
+
+    startRenameTransition(async () => {
+      try {
+        await renameFolderAction(renameFolderId, renameFolderName);
+        setIsRenameDialogOpen(false);
+        setRenameFolderId(null);
+        setRenameFolderName('');
+        
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  };
+
+  const handleDeleteFolder = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!deleteFolderId) return;
+    
+    const folder = folders.find(f => f.id === deleteFolderId);
+    if (!folder || deleteTypedName !== folder.name) return;
+
+    startDeleteTransition(async () => {
+      try {
+        if (deleteMode === 'all') {
+          await deleteFolderAndDocsAction(deleteFolderId);
+        } else {
+          await deleteFolderOnlyAction(deleteFolderId);
+        }
+        
+        setIsDeleteDialogOpen(false);
+        setDeleteFolderId(null);
+        setDeleteTypedName('');
+        
+        if (selectedFolderId === deleteFolderId) {
+          setSelectedFolderId(null);
+        }
+
         const res = await fetch('/api/vault/list');
         if (res.ok) {
           const data = await res.json();
@@ -343,7 +414,8 @@ export function VaultPage() {
 
   const filteredDocs = documents.filter((doc) => {
     const matchesRisk = filterRisk === 'all' || doc.risk === filterRisk;
-    return matchesRisk;
+    const matchesFolder = doc.folderId === selectedFolderId || (!doc.folderId && !selectedFolderId);
+    return matchesRisk && matchesFolder;
   }).sort((a, b) => {
     if (sortBy === 'newest') return -1; // Temporary sort logic
     if (sortBy === 'oldest') return 1;
@@ -468,29 +540,58 @@ export function VaultPage() {
       <DeadlineTimeline docs={documents} />
 
       {/* Folders Section */}
-      <div className="flex flex-col gap-3">
-        <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Quick Access</Text>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {folders.length === 0 ? (
-            <div className="col-span-full py-8 text-center rounded-[1.25rem] border border-dashed border-border-strong bg-surface-1/50">
-              <Text size="sm" tone="tertiary" className="italic">No folders yet. Create one to start organizing.</Text>
-            </div>
-          ) : (
-            folders.map(folder => (
-              <div key={folder.id} className="group relative flex items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-gradient-to-br from-surface-1 to-brand-primary/[0.01] p-4 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-md hover:-translate-y-0.5 cursor-pointer overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-primary/[0.03] to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
-                <div className="relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors shadow-sm">
-                  <VaultIcon className="size-5" />
-                </div>
-                <div className="relative flex-1">
-                  <Heading level={3} className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors">{folder.name}</Heading>
-                  <Text size="xs" className="mt-0.5 font-medium text-text-tertiary group-hover:text-brand-primary/70">{folder.count} Documents</Text>
-                </div>
+      {!selectedFolderId ? (
+        <div className="flex flex-col gap-3">
+          <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Quick Access</Text>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {folders.length === 0 ? (
+              <div className="col-span-full py-8 text-center rounded-[1.25rem] border border-dashed border-border-strong bg-surface-1/50">
+                <Text size="sm" tone="tertiary" className="italic">No folders yet. Create one to start organizing.</Text>
               </div>
-            ))
-          )}
+            ) : (
+              folders.map(folder => (
+                <div key={folder.id} onClick={() => setSelectedFolderId(folder.id)} className="group relative flex items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-gradient-to-br from-surface-1 to-brand-primary/[0.01] p-4 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-md hover:-translate-y-0.5 cursor-pointer overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-primary/[0.03] to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
+                  <div className="relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors shadow-sm">
+                    <VaultIcon className="size-5" />
+                  </div>
+                  <div className="relative flex-1">
+                    <Heading level={3} className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors">{folder.name}</Heading>
+                    <Text size="xs" className="mt-0.5 font-medium text-text-tertiary group-hover:text-brand-primary/70">{folder.count} Documents</Text>
+                  </div>
+                  
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setRenameFolderId(folder.id); setRenameFolderName(folder.name); setIsRenameDialogOpen(true); }}
+                      className="p-2 text-text-tertiary hover:text-brand-primary transition-colors bg-surface-1 rounded-md shadow-sm"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setDeleteFolderId(folder.id); setDeleteTypedName(''); setIsDeleteDialogOpen(true); }}
+                      className="p-2 text-text-tertiary hover:text-red-500 transition-colors bg-surface-1 rounded-md shadow-sm ml-1"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center gap-2 -mb-2">
+          <Button variant="ghost" size="sm" onClick={() => setSelectedFolderId(null)} className="text-text-secondary hover:text-text-primary -ml-2">
+            <ChevronLeft className="size-4 mr-1" />
+            Back to Main Vault
+          </Button>
+          <div className="h-4 w-px bg-border-subtle" />
+          <Heading level={3} className="text-sm font-bold text-text-primary flex items-center gap-2">
+            <VaultIcon className="size-4 text-brand-primary" />
+            {folders.find(f => f.id === selectedFolderId)?.name || 'Folder'}
+          </Heading>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex flex-col gap-3">
@@ -753,6 +854,103 @@ export function VaultPage() {
             </button>
           ))}
         </div>
+      </Dialog>
+
+      {/* Rename Folder Dialog */}
+      <Dialog 
+        open={isRenameDialogOpen} 
+        onClose={() => !isRenamingFolder && setIsRenameDialogOpen(false)}
+        title="Rename Folder"
+        description="Choose a new name for your folder."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsRenameDialogOpen(false)} disabled={isRenamingFolder}>
+              Cancel
+            </Button>
+            <Button onClick={handleRenameFolder} disabled={isRenamingFolder || !renameFolderName.trim()}>
+              {isRenamingFolder ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
+              Rename
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleRenameFolder} className="py-4">
+          <Input 
+            placeholder="Folder name" 
+            value={renameFolderName}
+            onChange={(e) => setRenameFolderName(e.target.value)}
+            disabled={isRenamingFolder}
+            maxLength={60}
+            autoFocus
+          />
+        </form>
+      </Dialog>
+
+      {/* Delete Folder Dialog */}
+      <Dialog 
+        open={isDeleteDialogOpen} 
+        onClose={() => !isDeletingFolder && setIsDeleteDialogOpen(false)}
+        title="Delete Folder"
+        description="Choose what to do with the documents inside this folder."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeletingFolder}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-critical hover:bg-critical-fg border-none text-white" 
+              onClick={handleDeleteFolder} 
+              disabled={isDeletingFolder || deleteTypedName !== folders.find(f => f.id === deleteFolderId)?.name}
+            >
+              {isDeletingFolder ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleDeleteFolder} className="py-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => setDeleteMode('only')}
+              className={`flex items-start gap-3 p-3 rounded-xl border transition-colors text-left ${deleteMode === 'only' ? 'border-brand-primary bg-brand-primary/5' : 'border-border-subtle bg-surface-1 hover:bg-surface-2'}`}
+            >
+              <div className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border ${deleteMode === 'only' ? 'border-brand-primary' : 'border-border-strong'}`}>
+                {deleteMode === 'only' && <div className="size-2 rounded-full bg-brand-primary" />}
+              </div>
+              <div>
+                <span className={`block text-sm font-semibold ${deleteMode === 'only' ? 'text-brand-primary' : 'text-text-primary'}`}>Keep Documents</span>
+                <span className="block text-xs text-text-secondary mt-0.5">Documents will be moved to the Main Vault.</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeleteMode('all')}
+              className={`flex items-start gap-3 p-3 rounded-xl border transition-colors text-left ${deleteMode === 'all' ? 'border-critical bg-critical/5' : 'border-border-subtle bg-surface-1 hover:bg-surface-2'}`}
+            >
+              <div className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border ${deleteMode === 'all' ? 'border-critical' : 'border-border-strong'}`}>
+                {deleteMode === 'all' && <div className="size-2 rounded-full bg-critical" />}
+              </div>
+              <div>
+                <span className={`block text-sm font-semibold ${deleteMode === 'all' ? 'text-critical' : 'text-text-primary'}`}>Delete Everything</span>
+                <span className="block text-xs text-text-secondary mt-0.5">Deletes this folder and permanently deletes all {folders.find(f => f.id === deleteFolderId)?.count || 0} documents inside it.</span>
+              </div>
+            </button>
+          </div>
+          
+          <div className="mt-2">
+            <Text size="sm" className="mb-2 font-medium text-text-primary">
+              Please type <strong className="font-bold text-text-primary select-all">{folders.find(f => f.id === deleteFolderId)?.name}</strong> to confirm.
+            </Text>
+            <Input 
+              placeholder={folders.find(f => f.id === deleteFolderId)?.name} 
+              value={deleteTypedName}
+              onChange={(e) => setDeleteTypedName(e.target.value)}
+              disabled={isDeletingFolder}
+              className="border-critical/30 focus-visible:ring-critical/20 focus-visible:border-critical"
+            />
+          </div>
+        </form>
       </Dialog>
     </div>
   );

@@ -75,3 +75,46 @@ export async function bulkMoveToFolderAction(documentIds: string[], folderId: st
   
   revalidatePath('/vault');
 }
+
+export async function renameFolderAction(folderId: string, newName: string) {
+  const session = await requireSession();
+  
+  const trimmed = newName.trim();
+  if (!trimmed) throw new Error('Folder name is required');
+  if (trimmed.length > 60) throw new Error('Name must be 60 characters or fewer.');
+  
+  await prisma.folder.update({
+    where: { id: folderId, userId: session.userId },
+    data: { name: trimmed }
+  });
+  
+  revalidatePath('/vault');
+}
+
+export async function deleteFolderOnlyAction(folderId: string) {
+  const session = await requireSession();
+  
+  // prisma folder relation is set to onDelete: SetNull for documents
+  await prisma.folder.delete({
+    where: { id: folderId, userId: session.userId }
+  });
+  
+  revalidatePath('/vault');
+}
+
+export async function deleteFolderAndDocsAction(folderId: string) {
+  const session = await requireSession();
+  
+  // First, mark all documents in the folder as deleted
+  await prisma.documentAnalysis.updateMany({
+    where: { folderId, ownerId: session.userId },
+    data: { deletedAt: new Date() }
+  });
+  
+  // Then delete the folder
+  await prisma.folder.delete({
+    where: { id: folderId, userId: session.userId }
+  });
+  
+  revalidatePath('/vault');
+}
