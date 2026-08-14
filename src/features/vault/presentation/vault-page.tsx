@@ -353,15 +353,7 @@ export function VaultPage() {
         </Badge>
       ),
     },
-    {
-      id: 'status',
-      header: 'Status',
-      cell: (item) => (
-        <Badge tone={item.resolved ? 'safe' : 'caution'} className="shadow-sm font-bold bg-opacity-10 border-none">
-          {item.resolved ? 'Resolved' : 'Action Needed'}
-        </Badge>
-      ),
-    },
+
     {
       id: 'date',
       header: 'Date Added',
