@@ -36,3 +36,20 @@ export async function toggleResolvedAction(documentId: string, resolved: boolean
   
   revalidatePath('/vault');
 }
+
+export async function createFolderAction(name: string) {
+  const session = await requireSession();
+  
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error('Folder name is required');
+  if (trimmed.length > 60) throw new Error('Name must be 60 characters or fewer.');
+  
+  await prisma.folder.create({
+    data: {
+      userId: session.userId,
+      name: trimmed
+    }
+  });
+  
+  revalidatePath('/vault');
+}

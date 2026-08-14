@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Heading, Text, DataTable, EmptyState, Badge, Input, Checkbox, type Column, cn } from '@/shared/ui';
+import { Dialog } from '@/shared/ui/components/dialog';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
 import { DeadlineTimeline } from './deadline-timeline';
-import { toggleResolvedAction, deleteDocumentAction } from '../actions';
-import { Eye, CheckCircle2, Trash2, XCircle } from 'lucide-react';
+import { toggleResolvedAction, deleteDocumentAction, createFolderAction } from '../actions';
+import { Eye, CheckCircle2, Trash2, XCircle, Loader2 } from 'lucide-react';
 
 export interface VaultDocument {
   id: string;
@@ -225,6 +226,32 @@ export function VaultPage() {
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [isCreatingFolder, startFolderTransition] = useTransition();
+
+  const handleCreateFolder = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newFolderName.trim()) return;
+    
+    startFolderTransition(async () => {
+      try {
+        await createFolderAction(newFolderName);
+        setIsFolderDialogOpen(false);
+        setNewFolderName('');
+        // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  };
+
   const handleDocumentUpdate = (id: string, updates: Partial<VaultDocument>) => {
     setDocuments(docs => docs.map(d => d.id === id ? { ...d, ...updates } : d));
   };
@@ -385,7 +412,11 @@ export function VaultPage() {
           </Text>
         </div>
         <div className="flex items-center gap-3 relative z-10">
-          <Button variant="secondary" className="font-bold hidden sm:flex border-border-subtle bg-surface-1 shadow-sm hover:border-brand-primary/40 hover:text-brand-primary transition-all h-10">
+          <Button 
+            variant="secondary" 
+            onClick={() => setIsFolderDialogOpen(true)}
+            className="font-bold hidden sm:flex border-border-subtle bg-surface-1 shadow-sm hover:border-brand-primary/40 hover:text-brand-primary transition-all h-10"
+          >
             New Folder
           </Button>
           <button 
@@ -618,6 +649,35 @@ export function VaultPage() {
           )}
         </div>
       </div>
+      
+      <Dialog 
+        open={isFolderDialogOpen} 
+        onClose={() => !isCreatingFolder && setIsFolderDialogOpen(false)}
+        title="Create New Folder"
+        description="Name your folder to organize your documents."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsFolderDialogOpen(false)} disabled={isCreatingFolder}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
+              {isCreatingFolder ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
+              Create
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreateFolder} className="py-4">
+          <Input 
+            placeholder="e.g. Tax Documents" 
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            disabled={isCreatingFolder}
+            maxLength={60}
+            autoFocus
+          />
+        </form>
+      </Dialog>
     </div>
   );
 }
