@@ -53,3 +53,25 @@ export async function createFolderAction(name: string) {
   
   revalidatePath('/vault');
 }
+
+export async function moveToFolderAction(documentId: string, folderId: string | null) {
+  const session = await requireSession();
+  
+  await prisma.documentAnalysis.update({
+    where: { id: documentId, ownerId: session.userId },
+    data: { folderId }
+  });
+  
+  revalidatePath('/vault');
+}
+
+export async function bulkMoveToFolderAction(documentIds: string[], folderId: string | null) {
+  const session = await requireSession();
+  
+  await prisma.documentAnalysis.updateMany({
+    where: { id: { in: documentIds }, ownerId: session.userId },
+    data: { folderId }
+  });
+  
+  revalidatePath('/vault');
+}

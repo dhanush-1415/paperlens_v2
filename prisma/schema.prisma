@@ -59,9 +59,12 @@ model UserSubscription {
 model DocumentAnalysis {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   ownerId      String    @map("owner_id") @db.Uuid
+  folderId     String?   @map("folder_id") @db.Uuid
   title        String
   documentType String    @map("document_type")
   charCount    Int       @map("char_count")
+
+  folder       Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
   scoreValue   Int       @map("score_value")
   scoreLevel   String    @map("score_level")
   
@@ -118,6 +121,7 @@ model Folder {
   parent           Folder?           @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
   children         Folder[]          @relation("FolderToFolder")
   documents        Document[]
+  analyses         DocumentAnalysis[]
 
   @@map("folders")
 }

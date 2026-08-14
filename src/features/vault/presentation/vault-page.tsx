@@ -7,8 +7,8 @@ import { Dialog } from '@/shared/ui/components/dialog';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
 import { DeadlineTimeline } from './deadline-timeline';
-import { toggleResolvedAction, deleteDocumentAction, createFolderAction } from '../actions';
-import { Eye, CheckCircle2, Trash2, XCircle, Loader2 } from 'lucide-react';
+import { toggleResolvedAction, deleteDocumentAction, createFolderAction, bulkMoveToFolderAction } from '../actions';
+import { Eye, CheckCircle2, Trash2, XCircle, Loader2, FolderInput } from 'lucide-react';
 
 export interface VaultDocument {
   id: string;
@@ -21,7 +21,7 @@ export interface VaultDocument {
   size: string;
 }
 
-export function ActionDropdown({ doc, onUpdate, onDelete }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void }) {
+export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void, onMoveRequest?: (id: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -93,6 +93,14 @@ export function ActionDropdown({ doc, onUpdate, onDelete }: { doc: VaultDocument
           >
             {doc.resolved ? <XCircle className="size-4" /> : <CheckCircle2 className="size-4" />}
             {doc.resolved ? 'Mark Unresolved' : 'Mark Resolved'}
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setIsOpen(false); onMoveRequest?.(doc.id); }}
+            disabled={isPending}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left disabled:opacity-50"
+          >
+            <FolderInput className="size-4" />
+            Move to Folder
           </button>
           <div className="h-px bg-border-subtle my-1 mx-2" />
           <button 
@@ -229,6 +237,34 @@ export function VaultPage() {
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreatingFolder, startFolderTransition] = useTransition();
+
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [docsToMove, setDocsToMove] = useState<string[]>([]);
+  const [isMoving, startMoveTransition] = useTransition();
+
+  const handleOpenMoveDialog = (docIds: string[]) => {
+    setDocsToMove(docIds);
+    setIsMoveDialogOpen(true);
+  };
+
+  const handleMoveDocuments = (folderId: string | null) => {
+    startMoveTransition(async () => {
+      try {
+        await bulkMoveToFolderAction(docsToMove, folderId);
+        setIsMoveDialogOpen(false);
+        setSelectedIds(new Set());
+        // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  };
 
   const handleCreateFolder = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -393,7 +429,7 @@ export function VaultPage() {
       header: 'ACTION',
       cell: (item) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} />
+          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} />
         </div>
       ),
     },
@@ -515,7 +551,9 @@ export function VaultPage() {
               </Text>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="secondary" size="sm" className="font-bold">Move to Folder</Button>
+              <Button variant="secondary" size="sm" className="font-bold" onClick={() => handleOpenMoveDialog(Array.from(selectedIds))}>
+                Move to Folder
+              </Button>
               <Button size="sm" className="bg-critical hover:bg-critical-fg text-white border-none font-bold">Delete</Button>
               <button onClick={() => setSelectedIds(new Set())} className="p-2 text-text-tertiary hover:text-text-primary transition-colors">
                 <CloseIcon className="size-5" />
@@ -677,6 +715,44 @@ export function VaultPage() {
             autoFocus
           />
         </form>
+      </Dialog>
+
+      <Dialog 
+        open={isMoveDialogOpen} 
+        onClose={() => !isMoving && setIsMoveDialogOpen(false)}
+        title="Move to Folder"
+        description={`Select a folder to move ${docsToMove.length} document${docsToMove.length === 1 ? '' : 's'} to.`}
+      >
+        <div className="py-4 flex flex-col gap-2 max-h-64 overflow-y-auto">
+          {folders.length === 0 && (
+            <Text size="sm" tone="tertiary" className="italic text-center py-4">No folders exist. Create one first.</Text>
+          )}
+          {folders.length > 0 && (
+            <button
+              onClick={() => handleMoveDocuments(null)}
+              disabled={isMoving}
+              className="flex items-center gap-3 w-full p-3 rounded-xl border border-border-subtle bg-surface-1 hover:bg-surface-2 transition-colors text-left"
+            >
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-text-secondary">
+                <LayoutDashboardIcon className="size-4" />
+              </div>
+              <span className="font-medium text-text-primary text-sm">Remove from Folder (Main Vault)</span>
+            </button>
+          )}
+          {folders.map(f => (
+            <button
+              key={f.id}
+              onClick={() => handleMoveDocuments(f.id)}
+              disabled={isMoving}
+              className="flex items-center gap-3 w-full p-3 rounded-xl border border-border-subtle bg-surface-1 hover:border-brand-primary/30 hover:bg-brand-primary/5 transition-colors text-left"
+            >
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-brand-primary">
+                <VaultIcon className="size-4" />
+              </div>
+              <span className="font-medium text-text-primary text-sm flex-1">{f.name}</span>
+            </button>
+          ))}
+        </div>
       </Dialog>
     </div>
   );
