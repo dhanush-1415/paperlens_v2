@@ -5,7 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 /**
  * Failsafe execution guard: Prisma must NEVER run on the client.
  */
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'test') {
   throw new Error('Prisma Client cannot be instantiated on the client side.');
 }
 

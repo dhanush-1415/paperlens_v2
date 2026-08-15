@@ -33,7 +33,7 @@ export const PdfViewer = forwardRef<HTMLDivElement, PdfViewerProps>(({ src }, re
     if (!src) return;
 
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     setLoading(true);
     setError(null);
     setNumPages(0);

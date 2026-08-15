@@ -41,7 +41,7 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
   
   const [showDatePicker, setShowDatePicker] = useState(false);
   
-  const analytics = data || {
+  const [defaultAnalytics] = useState(() => ({
     totalScans: 0,
     totalScansGrowth: '0% this period',
     vaultDocs: 0,
@@ -50,9 +50,11 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
     recentActivity: [],
     processingVolume: [],
     riskDistribution: { safePercentage: 100, cautionPercentage: 0, criticalPercentage: 0 },
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    startDate: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     endDate: new Date().toISOString()
-  };
+  }));
+
+  const analytics = data || defaultAnalytics;
 
   const [dateRange, setDateRange] = useState([
     {

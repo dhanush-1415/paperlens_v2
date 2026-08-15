@@ -1,5 +1,5 @@
 import React from 'react';
-import { AnalyticsData } from './analytics-page';
+import { type AnalyticsData } from './analytics-page';
 import { format } from 'date-fns';
 import { ShieldIcon } from '@/shared/ui/icons';
 import { ScanIcon, VaultIcon, BarChartIcon } from '@/shared/ui/icons/dashboard-icons';

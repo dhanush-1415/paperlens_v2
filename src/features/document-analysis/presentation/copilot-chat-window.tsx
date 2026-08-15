@@ -37,15 +37,18 @@ export function CopilotChatWindow({ documentId, suggestedQuestions = [], reanaly
 
   // Sync displayedSuggestions when prop changes
   useEffect(() => {
-    if (suggestedQuestions && suggestedQuestions.length > 0) {
-      setDisplayedSuggestions([...suggestedQuestions]);
-      setIsSuggestionsLoading(false);
-      autoLoadDoneRef.current = false;
-    } else {
-      setDisplayedSuggestions([]);
-      setIsSuggestionsLoading(true);
-      autoLoadDoneRef.current = false;
-    }
+    const id = setTimeout(() => {
+      if (suggestedQuestions && suggestedQuestions.length > 0) {
+        setDisplayedSuggestions([...suggestedQuestions]);
+        setIsSuggestionsLoading(false);
+        autoLoadDoneRef.current = false;
+      } else {
+        setDisplayedSuggestions([]);
+        setIsSuggestionsLoading(true);
+        autoLoadDoneRef.current = false;
+      }
+    }, 0);
+    return () => clearTimeout(id);
   }, [suggestedQuestions]);
 
   const handleLoadMore = async () => {
@@ -92,29 +95,33 @@ export function CopilotChatWindow({ documentId, suggestedQuestions = [], reanaly
     if (!stored) return;
     try {
       const { separatorAfterIndex } = JSON.parse(stored) as { separatorAfterIndex: number };
-      setMessages(prev => {
-        if (prev.some(m => m.role === 'system')) return prev;
-        const result = [...prev];
-        result.splice(Math.min(separatorAfterIndex, result.length), 0, {
-          id: `reanalysis-stored`,
-          role: 'system',
-          content: 'reanalyzed',
+      setTimeout(() => {
+        setMessages(prev => {
+          if (prev.some(m => m.role === 'system')) return prev;
+          const result = [...prev];
+          result.splice(Math.min(separatorAfterIndex, result.length), 0, {
+            id: `reanalysis-stored`,
+            role: 'system',
+            content: 'reanalyzed',
+          });
+          return result;
         });
-        return result;
-      });
+      }, 0);
     } catch {}
   }, [documentId]);
 
   // Insert separator when re-analysis completes
   useEffect(() => {
     if (!reanalyzedAt) return;
-    setMessages(prev => {
-      localStorage.setItem(
-        `clearcut_reanalysis_${documentId}`,
-        JSON.stringify({ separatorAfterIndex: prev.length }),
-      );
-      return [...prev, { id: `reanalysis-${reanalyzedAt}`, role: 'system', content: 'reanalyzed' }];
-    });
+    setTimeout(() => {
+      setMessages(prev => {
+        localStorage.setItem(
+          `clearcut_reanalysis_${documentId}`,
+          JSON.stringify({ separatorAfterIndex: prev.length }),
+        );
+        return [...prev, { id: `reanalysis-${reanalyzedAt}`, role: 'system', content: 'reanalyzed' }];
+      });
+    }, 0);
   }, [reanalyzedAt, documentId]);
 
   // Scroll to bottom
@@ -137,13 +144,13 @@ export function CopilotChatWindow({ documentId, suggestedQuestions = [], reanaly
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
     
-    const userMsg = { id: Date.now().toString(), role: 'user', content: text };
+    const userMsg = { id: crypto.randomUUID(), role: 'user', content: text };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
-    const assistantId = (Date.now() + 1).toString();
+    const assistantId = crypto.randomUUID();
     setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
 
     const removeAssistantPlaceholder = () =>

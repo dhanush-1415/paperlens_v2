@@ -88,7 +88,7 @@ describe('isProtectedPath', () => {
 describe('isAuthOnlyPath', () => {
  it('matches the sign-in surface', () => {
  expect(isAuthOnlyPath('/login')).toBe(true);
- expect(isAuthOnlyPath('/register')).toBe(true);
+ expect(isAuthOnlyPath('/signup')).toBe(true);
  expect(isAuthOnlyPath('/forgot-password')).toBe(true);
  });
 

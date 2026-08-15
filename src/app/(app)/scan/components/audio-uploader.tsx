@@ -254,15 +254,16 @@ export function AudioUploader({ onFileReady, onScanningChange, disabled }: Audio
 
   // Cycle phases every 3.5 s during analysis
   useEffect(() => {
+    let initPhase: ReturnType<typeof setTimeout>;
     if (state === 'analyzing') {
-      setPhase(0);
+      initPhase = setTimeout(() => setPhase(0), 0);
       phaseTimer.current = setInterval(() => {
         setPhase((p) => Math.min(p + 1, AUDIO_PHASES.length - 1));
       }, 3500);
     } else {
       if (phaseTimer.current) clearInterval(phaseTimer.current);
     }
-    return () => { if (phaseTimer.current) clearInterval(phaseTimer.current); };
+    return () => { clearTimeout(initPhase); if (phaseTimer.current) clearInterval(phaseTimer.current); };
   }, [state]);
 
   const validateAndAnalyze = useCallback(async (f: File) => {

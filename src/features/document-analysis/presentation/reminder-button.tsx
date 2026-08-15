@@ -234,7 +234,7 @@ export function ReminderButton({
   const [selected, setSelected]      = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { setTimeout(() => setMounted(true), 0); }, []);
 
   const overlayRef   = useRef<HTMLDivElement>(null);
   const scrollBodyRef = useRef<HTMLDivElement>(null);

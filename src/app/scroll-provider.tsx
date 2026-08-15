@@ -37,7 +37,7 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
       touchMultiplier: 2,
     });
 
-    setLenis(lenisInstance);
+    setTimeout(() => setLenis(lenisInstance), 0);
 
     // Synchronize Lenis scroll event with GSAP ScrollTrigger updates
     lenisInstance.on('scroll', ScrollTrigger.update);

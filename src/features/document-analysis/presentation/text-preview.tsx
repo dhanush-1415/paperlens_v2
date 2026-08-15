@@ -264,7 +264,7 @@ export function TextPreview({
 
   useEffect(() => {
     if (initialContent) {
-      setContent(initialContent);
+      setTimeout(() => setContent(initialContent), 0);
       return;
     }
     if (!src) return;

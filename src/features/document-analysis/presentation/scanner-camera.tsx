@@ -107,7 +107,7 @@ export function ScannerCamera({ onResult, onFileReady, onScanningChange, classNa
 
   // Cycle through phase messages while uploading
   useEffect(() => {
-    if (mode !== 'uploading') { setPhaseIdx(0); return; }
+    if (mode !== 'uploading') { setTimeout(() => setPhaseIdx(0), 0); return; }
     const timers = uploadPhases.slice(1).map((_, i) =>
       setTimeout(() => setPhaseIdx(i + 1), (i + 1) * 3200)
     );

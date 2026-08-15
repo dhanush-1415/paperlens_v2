@@ -26,7 +26,7 @@ export function ShareExportMenu({ documentId, title }: { documentId: string, tit
         await navigator.share({
           title: title || 'PaperLens Document Analysis',
           text: 'Check out this document analysis on PaperLens',
-          url: url,
+          url,
         });
       } else {
         handleCopyLink();

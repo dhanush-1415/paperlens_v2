@@ -42,7 +42,7 @@ export async function GET(req: Request) {
         id: d.id,
         name: d.filename || 'Untitled Document',
         type: (d.fileType || 'unknown').toUpperCase(),
-        risk: risk,
+        risk,
         date: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
         size: d.byteSize ? `${(d.byteSize / (1024 * 1024)).toFixed(1)} MB` : '0 MB'
       };

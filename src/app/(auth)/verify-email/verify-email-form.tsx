@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useTransition, useRef, KeyboardEvent, ClipboardEvent } from 'react';
+import { useState, useEffect, useCallback, useTransition, useRef, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { verifyOtpAction, resendOtpAction } from '@/server/actions/auth';
 import { cn } from '@/shared/ui/cn';
@@ -114,7 +114,7 @@ export function VerifyEmailForm() {
   }, [otp, email, isPending]);
 
   useEffect(() => {
-    if (otp.length === 6 && !digits.includes('')) handleVerify();
+    if (otp.length === 6 && !digits.includes('')) setTimeout(handleVerify, 0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otp]);
 

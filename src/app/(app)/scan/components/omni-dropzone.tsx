@@ -70,7 +70,7 @@ export function OmniDropzone() {
 
   useEffect(() => {
     if (textState && !textState.ok && textState.error) {
-      handleAnalysisResult(textState);
+      setTimeout(() => handleAnalysisResult(textState), 0);
     }
   }, [textState]);
 

@@ -171,7 +171,7 @@ export const analyzeDocumentAction = action(
     await container.resolve(ANALYZE_DOCUMENT)({
       ownerId: session.userId,
       text: input.text,
-      media: media,
+      media,
       documentType: input.documentType,
       fileUrl,
       mimeType,

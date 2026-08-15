@@ -45,8 +45,8 @@ export async function GET(req: Request) {
         folderId: a.folderId,
         name: a.title || 'Untitled Document',
         type: (a.documentType || 'unknown').toUpperCase(),
-        risk: risk,
-        resolved: resolved,
+        risk,
+        resolved,
         deadlineDate: a.deadlineDate?.toISOString() || null,
         date: a.analyzedAt ? new Date(a.analyzedAt).toISOString() : new Date().toISOString(),
         size: 'Text Only' // Zero retention indicator

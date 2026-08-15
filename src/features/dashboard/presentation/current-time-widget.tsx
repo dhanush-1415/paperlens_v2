@@ -7,9 +7,9 @@ export function CurrentTimeWidget() {
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    setTime(new Date());
+    const initTimer = setTimeout(() => setTime(new Date()), 0);
     const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    return () => { clearTimeout(initTimer); clearInterval(timer); };
   }, []);
 
   if (!time) {

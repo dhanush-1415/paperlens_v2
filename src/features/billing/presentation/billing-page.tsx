@@ -22,7 +22,7 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
 
   const handleUpgrade = async (planName: string) => {
     if (planName === 'Enterprise') {
-      window.location.href = 'mailto:sales@paperlens.com';
+      window.location.assign('mailto:sales@paperlens.com');
       return;
     }
     
@@ -33,7 +33,7 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
       });
       const data = await res.json();
       if (data.checkout_url) {
-        window.location.href = data.checkout_url;
+        window.location.assign(data.checkout_url);
       } else {
         alert('Checkout failed: ' + (data.error || 'Unknown error'));
       }

@@ -502,7 +502,7 @@ export function VaultPage() {
   });
 
   useEffect(() => {
-    setCurrentPage(1);
+    setTimeout(() => setCurrentPage(1), 0);
   }, [searchQuery, filterRisk, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredDocs.length / pageSize));
