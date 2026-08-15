@@ -66,9 +66,9 @@ const parsed = serverEnvSchema
  .safeParse(process.env);
 
 if (!parsed.success) {
- throw new Error(
- `Invalid server environment variables:\n${JSON.stringify(z.treeifyError(parsed.error), null, 2)}`,
- );
+  throw new Error(
+    `Invalid server environment variables:\n${JSON.stringify(parsed.error.flatten().fieldErrors, null, 2)}`
+  );
 }
 
 export const serverEnv: ServerEnv = parsed.data;

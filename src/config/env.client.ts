@@ -14,36 +14,40 @@ import { z } from 'zod';
  * loop.
  */
 const clientEnvSchema = z.object({
- NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
- NEXT_PUBLIC_APP_ENV: z.enum(['local', 'development', 'preview', 'staging', 'production']).default('local'),
- NEXT_PUBLIC_COMMIT_SHA: z.string().default('unknown'),
- NEXT_PUBLIC_ANALYTICS_ENABLED: z
- .enum(['true', 'false'])
- .default('false')
- .transform((value) => value === 'true'),
- NEXT_PUBLIC_ERROR_REPORTING_DSN: z.string().optional(),
- NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
- NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
+  NEXT_PUBLIC_APP_URL: z.string().url().optional().or(z.literal('')),
+  NEXT_PUBLIC_APP_ENV: z.enum(['local', 'development', 'preview', 'staging', 'production']).default('local'),
+  NEXT_PUBLIC_COMMIT_SHA: z.string().default('unknown'),
+  NEXT_PUBLIC_ANALYTICS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  NEXT_PUBLIC_ERROR_REPORTING_DSN: z.string().optional(),
+  NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
+  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().or(z.literal('')),
+  NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional().or(z.literal('')),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
 
 const parsed = clientEnvSchema.safeParse({
- NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
- NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
- NEXT_PUBLIC_COMMIT_SHA: process.env.NEXT_PUBLIC_COMMIT_SHA,
- NEXT_PUBLIC_ANALYTICS_ENABLED: process.env.NEXT_PUBLIC_ANALYTICS_ENABLED,
- NEXT_PUBLIC_ERROR_REPORTING_DSN: process.env.NEXT_PUBLIC_ERROR_REPORTING_DSN,
- NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
- NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
+  NEXT_PUBLIC_COMMIT_SHA: process.env.NEXT_PUBLIC_COMMIT_SHA,
+  NEXT_PUBLIC_ANALYTICS_ENABLED: process.env.NEXT_PUBLIC_ANALYTICS_ENABLED,
+  NEXT_PUBLIC_ERROR_REPORTING_DSN: process.env.NEXT_PUBLIC_ERROR_REPORTING_DSN,
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+  NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
 });
 
 if (!parsed.success) {
- // Thrown at module load, which in practice means at build time — a misconfigured public
- // variable should never reach a user's browser.
- throw new Error(
- `Invalid public environment variables:\n${JSON.stringify(z.treeifyError(parsed.error), null, 2)}`,
- );
+  // Thrown at module load, which in practice means at build time — a misconfigured public
+  // variable should never reach a user's browser.
+  throw new Error(
+    `Invalid public environment variables:\n${JSON.stringify(parsed.error.flatten().fieldErrors, null, 2)}`,
+  );
 }
 
 export const clientEnv: ClientEnv = parsed.data;
