@@ -1,7 +1,5 @@
 import type { Instrumentation } from 'next';
 
-import { runtime } from '@/config/runtime';
-
 /**
  * Server instrumentation — the global error funnel (requirements 5, 6, 17).
  *
@@ -28,20 +26,20 @@ import { runtime } from '@/config/runtime';
  * fail to compile for an edge deployment. The dynamic import inside a runtime check keeps
  * one instrumentation file working on both.
  *
- * `process.env.NEXT_RUNTIME` is the documented way to detect the runtime, but ESLint confines
- * `process.env` to `src/config/` — so the check reads `runtime`, which is that variable,
- * parsed once, in the one module allowed to touch it.
+ * `process.env.NEXT_RUNTIME` is the documented way to detect the runtime. Next.js uses AST replacement to eliminate the node-only dynamic imports during the edge build. Extracting this to a variable breaks that analysis.
  */
 
 export async function register(): Promise<void> {
- if (runtime !== 'nodejs') return;
+ // eslint-disable-next-line no-restricted-syntax
+ if (process.env.NEXT_RUNTIME !== 'nodejs') return;
 
  const { bootstrapServer } = await import('@/server/bootstrap');
  bootstrapServer();
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
- if (runtime !== 'nodejs') return;
+ // eslint-disable-next-line no-restricted-syntax
+ if (process.env.NEXT_RUNTIME !== 'nodejs') return;
 
  const { getServerContainer } = await import('@/server/bootstrap');
  const { ERROR_REPORTER, LOGGER } = await import('@/core/container');
