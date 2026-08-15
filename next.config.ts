@@ -63,7 +63,7 @@ const nextConfig: NextConfig = {
   },
 
 
-  serverExternalPackages: ['@prisma/client', 'prisma', 'pdf-parse', 'pdfjs-dist'],
+  serverExternalPackages: ['@prisma/client', 'prisma'],
 
   /**
    * React Compiler is stable in Next 16 but off here deliberately: it is a performance
