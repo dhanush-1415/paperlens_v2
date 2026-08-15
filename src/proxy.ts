@@ -100,6 +100,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // 3. Supabase cookie forwarding
   let supabaseResponse = withRequestHeaders(request, requestHeaders);
 
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return applyResponseHeaders(supabaseResponse, correlation);
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
