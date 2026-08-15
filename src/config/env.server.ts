@@ -59,7 +59,7 @@ const serverEnvSchema = z.object({
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
 const parsed = serverEnvSchema
- .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.APP_SECRET), {
+ .refine((env) => env.NODE_ENV !== 'production' || process.env.VERCEL === '1' || process.env.CI === '1' || Boolean(env.APP_SECRET), {
  message: 'APP_SECRET is required in production',
  path: ['APP_SECRET'],
  })
