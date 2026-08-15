@@ -14,7 +14,7 @@ import { z } from 'zod';
  * loop.
  */
 const clientEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.string().url().optional().or(z.literal('')),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000').catch('http://localhost:3000'),
   NEXT_PUBLIC_APP_ENV: z.enum(['local', 'development', 'preview', 'staging', 'production']).default('local'),
   NEXT_PUBLIC_COMMIT_SHA: z.string().default('unknown'),
   NEXT_PUBLIC_ANALYTICS_ENABLED: z
