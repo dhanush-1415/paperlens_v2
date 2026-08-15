@@ -7,8 +7,9 @@ import { Dialog } from '@/shared/ui/components/dialog';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
 import { DeadlineTimeline } from './deadline-timeline';
-import { toggleResolvedAction, deleteDocumentAction, createFolderAction, bulkMoveToFolderAction, renameFolderAction, deleteFolderOnlyAction, deleteFolderAndDocsAction } from '../actions';
+import { toggleResolvedAction, deleteDocumentAction, bulkDeleteDocumentsAction, createFolderAction, bulkMoveToFolderAction, renameFolderAction, deleteFolderOnlyAction, deleteFolderAndDocsAction } from '../actions';
 import { Eye, CheckCircle2, Trash2, XCircle, Loader2, FolderInput, FolderX, Pencil, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export interface VaultDocument {
   id: string;
@@ -281,6 +282,25 @@ export function VaultPage() {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [docsToMove, setDocsToMove] = useState<string[]>([]);
   const [isMoving, startMoveTransition] = useTransition();
+
+  const handleBulkDelete = () => {
+    if (!window.confirm(`Are you sure you want to permanently delete ${selectedIds.size} documents?`)) return;
+    
+    startDeleteTransition(async () => {
+      try {
+        await bulkDeleteDocumentsAction(Array.from(selectedIds));
+        setSelectedIds(new Set());
+        // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  };
 
   const handleOpenMoveDialog = (docIds: string[]) => {
     setDocsToMove(docIds);
@@ -585,6 +605,7 @@ export function VaultPage() {
           </Button>
           <button 
             disabled={isLoading}
+            onClick={() => router.push('/scan')}
             className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-primary to-brand-secondary text-white shadow-lg shadow-brand-primary/25 hover:shadow-brand-primary/40 hover:-translate-y-0.5 transition-all group disabled:opacity-50 disabled:pointer-events-none"
             title="Upload Document"
           >
@@ -728,7 +749,7 @@ export function VaultPage() {
               <Button variant="secondary" size="sm" className="font-bold" onClick={() => handleOpenMoveDialog(Array.from(selectedIds))}>
                 Move to Folder
               </Button>
-              <Button size="sm" className="bg-critical hover:bg-critical-fg text-white border-none font-bold">Delete</Button>
+              <Button size="sm" className="bg-critical hover:bg-critical-fg text-white border-none font-bold" onClick={handleBulkDelete}>Delete</Button>
               <button onClick={() => setSelectedIds(new Set())} className="p-2 text-text-tertiary hover:text-text-primary transition-colors">
                 <CloseIcon className="size-5" />
               </button>
@@ -749,7 +770,7 @@ export function VaultPage() {
                 title="No documents found"
                 description={searchQuery ? 'Try adjusting your search or filters.' : 'Upload your first contract to get started.'}
                 filtered={!!searchQuery}
-                action={!searchQuery && <Button className="font-bold shadow-md"><UploadCloudIcon className="size-4 mr-2" /> Upload Document</Button>}
+                action={!searchQuery && <Button asChild className="font-bold shadow-md"><Link href="/scan"><UploadCloudIcon className="size-4 mr-2" /> Upload Document</Link></Button>}
               />
             </div>
           ) : view === 'list' ? (
