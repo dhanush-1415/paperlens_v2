@@ -22,10 +22,10 @@ const clientEnvSchema = z.object({
     .default('false')
     .transform((value) => value === 'true'),
   NEXT_PUBLIC_ERROR_REPORTING_DSN: z.string().optional(),
-  NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().or(z.literal('')),
-  NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional().or(z.literal('')),
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url().catch(''),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().catch(''),
+  NEXT_PUBLIC_POSTHOG_KEY: z.string().catch(''),
+  NEXT_PUBLIC_POSTHOG_HOST: z.string().url().catch(''),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
