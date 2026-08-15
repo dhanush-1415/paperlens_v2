@@ -29,7 +29,7 @@ const serverEnvSchema = z.object({
  * Optional in development so a fresh clone runs with no setup; required in production by
  * the refinement below.
  */
- APP_SECRET: z.string().optional().or(z.literal('')),
+ APP_SECRET: z.string().catch(''),
 
  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
  LOG_FORMAT: z.enum(['pretty', 'json']).optional(),
@@ -51,9 +51,9 @@ const serverEnvSchema = z.object({
 
  /** White-label tenant this deployment serves. See `tenant.ts`. */
  TENANT_ID: z.string().default('default'),
-  SUPABASE_URL: z.string().url().optional().or(z.literal('')),
-  SUPABASE_ANON_KEY: z.string().optional().or(z.literal('')),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().optional().or(z.literal('')),
+  SUPABASE_URL: z.string().url().catch(''),
+  SUPABASE_ANON_KEY: z.string().catch(''),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().catch(''),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
