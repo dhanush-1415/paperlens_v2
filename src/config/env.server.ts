@@ -21,7 +21,7 @@ const serverEnvSchema = z.object({
  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
  /** Absolute origin used for absolute URLs in server-rendered output and emails. */
- APP_URL: z.url().default('http://localhost:3000'),
+ APP_URL: z.string().url().catch('http://localhost:3000'),
 
  /**
  * Signing key for anything this app issues itself (session cookie MAC, CSRF token).
