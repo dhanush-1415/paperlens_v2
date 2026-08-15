@@ -235,6 +235,12 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
     }
   }, [pathname, userCollapsedPreference, setCollapsed]);
 
+  // Auto-dismiss mobile drawer on navigation
+  const closeMobile = useSidebarStore((s) => s.closeMobile);
+  useEffect(() => {
+    closeMobile();
+  }, [pathname, closeMobile]);
+
   /**
    * Active state: a nav item is active when the pathname matches exactly or starts with
    * the item's href followed by a `/`. The prefix match handles nested pages like
@@ -254,7 +260,6 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
   }));
 
   const isMobileOpen = useSidebarStore((s) => s.isMobileOpen);
-  const closeMobile = useSidebarStore((s) => s.closeMobile);
 
   const renderNav = (isCollapsedMode: boolean, isMobile: boolean = false) => (
     <nav
