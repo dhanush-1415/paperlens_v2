@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -39,7 +39,8 @@ export const prisma = new Proxy({} as PrismaClient, {
         const pool = new Pool({ connectionString });
         const adapter = new PrismaPg(pool);
         
-        globalThis.prismaGlobal = new PrismaClient({ 
+        const { PrismaClient: PrismaClientConstructor } = require('@prisma/client');
+        globalThis.prismaGlobal = new PrismaClientConstructor({ 
           adapter,
           log: ['error', 'warn'], 
         });
