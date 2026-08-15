@@ -18,7 +18,8 @@
     "test:e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
     "prepare": "husky install",
-    "coverage:check": "vitest run --coverage && vitest run --coverage --threshold=75"
+    "coverage:check": "vitest run --coverage && vitest run --coverage --threshold=75",
+    "postinstall": "prisma generate"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
