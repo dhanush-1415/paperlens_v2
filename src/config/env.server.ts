@@ -18,7 +18,7 @@ import { z } from 'zod';
  * first and read from `serverEnv` only.
  */
 const serverEnvSchema = z.object({
- NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+ NODE_ENV: z.enum(['development', 'production', 'test']).catch('development').default('development'),
 
  /** Absolute origin used for absolute URLs in server-rendered output and emails. */
  APP_URL: z.string().url().catch('http://localhost:3000'),
@@ -31,8 +31,8 @@ const serverEnvSchema = z.object({
  */
  APP_SECRET: z.string().catch(''),
 
- LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
- LOG_FORMAT: z.enum(['pretty', 'json']).optional(),
+  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).catch('info' as any).optional(),
+  LOG_FORMAT: z.enum(['pretty', 'json']).catch('pretty' as any).optional(),
 
  /** Outbound HTTP defaults. Centralized so no call site invents its own timeout. */
  HTTP_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(15_000),
