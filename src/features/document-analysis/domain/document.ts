@@ -142,10 +142,13 @@ export interface AnalysisDraft {
  readonly actionPlan: readonly string[];
  readonly urgency: string | null;
  readonly rawText: string;
+ readonly fileUrl?: string | null;
+ readonly mimeType?: string | null;
  readonly entities: readonly KeyEntity[];
  readonly legitimacy: string | null;
  readonly confidence: string | null;
  readonly suggestedQuestions: readonly string[];
+ readonly deadlineDate?: string | null;
  /** ISO 8601. Produced from an injected clock, never from `new Date()` inside a rule. */
  readonly analyzedAt: string;
 }

@@ -42,13 +42,10 @@ import { Text } from '../components/text';
 import { TONE_SOLID, type RiskTone } from '../tone';
 
 const excerptVariants = cva(
- [
- 'relative overflow-hidden rounded-card border border-border-subtle bg-surface-2',
- // The accent bar is inline-start padding plus an absolutely-positioned span, rather than
- // a `border-s-4`: a thick border on one side of a rounded box leaves a visible notch at
- // the corners in every engine.
- 'py-4 ps-5 pe-4',
- ],
+  [
+    'relative overflow-hidden rounded-2xl border border-border-strong/50 bg-surface-1 shadow-[inset_0_2px_15px_rgba(0,0,0,0.03)] dark:shadow-[inset_0_2px_15px_rgba(255,255,255,0.02)]',
+    'py-5 ps-6 pe-5 transition-all duration-300 hover:shadow-[inset_0_2px_20px_rgba(0,0,0,0.05)] dark:hover:shadow-[inset_0_2px_20px_rgba(255,255,255,0.04)] hover:border-border-strong',
+  ],
  {
  variants: {
  /**
@@ -96,23 +93,24 @@ export function DocumentExcerpt({
  <span
  aria-hidden
  className={cn(
- 'absolute inset-y-0 start-0 w-1',
+ 'absolute inset-y-0 start-0 w-[5px] rounded-r-sm',
  level ? TONE_SOLID[level] : 'bg-border-strong',
+ level === 'critical' ? 'shadow-[2px_0_12px_rgba(239,68,68,0.4)]' : '',
+ level === 'caution' ? 'shadow-[2px_0_12px_rgba(245,158,11,0.4)]' : '',
  )}
  />
 
  <blockquote
  cite={cite}
  className={cn(
- ' text-2xs leading-relaxed whitespace-pre-wrap text-text-primary',
+ 'text-sm font-serif leading-relaxed whitespace-pre-wrap text-text-secondary',
  // Any `<mark>` the caller placed inside gets the tint here, so the call site writes
- // plain HTML and never a class name. `rounded-selection` and the negative inline
- // margin keep the highlight from looking like a text-selection rectangle.
- '[&_mark]:-mx-0.5 [&_mark]:rounded-selection [&_mark]:px-0.5',
- '[&_mark]:bg-brand-primary/20 [&_mark]:text-text-primary',
- level === 'critical' && '[&_mark]:bg-risk-critical/20',
- level === 'caution' && '[&_mark]:bg-risk-caution/25',
- level === 'safe' && '[&_mark]:bg-risk-safe/20',
+ // plain HTML and never a class name.
+ '[&_mark]:-mx-1 [&_mark]:rounded-md [&_mark]:px-1.5 [&_mark]:py-0.5',
+ '[&_mark]:bg-brand-primary/10 [&_mark]:text-text-primary [&_mark]:font-semibold',
+ level === 'critical' && '[&_mark]:bg-risk-critical/15 [&_mark]:border [&_mark]:border-risk-critical/20',
+ level === 'caution' && '[&_mark]:bg-risk-caution/15 [&_mark]:border [&_mark]:border-risk-caution/20',
+ level === 'safe' && '[&_mark]:bg-risk-safe/15 [&_mark]:border [&_mark]:border-risk-safe/20',
  )}
  >
  {children}

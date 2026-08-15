@@ -186,6 +186,9 @@ export function LandingHowItWorks() {
                 <button
                   key={step.id}
                   onClick={() => setActiveStep(step.id)}
+                  aria-expanded={isActive}
+                  aria-controls="how-it-works-visual"
+                  id={`how-it-works-tab-${step.id}`}
                   className={cn(
                     'text-left p-6 rounded-2xl transition-all duration-500 flex gap-5 group relative overflow-hidden',
                     isActive
@@ -255,7 +258,12 @@ export function LandingHowItWorks() {
               </div>
 
               {/* Injected Active Step Panel */}
-              <div className="flex-1 w-full bg-canvas/30 relative flex items-center justify-center p-6 sm:p-10">
+              <div 
+                id="how-it-works-visual" 
+                role="region" 
+                aria-labelledby={`how-it-works-tab-${activeStep}`}
+                className="flex-1 w-full bg-canvas/30 relative flex items-center justify-center p-6 sm:p-10"
+              >
                 {currentStep.visual}
               </div>
 

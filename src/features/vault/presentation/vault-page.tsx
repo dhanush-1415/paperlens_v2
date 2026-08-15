@@ -7,8 +7,9 @@ import { Dialog } from '@/shared/ui/components/dialog';
 import { SearchIcon, DocumentIcon, MenuIcon, CheckIcon, CloseIcon } from '@/shared/ui/icons';
 import { LayoutDashboardIcon, VaultIcon, MoreVerticalIcon, UploadCloudIcon, FilterIcon, ArrowUpDownIcon } from '@/shared/ui/icons/dashboard-icons';
 import { DeadlineTimeline } from './deadline-timeline';
-import { toggleResolvedAction, deleteDocumentAction, createFolderAction, bulkMoveToFolderAction, renameFolderAction, deleteFolderOnlyAction, deleteFolderAndDocsAction } from '../actions';
+import { toggleResolvedAction, deleteDocumentAction, bulkDeleteDocumentsAction, createFolderAction, bulkMoveToFolderAction, renameFolderAction, deleteFolderOnlyAction, deleteFolderAndDocsAction } from '../actions';
 import { Eye, CheckCircle2, Trash2, XCircle, Loader2, FolderInput, FolderX, Pencil, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export interface VaultDocument {
   id: string;
@@ -36,7 +37,7 @@ const formatDisplayDate = (isoString: string) => {
   }
 };
 
-export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void, onMoveRequest?: (id: string) => void }) {
+export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest, onRemoveFromFolder }: { doc: VaultDocument, onUpdate?: (id: string, updates: Partial<VaultDocument>) => void, onDelete?: (id: string) => void, onMoveRequest?: (id: string) => void, onRemoveFromFolder?: (id: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -118,6 +119,16 @@ export function ActionDropdown({ doc, onUpdate, onDelete, onMoveRequest }: { doc
             <FolderInput className="size-4" />
             Move to Folder
           </button>
+          {doc.folderId && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsOpen(false); onRemoveFromFolder?.(doc.id); }}
+              disabled={isPending}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-2 hover:text-text-primary transition-colors text-left disabled:opacity-50"
+            >
+              <LayoutDashboardIcon className="size-4" />
+              Remove from Folder
+            </button>
+          )}
           <div className="h-px bg-border-subtle my-1 mx-2" />
           <button 
             onClick={(e) => { e.stopPropagation(); handleDelete(); }}
@@ -272,9 +283,45 @@ export function VaultPage() {
   const [docsToMove, setDocsToMove] = useState<string[]>([]);
   const [isMoving, startMoveTransition] = useTransition();
 
+  const handleBulkDelete = () => {
+    if (!window.confirm(`Are you sure you want to permanently delete ${selectedIds.size} documents?`)) return;
+    
+    startDeleteTransition(async () => {
+      try {
+        await bulkDeleteDocumentsAction(Array.from(selectedIds));
+        setSelectedIds(new Set());
+        // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  };
+
   const handleOpenMoveDialog = (docIds: string[]) => {
     setDocsToMove(docIds);
     setIsMoveDialogOpen(true);
+  };
+
+  const handleRemoveFromFolder = (docId: string) => {
+    startMoveTransition(async () => {
+      try {
+        await bulkMoveToFolderAction([docId], null);
+        // Refresh the list
+        const res = await fetch('/api/vault/list');
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data.folders || []);
+          setDocuments(data.documents || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
   };
 
   const handleMoveDocuments = (folderId: string | null) => {
@@ -435,10 +482,12 @@ export function VaultPage() {
     const matchesRisk = filterRisk === 'all' || doc.risk === filterRisk;
     
     let matchesFolder = false;
-    if (selectedFolderId) {
+    if (showAllDocuments) {
+      matchesFolder = true;
+    } else if (selectedFolderId) {
       matchesFolder = doc.folderId === selectedFolderId;
     } else {
-      matchesFolder = showAllDocuments || !doc.folderId;
+      matchesFolder = !doc.folderId;
     }
     
     return matchesRisk && matchesFolder;
@@ -527,7 +576,7 @@ export function VaultPage() {
       header: 'ACTION',
       cell: (item) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} />
+          <ActionDropdown doc={item} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} onRemoveFromFolder={handleRemoveFromFolder} />
         </div>
       ),
     },
@@ -556,6 +605,7 @@ export function VaultPage() {
           </Button>
           <button 
             disabled={isLoading}
+            onClick={() => router.push('/scan')}
             className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-primary to-brand-secondary text-white shadow-lg shadow-brand-primary/25 hover:shadow-brand-primary/40 hover:-translate-y-0.5 transition-all group disabled:opacity-50 disabled:pointer-events-none"
             title="Upload Document"
           >
@@ -626,13 +676,13 @@ export function VaultPage() {
       <div className="flex items-center gap-4">
         <Text size="xs" className="font-bold uppercase tracking-wider text-text-tertiary ml-1">Documents</Text>
         
-        {!selectedFolderId && documents.some(d => d.folderId) && (
-          <div className="flex items-center gap-2">
+        {documents.some(d => d.folderId) && (
+          <div className="flex items-center gap-2" onClick={() => setShowAllDocuments(p => !p)}>
             <Switch 
                id="show-all"
                checked={showAllDocuments}
                onChange={(e) => setShowAllDocuments(e.target.checked)}
-               className="scale-75"
+               className="scale-75 pointer-events-none"
             />
             <label htmlFor="show-all" className="text-xs font-medium text-text-secondary cursor-pointer select-none">
               Show all
@@ -699,7 +749,7 @@ export function VaultPage() {
               <Button variant="secondary" size="sm" className="font-bold" onClick={() => handleOpenMoveDialog(Array.from(selectedIds))}>
                 Move to Folder
               </Button>
-              <Button size="sm" className="bg-critical hover:bg-critical-fg text-white border-none font-bold">Delete</Button>
+              <Button size="sm" className="bg-critical hover:bg-critical-fg text-white border-none font-bold" onClick={handleBulkDelete}>Delete</Button>
               <button onClick={() => setSelectedIds(new Set())} className="p-2 text-text-tertiary hover:text-text-primary transition-colors">
                 <CloseIcon className="size-5" />
               </button>
@@ -720,7 +770,7 @@ export function VaultPage() {
                 title="No documents found"
                 description={searchQuery ? 'Try adjusting your search or filters.' : 'Upload your first contract to get started.'}
                 filtered={!!searchQuery}
-                action={!searchQuery && <Button className="font-bold shadow-md"><UploadCloudIcon className="size-4 mr-2" /> Upload Document</Button>}
+                action={!searchQuery && <Button asChild className="font-bold shadow-md"><Link href="/scan"><UploadCloudIcon className="size-4 mr-2" /> Upload Document</Link></Button>}
               />
             </div>
           ) : view === 'list' ? (
@@ -777,7 +827,7 @@ export function VaultPage() {
                       <DocumentIcon className="size-6" />
                     </div>
                     <div className="z-10" onClick={(e) => e.stopPropagation()}>
-                      <ActionDropdown doc={doc} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} />
+                      <ActionDropdown doc={doc} onUpdate={handleDocumentUpdate} onDelete={handleDocumentDelete} onMoveRequest={(id) => handleOpenMoveDialog([id])} onRemoveFromFolder={handleRemoveFromFolder} />
                     </div>
                   </div>
                   

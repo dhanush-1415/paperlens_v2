@@ -60,9 +60,11 @@ const LABELS: AnalysisReportLabels = {
  * oracle that confirms which documents exist by returning 403 for the ones that do. Rendering
  * the same 404 for both is the other half of that decision.
  */
-function Report({ analysis }: { readonly analysis: any }) {
- return <AnalysisReport analysis={analysis} labels={LABELS} />;
+function Report({ analysis, plan }: { readonly analysis: any, plan: any }) {
+ return <AnalysisReport analysis={analysis} labels={LABELS} plan={plan} />;
 }
+
+import { prisma } from '@/server/db/prisma';
 
 async function DocumentContainer({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params;
@@ -75,6 +77,17 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
  const analysisDto = toAnalysisDto(analysisData);
  
  const isResolved = analysisData.flags.length > 0 && analysisData.resolvedFlagIds.length >= analysisData.flags.length;
+
+ const sub = await prisma.userSubscription.findFirst({
+   where: { userId: session.userId },
+   include: { plan: true }
+ });
+
+ const plan = {
+   canChat: sub ? sub.chatMessagesUsed < (sub.plan?.quotaChatMessagesPerMonth || 20) : false,
+   usage: { chatMsgs: sub?.chatMessagesUsed || 0 },
+   limits: { chatMsgs: sub?.plan?.quotaChatMessagesPerMonth || 20 }
+ };
 
  return (
  <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[800px] w-full overflow-hidden bg-surface-1 rounded-2xl border border-border-subtle shadow-sm">
@@ -89,7 +102,7 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
   </header>
 
   <main className="flex-1 min-h-0 overflow-hidden">
-    <Report analysis={analysisDto} />
+    <Report analysis={analysisDto} plan={plan} />
   </main>
   
   <SidebarCollapser />

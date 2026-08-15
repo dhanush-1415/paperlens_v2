@@ -50,32 +50,79 @@ export async function POST(req: Request) {
       });
     }
 
-    // Provide context to the AI (extract flags as context)
+    // Provide context to the AI
     const flagsContext = docAnalysis.flags ? JSON.stringify(docAnalysis.flags, null, 2) : 'No risks found.';
-    const systemPrompt = `You are a Legal AI Copilot for a platform called PaperLens. 
-Your goal is to answer questions about a user's document and the risks flagged in it. 
-Be professional, concise, and do not provide binding legal advice (always remind them you are an AI assistant if they ask for legal representation).
-Here are the risks flagged in the document for your context:\n\n${flagsContext}
+    
+    const systemParts = [
+      'You are PaperLens, an elite legal and bureaucratic assistant.',
+      'Below is the metadata AND the full raw text of the user\'s document.',
+      'You must answer questions based on the FULL TEXT. Do not say you only have a summary.',
+      'Be concise. Use plain language that a non-lawyer can understand.',
+      'If the answer is genuinely not covered by the document, say so honestly.',
+      'LANGUAGE MATCHING: Reply in the same language as the document summary. If the user writes in a different language, reply in that language instead.',
+      '',
+      '--- DOCUMENT METADATA ---',
+      `Title: ${docAnalysis.title}`,
+      `Summary: ${docAnalysis.summary || 'None'}`,
+      `Urgency: ${docAnalysis.urgency || 'None'}`,
+      `Deadline: ${docAnalysis.deadlineDate ? docAnalysis.deadlineDate.toISOString() : 'None'}`,
+      `Flags/Risks: ${flagsContext}`,
+      '--- END METADATA ---',
+      '',
+      '--- FULL DOCUMENT TEXT ---',
+      docAnalysis.rawText || 'No text extracted.',
+      '--- END FULL TEXT ---'
+    ];
 
-Here is the RAW FULL TEXT of the document:\n\n${docAnalysis.rawText}`;
+    const systemInstruction = systemParts.join('\n');
 
     const result = streamText({
-      model: google('gemini-1.5-pro'),
-      system: systemPrompt,
+      model: google('gemini-2.5-flash'),
+      system: systemInstruction,
       messages,
       async onFinish({ text }) {
-        // Save the assistant's response to the database
-        await prisma.chatMessage.create({
-          data: {
-            sessionId: currentSessionId!,
-            role: 'assistant',
-            content: text,
-          }
-        });
+        try {
+          await prisma.chatMessage.create({
+            data: {
+              sessionId: currentSessionId!,
+              role: 'assistant',
+              content: text,
+            }
+          });
+        } catch (dbErr) {
+          console.error('[chat-stream] Database message insert failed:', dbErr);
+        }
       }
     });
 
-    return result.toTextStreamResponse();
+    const ERROR_SENTINEL = '__CHAT_ERROR__';
+    const encoder = new TextEncoder();
+    const safeStream = new ReadableStream({
+      async start(controller) {
+        const reader = result.textStream.getReader();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(encoder.encode(value));
+          }
+        } catch (streamErr: any) {
+          const errMsg  = streamErr?.message || String(streamErr);
+          const isQuota = /429|rate.?limit|quota|resource.?exhausted/i.test(errMsg);
+          const isPolicy = /safety|policy|blocked/i.test(errMsg);
+          controller.enqueue(
+            encoder.encode(`${ERROR_SENTINEL}:${isPolicy ? 'CONTENT_POLICY' : isQuota ? 'RATE_LIMIT' : 'GENERAL'}`)
+          );
+        } finally {
+          reader.releaseLock();
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(safeStream, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
   } catch (error: any) {
     console.error('Chat API Error:', error);
     return new Response(error.message || 'Internal Server Error', { status: 500 });

@@ -89,7 +89,20 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
         {/* ── Left Column (Main Content) ────────────────────────────────────────── */}
         <div className="flex flex-col gap-6 lg:col-span-2 lg:gap-8">
           
-          {/* Quick Stats Grid */}
+          {dashboardData.totalScans === 0 ? (
+            <div className="flex flex-col items-center justify-center bg-surface-1 border border-border-subtle rounded-3xl p-12 text-center h-full min-h-[400px] shadow-sm">
+              <div className="size-20 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center mb-6 ring-8 ring-brand-primary/5">
+                <UploadCloudIcon className="size-10" />
+              </div>
+              <Heading level={2} className="text-2xl font-extrabold tracking-tight mb-2">Welcome to your Workspace</Heading>
+              <Text tone="secondary" className="max-w-md mx-auto mb-8">You haven't uploaded any documents yet. Drop your first contract, notice, or lease to let our AI engine instantly identify risks and extract key deadlines.</Text>
+              <Button asChild size="lg" className="h-12 px-8 shadow-lg shadow-brand-primary/20 hover:scale-105 transition-transform rounded-xl font-bold bg-brand-primary text-white hover:bg-brand-primary-hover">
+                <Link href={ROUTES.scan}>Analyze Your First Document</Link>
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="relative overflow-hidden rounded-3xl bg-surface-1 shadow-[0_2px_20px_-8px_rgba(0,0,0,0.1)] border border-border-subtle hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.15)] transition-all duration-300 group p-6">
               <div className="flex items-center justify-between mb-4">
@@ -224,6 +237,8 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
               </Button>
             </div>
           </Card>
+          </>
+          )}
         </div>
 
         {/* ── Right Column (Sidebar Widgets) ────────────────────────────────────── */}

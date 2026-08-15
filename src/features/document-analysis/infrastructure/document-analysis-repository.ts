@@ -62,10 +62,13 @@ function toEntity(record: any): DocumentAnalysis {
     actionPlan: record.actionPlan || [],
     urgency: record.urgency,
     rawText: record.rawText || "",
+    fileUrl: record.fileUrl,
+    mimeType: record.mimeType,
     entities: (record.entities as any) || [],
     legitimacy: record.legitimacy,
     confidence: record.confidence,
     suggestedQuestions: record.suggestedQuestions || [],
+    deadlineDate: record.deadlineDate?.toISOString() || null,
     analyzedAt: record.analyzedAt.toISOString(),
   };
 
@@ -110,10 +113,13 @@ export function createDocumentAnalysisRepository(
             actionPlan: draft.actionPlan as string[],
             urgency: draft.urgency,
             rawText: draft.rawText,
+            fileUrl: draft.fileUrl,
+            mimeType: draft.mimeType,
             entities: draft.entities as any,
             legitimacy: draft.legitimacy,
             confidence: draft.confidence,
             suggestedQuestions: draft.suggestedQuestions as string[],
+            deadlineDate: draft.deadlineDate ? new Date(draft.deadlineDate) : null,
             analyzedAt: new Date(draft.analyzedAt),
             flags: draft.flags.map(f => ({
               id: f.id,

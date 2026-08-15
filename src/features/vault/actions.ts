@@ -15,6 +15,17 @@ export async function deleteDocumentAction(documentId: string) {
   revalidatePath('/vault');
 }
 
+export async function bulkDeleteDocumentsAction(documentIds: string[]) {
+  const session = await requireSession();
+  
+  await prisma.documentAnalysis.updateMany({
+    where: { id: { in: documentIds }, ownerId: session.userId },
+    data: { deletedAt: new Date() }
+  });
+  
+  revalidatePath('/vault');
+}
+
 export async function toggleResolvedAction(documentId: string, resolved: boolean) {
   const session = await requireSession();
   

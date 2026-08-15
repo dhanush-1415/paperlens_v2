@@ -56,6 +56,10 @@ const nextConfig: NextConfig = {
       static: 300,
       dynamic: 30,
     },
+
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
 
   // @ts-expect-error - Next 15+ has serverActions at the root, but the typings might not reflect it

@@ -9,6 +9,9 @@ import { rateLimitError } from '@/core/errors/app-error';
 import { unwrapOrThrow } from '@/core/result/result';
 import { ROUTES } from '@/shared/constants/routes';
 import { parseFormData } from '@/shared/validation';
+import { createClient } from '@supabase/supabase-js';
+import { serverEnv } from '@/config/env.server';
+import { v4 as uuidv4 } from 'uuid';
 import { action, checkPermissionResult, getServerContainer } from '@/server/bootstrap';
 import { getUserPlan, incrementScanUsage } from '@/server/dal/plan';
 import { forbiddenError, validationError } from '@/core/errors/app-error';
@@ -91,17 +94,41 @@ export const analyzeDocumentAction = action(
  * `unwrapOrThrow` hands the boundary a `VALIDATION` error whose `fieldErrors` survive
  * `toClient()` and land straight in the form's `<Field error>` props.
  */
- const file = formData.get('file') as File | null;
- let media: { data: string; mimeType: string } | undefined = undefined;
+  const file = formData.get('file') as File | null;
+  let media: { data: string; mimeType: string } | undefined = undefined;
+  let fileUrl: string | undefined = undefined;
+  let mimeType: string | undefined = undefined;
 
- if (file && file.size > 0) {
+  if (file && file.size > 0) {
+    mimeType = file.type;
+    
+    // Upload original file to Supabase Storage
+    if (serverEnv.SUPABASE_URL && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const supabaseAdmin = createClient(serverEnv.SUPABASE_URL, serverEnv.SUPABASE_SERVICE_ROLE_KEY);
+        const fileExt = file.name.split('.').pop() || 'bin';
+        const filePath = `${session.userId}/${uuidv4()}.${fileExt}`;
+        const buffer = Buffer.from(await file.arrayBuffer());
+        
+        await supabaseAdmin.storage.from('vault-documents').upload(filePath, buffer, { 
+          contentType: file.type,
+          upsert: true
+        });
+        
+        const { data } = supabaseAdmin.storage.from('vault-documents').getPublicUrl(filePath);
+        fileUrl = data.publicUrl;
+      } catch (e) {
+        console.error('Failed to upload to S3', e);
+        // Continue anyway; we don't want to break the pipeline if S3 fails
+      }
+    }
    if (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/')) {
      const buffer = await file.arrayBuffer();
      media = {
        data: Buffer.from(buffer).toString('base64'),
        mimeType: file.type,
      };
-     formData.set('text', '[Media File Analysis]'); // Satisfy Zod schema
+      formData.set('text', '[Media File Analysis: This file contains image/video content that will be analysed natively by the AI vision model. Bypass min length validation limit.]'); // Satisfy Zod schema
    } else {
      try {
        const extractedText = await extractTextFromFile(file);
@@ -118,7 +145,7 @@ export const analyzeDocumentAction = action(
            data: Buffer.from(buffer).toString('base64'),
            mimeType: 'application/pdf',
          };
-         formData.set('text', '[Scanned PDF sent as media for native AI OCR]');
+          formData.set('text', '[Scanned PDF sent as media for native AI OCR because no readable text was extracted by pdf-parse. Bypass min length limit.]');
        } else {
          formData.set('text', extractedText);
        }
@@ -140,15 +167,17 @@ export const analyzeDocumentAction = action(
  const startedAt = container.resolve(CLOCK)().getTime();
 
  // 5 ─ The operation. One resolved use case, one call, no assembly.
- const analysis = unwrapOrThrow(
- await container.resolve(ANALYZE_DOCUMENT)({
- ownerId: session.userId,
- text: input.text,
- media: media,
- documentType: input.documentType,
- ...(input.title === undefined ? {} : { title: input.title }),
- }),
- );
+  const analysis = unwrapOrThrow(
+    await container.resolve(ANALYZE_DOCUMENT)({
+      ownerId: session.userId,
+      text: input.text,
+      media: media,
+      documentType: input.documentType,
+      fileUrl,
+      mimeType,
+      ...(input.title === undefined ? {} : { title: input.title }),
+    }),
+  );
 
  container.resolve(ANALYTICS).track('document.analyzed', {
  documentId: analysis.id,

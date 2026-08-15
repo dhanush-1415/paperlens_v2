@@ -26,6 +26,7 @@ import { CopilotChatWindow } from './copilot-chat-window';
 export interface AnalysisReportProps {
  readonly analysis: AnalysisDto;
  readonly labels: AnalysisReportLabels;
+ readonly plan?: { canChat: boolean; usage: { chatMsgs: number }; limits: { chatMsgs: number } };
 }
 
 export interface AnalysisReportLabels {
@@ -61,11 +62,16 @@ export interface AnalysisReportLabels {
  * compile error here instead of a wrong colour in production.
  */
 import { type Tone } from '@/shared/ui';
-import Markdown from 'react-markdown';
 import { Copy, RefreshCw, Archive, Trash2, ShieldCheck, Scale, Globe, CheckCircle2, Sparkles } from 'lucide-react';
 import { WorkspacePane } from './workspace-pane';
+import { MarkdownRenderer } from './markdown-renderer';
 import { DocumentSettings } from './document-settings';
 import { SmartActionPlan } from './smart-action-plan';
+import { ExpertEscalation } from './expert-escalation';
+import { shouldOfferEscalation } from '../application/experts';
+import { ShareExportMenu } from './share-button';
+import { CalendarMenu } from './calendar-menu';
+import { ReminderButton } from './reminder-button';
 
 const SCORE_TONE = {
  critical: 'critical',
@@ -73,7 +79,29 @@ const SCORE_TONE = {
  safe: 'safe',
 } as const satisfies Record<AnalysisDto['score']['level'], Tone>;
 
-export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
+const isLikelyFilename = (title: string) => /\.[a-z0-9]+$/i.test(title);
+
+const getCleanTitle = (title: string) => {
+  if (!title || title === 'Document Analysis') return 'Document Analysis';
+  if (!isLikelyFilename(title)) return title;
+  
+  let name = title.replace(/\.[^/.]+$/, ""); // strip extension
+  name = name.replace(/^[0-9]+-/, ""); // strip numeric prefix
+  name = name.replace(/[-_]/g, " "); // replace dashes with spaces
+  
+  // Title case it for better aesthetics
+  name = name.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+  
+  return name.trim();
+};
+
+const hasLostInformation = (title: string) => {
+  if (!isLikelyFilename(title)) return false;
+  // If it had a numeric prefix that we stripped, it lost information (e.g. 611285713-)
+  return /^[0-9]+-/.test(title);
+};
+
+export function AnalysisReport({ analysis, labels, plan }: AnalysisReportProps) {
   const urgency = analysis.urgency || (analysis.score.level === 'critical' ? 'critical' : analysis.score.level === 'caution' ? 'medium' : 'low');
   
   const derivedActionPlan = analysis.actionPlan && analysis.actionPlan.length > 0
@@ -93,46 +121,40 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
   return (
     <div className="flex flex-col lg:flex-row h-full w-full overflow-hidden bg-surface-1">
       {/* LEFT PANE: Report Data (Scrollable) */}
-      <div className="flex-1 overflow-y-auto h-full p-6 md:p-8 flex flex-col gap-6 custom-scrollbar relative">
+      <div className="flex-1 overflow-y-auto h-full block custom-scrollbar relative pb-10">
         <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-brand-primary/5 to-transparent pointer-events-none" />
         
-        {/* -- Header — badge + headline ---------------------------------- */}
-        <div className="flex flex-col gap-3 relative z-20 bg-surface-1 border border-border-strong rounded-2xl overflow-hidden shadow-md sticky top-0 mt-[-8px]">
-          {/* Badge row + scanned date */}
-          <div className={`px-5 pt-4 pb-3 flex items-center justify-between gap-3 border-b ${
-            analysis.score.level === 'critical' ? 'bg-risk-critical-bg border-risk-critical-border' :
-            analysis.score.level === 'caution' ? 'bg-risk-caution-bg border-risk-caution-border' :
-            'bg-risk-safe-bg border-risk-safe-border'
-          }`}>
-            {/* Priority badge */}
-            <div className="relative shrink-0">
-              <Badge tone={SCORE_TONE[analysis.score.level]} dot className="font-semibold text-xs py-1 px-3 uppercase tracking-wide border-current/30">
+        {/* -- Header ---------------------------------- */}
+        <div className="flex flex-col gap-3 relative z-30 bg-surface-1/95 backdrop-blur-md border-b border-border-strong shadow-sm sticky top-0 px-6 md:px-8 pt-6 pb-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <Heading level={1} size="lg" className="font-geist tracking-tight text-text-primary leading-snug flex items-center gap-2 overflow-hidden flex-1">
+                <span className="shrink-0 whitespace-nowrap">{getCleanTitle(analysis.title)}</span>
+                {hasLostInformation(analysis.title) && (
+                  <span className="truncate text-text-secondary opacity-70 font-normal text-base md:text-lg mt-0.5">({analysis.title})</span>
+                )}
+              </Heading>
+              <Badge tone={SCORE_TONE[analysis.score.level]} dot className="shrink-0 font-semibold text-xs py-1 px-3 uppercase tracking-wide border-current/30 shadow-sm whitespace-nowrap">
                 {analysis.score.level === 'critical' ? 'Critical — Act Now' : analysis.score.level === 'caution' ? 'Review Recommended' : 'Safe to Proceed'}
               </Badge>
             </div>
-            <span className="text-[11px] font-medium opacity-80 shrink-0">
-              {labels.analyzedAt(analysis.analyzedAt)}
-            </span>
-          </div>
-
-          {/* Headline */}
-          <div className="px-5 pb-5 pt-1 bg-surface-1">
-            <Heading level={1} size="lg" className="font-geist tracking-tight text-text-primary leading-snug">
-              {analysis.title || 'Document Analysis'}
-            </Heading>
+            
             {/* Category + specialized intelligence badges */}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-2 px-2.5 py-0.5 text-[10px] font-semibold text-text-secondary">
                 {DOCUMENT_TYPE_LABEL[analysis.documentType]}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-primary/30 bg-brand-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-brand-ink">
                 Specialized analysis
               </span>
+              <span className="text-[11px] font-medium opacity-80 text-text-tertiary ml-auto">
+                {labels.analyzedAt(analysis.analyzedAt)}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 mt-2">
+        <div className="px-6 md:px-8 flex flex-col md:flex-row gap-4 mt-2">
           {/* -- Relief moment — emotional reassurance ------------------ */}
           <div className={`flex-1 flex flex-col justify-center gap-1.5 rounded-xl border px-4 py-3.5 shadow-sm ${
             analysis.score.level === 'critical' ? 'bg-risk-critical-bg border-risk-critical-border text-risk-critical-fg' :
@@ -173,7 +195,7 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
         </div>
 
         {/* Summary — Markdown rendered */}
-        <div className="px-1 mt-2">
+        <div className="px-6 md:px-8 mt-2">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10">
               <Sparkles className="h-3.5 w-3.5 text-brand-primary" />
@@ -181,20 +203,31 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
             <p className="text-sm font-bold text-text-primary leading-none">Executive Summary</p>
           </div>
           <div className="p-5 rounded-2xl bg-surface-2 border border-border-subtle/50 shadow-sm">
-            <div className="prose prose-sm prose-neutral max-w-none prose-p:leading-relaxed prose-p:text-text-secondary prose-strong:text-text-primary prose-ul:text-text-secondary prose-ul:list-disc prose-ul:pl-5 prose-li:marker:text-text-tertiary prose-li:my-1.5 prose-headings:text-text-primary prose-headings:font-bold prose-headings:text-[10px] prose-headings:uppercase prose-headings:tracking-wider prose-headings:mb-2 prose-headings:mt-4 first:prose-headings:mt-0">
-              <Markdown>
-                {summary.includes('- ') || summary.includes('* ') ? summary : `${summary}\n\n**Key Takeaways:**\n- The document type is classified as **${DOCUMENT_TYPE_LABEL[analysis.documentType]}**.\n- Detected **${analysis.flags.length}** specific clauses requiring review.\n- Authenticity signal indicates the document is **${analysis.legitimacy === 'SUSPICIOUS' ? 'Suspicious' : 'Standard'}**.\n- Priority level for this review is set to **${urgency.toUpperCase()}**.`}
-              </Markdown>
-            </div>
+            <MarkdownRenderer summary={summary} analysis={analysis} urgency={urgency} />
           </div>
         </div>
 
         {/* -- Smart action plan (interactive checklist) -------------------- */}
-        <SmartActionPlan actions={actionPlan} />
+        <div className="px-6 md:px-8 mt-4">
+          <SmartActionPlan actions={actionPlan} documentTitle={analysis.title} />
+        </div>
+
+        {/* -- Expert escalation (high-risk docs only) ------------------- */}
+        {shouldOfferEscalation({ category: null, docPack: null, urgency: urgency as any }) && (
+          <div className="px-6 md:px-8 mt-6 mb-3">
+            <ExpertEscalation
+              documentId={analysis.id}
+              category={null}
+              docPack={null}
+              urgency={urgency as any}
+            />
+          </div>
+        )}
 
         {/* -- Trust Layer: evidence quotes --------------------- */}
         {analysis.flags.length > 0 && (
-          <details className="group relative z-10 rounded-2xl border border-border-subtle bg-surface-2 px-5 py-4 shadow-sm">
+          <div className="px-6 md:px-8 mt-4">
+            <details className="group relative z-10 rounded-2xl border border-border-subtle bg-surface-2 px-5 py-4 shadow-sm">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold text-text-secondary">
               <span className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" />
@@ -213,12 +246,14 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
               ))}
             </div>
             <p className="mt-4 text-[10px] text-text-tertiary">Informational only — not legal, tax, or financial advice.</p>
-          </details>
+            </details>
+          </div>
         )}
 
         {/* -- Key Entities -------------------------------------------------- */}
         {analysis.entities && analysis.entities.length > 0 && (
-          <div className="flex flex-col gap-3 relative z-10 bg-surface-2 p-5 rounded-2xl border border-border-subtle shadow-sm">
+          <div className="px-6 md:px-8 mt-6">
+            <div className="flex flex-col gap-3 relative z-10 bg-surface-2 p-5 rounded-2xl border border-border-subtle shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10">
                 <ShieldCheck className="h-3.5 w-3.5 text-brand-primary" />
@@ -237,14 +272,17 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
                 </div>
               ))}
             </div>
+            </div>
           </div>
         )}
         
         {/* -- Settings / Toggles ------------------------------------------ */}
-        <DocumentSettings documentId={analysis.id} />
+        <div className="px-6 md:px-8 mt-4">
+          <DocumentSettings documentId={analysis.id} />
+        </div>
 
         {/* Findings */}
-        <section className="flex flex-col gap-6 relative z-10 mt-4">
+        <section className="px-6 md:px-8 flex flex-col gap-6 relative z-10 mt-6">
           <div className="flex items-center justify-between border-b border-border-subtle pb-4">
             <div className="flex flex-col gap-1">
               <Heading level={2} size="md" className="font-geist tracking-tight text-text-primary">
@@ -269,29 +307,61 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
         </section>
 
         {/* -- BOTTOM SECTION — Quick Actions ----------------------------- */}
-        <div className="border-t border-border-subtle pt-6 pb-2 mt-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary mb-3">Quick Actions</p>
-          <div className="grid grid-cols-4 gap-2">
-            <button title="Copy summary" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150">
-              <Copy className="h-4 w-4" />
-              <span className="text-[10px] font-medium leading-none">Copy</span>
-            </button>
-            <button title="Re-analyze document" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/20 transition-all duration-150">
-              <RefreshCw className="h-4 w-4" />
-              <span className="text-[10px] font-medium leading-none">Re-analyze</span>
-            </button>
-            <button title="Archive document" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150">
-              <Archive className="h-4 w-4" />
-              <span className="text-[10px] font-medium leading-none">Archive</span>
-            </button>
-            <button title="Delete document" className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-risk-critical-fg hover:bg-risk-critical-bg border border-transparent hover:border-risk-critical-border transition-all duration-150">
-              <Trash2 className="h-4 w-4" />
-              <span className="text-[10px] font-medium leading-none">Delete</span>
-            </button>
+        <div className="px-6 md:px-8 mt-10 mb-8">
+          <div className="rounded-3xl border border-border-subtle bg-surface-1 shadow-sm overflow-hidden relative transition-all duration-300 hover:shadow-md">
+            <div className="absolute top-0 left-0 w-full h-[120px] bg-gradient-to-br from-brand-primary/5 via-brand-primary/[0.02] to-transparent pointer-events-none" />
+            
+            <div className="px-6 py-4 border-b border-border-subtle/50 bg-surface-2/30 backdrop-blur-md flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-widest text-text-secondary flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-brand-primary opacity-80" /> Action Center
+              </p>
+              <div className="flex gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-primary/40 animate-pulse"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-primary/20"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-primary/20"></span>
+              </div>
+            </div>
+            
+            <div className="p-6 flex flex-wrap items-center gap-2 sm:gap-3 relative z-10">
+              <ShareExportMenu documentId={analysis.id} title={analysis.title} />
+              
+              <CalendarMenu 
+                title={`Review Document: ${analysis.title}`} 
+                dateString={new Date().toISOString().split('T')[0] as string} 
+                options={{ urgency: analysis.score.level, summary: analysis.summary ?? '', documentUrl: `https://paperlens.app/document/${analysis.id}` }} 
+                variant="icon"
+              />
+              <ReminderButton 
+                document={{ id: analysis.id, title: analysis.title, score: { level: analysis.score.level } }}
+                deadlineDate={null}
+                variant="icon"
+              />
+              
+              <div className="h-8 w-px bg-border-strong/50 hidden md:block mx-1 sm:mx-2" />
+              
+              <div className="flex flex-wrap sm:flex-nowrap flex-1 md:flex-none justify-end gap-2 sm:gap-3 ml-auto">
+                <button title="Copy summary" className="group flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-text-secondary bg-surface-2 border border-border-subtle hover:text-text-primary hover:bg-surface-raised hover:border-border-strong hover:shadow-sm transition-all duration-200">
+                  <Copy className="h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors" />
+                  <span className="text-xs font-semibold leading-none">Copy</span>
+                </button>
+                <button title="Re-analyze document" className="group flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-brand-primary bg-brand-primary/5 border border-brand-primary/20 hover:bg-brand-primary/10 hover:border-brand-primary/40 hover:shadow-sm transition-all duration-200">
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="text-xs font-semibold leading-none">Retry</span>
+                </button>
+                <button title="Archive document" className="group flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-text-secondary bg-surface-2 border border-border-subtle hover:text-text-primary hover:bg-surface-raised hover:border-border-strong hover:shadow-sm transition-all duration-200">
+                  <Archive className="h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors" />
+                  <span className="text-xs font-semibold leading-none hidden sm:inline">Archive</span>
+                </button>
+                <button title="Delete document" className="group flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-risk-critical-fg bg-risk-critical-bg/30 border border-risk-critical-border/50 hover:bg-risk-critical-bg hover:border-risk-critical-border hover:shadow-sm transition-all duration-200">
+                  <Trash2 className="h-4 w-4" />
+                  <span className="text-xs font-semibold leading-none hidden sm:inline">Delete</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <footer className="flex flex-col gap-2 border-t border-border-subtle pt-6 relative z-10">
+        <footer className="px-6 md:px-8 flex flex-col gap-2 border-t border-border-subtle pt-6 mt-4 relative z-10">
           <Text as="span" size="xs" tone="tertiary">
             <time dateTime={analysis.analyzedAt}>{labels.analyzedAt(analysis.analyzedAt)}</time>
           </Text>
@@ -306,6 +376,9 @@ export function AnalysisReport({ analysis, labels }: AnalysisReportProps) {
         documentId={analysis.id} 
         suggestedQuestions={analysis.suggestedQuestions} 
         rawText={analysis.rawText} 
+        fileUrl={analysis.fileUrl}
+        mimeType={analysis.mimeType}
+        plan={plan}
       />
     </div>
   );

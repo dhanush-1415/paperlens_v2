@@ -15,23 +15,25 @@ export function MarkdownRenderer({
 }) {
   const content = summary.includes('- ') || summary.includes('* ') 
     ? summary 
-    : `${summary}\n\n**Key Takeaways:**\n- The document type is classified as **${DOCUMENT_TYPE_LABEL[analysis.documentType]}**.\n- Detected **${analysis.flags.length}** specific clauses requiring review.\n- Priority level for this review is set to **${urgency.toUpperCase()}**.`;
+    : `${summary}\n\n**Key Takeaways:**\n- The document type is classified as **${DOCUMENT_TYPE_LABEL[analysis.documentType]}**.\n- Detected **${analysis.flags.length}** specific clauses requiring review.\n- Authenticity signal indicates the document is **${analysis.legitimacy === 'SUSPICIOUS' ? 'Suspicious' : 'Standard'}**.\n- Priority level for this review is set to **${urgency.toUpperCase()}**.`;
 
   return (
     <Markdown
       components={{
         h3: ({ children }) => (
-          <p className="mt-4 mb-1.5 first:mt-0 text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
-            {children}
+          <p className="mt-5 mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-primary/80">
+            <span className="h-px flex-1 bg-brand-primary/20" />
+            <span>{children}</span>
+            <span className="h-px flex-1 bg-brand-primary/20" />
           </p>
         ),
         ul: ({ children }) => (
-          <ul className="space-y-1 mt-1.5 mb-3">{children}</ul>
+          <ul className="pl-3.5 space-y-1 mb-2">{children}</ul>
         ),
         li: ({ children }) => (
-          <li className="flex items-start gap-2">
-            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-text-tertiary/60" aria-hidden="true" />
-            <span className="text-sm text-text-secondary leading-relaxed">{children}</span>
+          <li className="flex items-start gap-1.5 list-none">
+            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-text-primary/30" aria-hidden="true" />
+            <span className="min-w-0 text-sm text-text-secondary leading-relaxed">{children}</span>
           </li>
         ),
         p: ({ children }) => (

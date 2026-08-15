@@ -11,47 +11,47 @@ export const instant = false;
 export default async function DashboardPage() {
   const session = await requireSession();
 
-  // Fetch real data
-  const totalScans = await prisma.documentAnalysis.count({
-    where: { ownerId: session.userId, deletedAt: null }
-  });
-
-  const activeDocuments = await prisma.documentAnalysis.count({
-    where: { 
-      ownerId: session.userId, 
-      deletedAt: null,
-      scoreLevel: { in: ['critical', 'caution'] }
-    }
-  });
-
-  const recentDocuments = await prisma.documentAnalysis.findMany({
-    where: { ownerId: session.userId, deletedAt: null },
-    orderBy: { analyzedAt: 'desc' },
-    take: 5
-  });
-
-  let criticalCount = 0;
-  let cautionCount = 0;
-
-  for (const doc of recentDocuments) {
-    if (doc.scoreLevel === 'critical') criticalCount++;
-    if (doc.scoreLevel === 'caution') cautionCount++;
-  }
-
-  // Count total critical risks across all documents for the dashboard metric
-  const allCriticalCount = await prisma.documentAnalysis.count({
-    where: { ownerId: session.userId, deletedAt: null, scoreLevel: 'critical' }
-  });
-
-  // Activity over last 7 days
-  const last7Days = new Date();
-  last7Days.setDate(last7Days.getDate() - 6); // 7 days including today
-  last7Days.setHours(0, 0, 0, 0);
-  
-  const recentDocsForChart = await prisma.documentAnalysis.findMany({
-    where: { ownerId: session.userId, analyzedAt: { gte: last7Days } },
-    select: { analyzedAt: true }
-  });
+  // Fetch real data in parallel
+  const [
+    totalScans,
+    activeDocuments,
+    recentDocuments,
+    allCriticalCount,
+    recentDocsForChart,
+    userSubscription
+  ] = await Promise.all([
+    prisma.documentAnalysis.count({
+      where: { ownerId: session.userId, deletedAt: null }
+    }),
+    prisma.documentAnalysis.count({
+      where: { 
+        ownerId: session.userId, 
+        deletedAt: null,
+        scoreLevel: { in: ['critical', 'caution'] }
+      }
+    }),
+    prisma.documentAnalysis.findMany({
+      where: { ownerId: session.userId, deletedAt: null },
+      orderBy: { analyzedAt: 'desc' },
+      take: 5
+    }),
+    prisma.documentAnalysis.count({
+      where: { ownerId: session.userId, deletedAt: null, scoreLevel: 'critical' }
+    }),
+    prisma.documentAnalysis.findMany({
+      where: { 
+        ownerId: session.userId, 
+        analyzedAt: { 
+          gte: new Date(new Date().setHours(0, 0, 0, 0) - 6 * 24 * 60 * 60 * 1000) 
+        } 
+      },
+      select: { analyzedAt: true }
+    }),
+    prisma.userSubscription.findUnique({
+      where: { userId: session.userId },
+      include: { plan: true }
+    })
+  ]);
 
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const activityMap = new Map(days.map(d => [d, 0]));
@@ -83,11 +83,6 @@ export default async function DashboardPage() {
     })),
     scanActivityData
   };
-
-  const userSubscription = await prisma.userSubscription.findUnique({
-    where: { userId: session.userId },
-    include: { plan: true }
-  });
 
   const usage = {
     scansUsed: userSubscription?.scansUsed || totalScans,

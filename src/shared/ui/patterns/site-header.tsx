@@ -41,6 +41,7 @@ import { usePathname } from 'next/navigation';
 import type { Route } from 'next';
 
 import { cn } from '@/shared/ui/cn';
+import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 
 import { Button } from '../components/button';
 import { Drawer } from '../components/drawer';
@@ -163,11 +164,8 @@ export function SiteHeader({
  'transition-opacity duration-(--duration-micro) hover:opacity-80',
  )}
  >
- <svg className="size-6 text-brand-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-   <circle cx="12" cy="13" r="4" className="stroke-brand-secondary fill-canvas/80" strokeWidth={2} />
- </svg>
- <span>{productName}</span>
+  <PaperLensLogo size="md" showText={false} />
+  <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 font-extrabold tracking-tight">{productName}</span>
  </Link>
 
  {/*

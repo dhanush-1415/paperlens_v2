@@ -28,7 +28,7 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
     
     try {
       setIsUpgrading(true);
-      const res = await fetch('/api/stripe/checkout', {
+      const res = await fetch('/api/billing/checkout', {
         method: 'POST',
       });
       const data = await res.json();
@@ -181,7 +181,11 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
                   {p.price !== 'Custom' && <Text tone="tertiary" className="font-medium">/month</Text>}
                 </div>
               </div>
-              {isCurrent && <Badge tone="brand" className="font-bold shadow-sm">Current Plan</Badge>}
+              {isCurrent ? (
+                <Badge tone="brand" className="font-bold shadow-sm">Current Plan</Badge>
+              ) : p.name === 'Professional' && planData.plan.displayName.toLowerCase() === 'starter' ? (
+                <Badge tone="brand" className="font-bold shadow-sm bg-gradient-to-r from-brand-primary to-brand-secondary text-white border-none animate-pulse">Recommended</Badge>
+              ) : null}
             </div>
 
             <ul className="relative flex-1 space-y-4">
@@ -227,11 +231,21 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
           
           <div className="mt-6 rounded-xl border border-risk-caution/20 bg-risk-caution/5 p-4 flex gap-3 items-start">
             <AlertTriangleIcon className="size-5 text-risk-caution shrink-0 mt-0.5" />
-            <div>
-              <Text size="sm" className="font-bold text-text-primary">Next billing: Sep 1, 2026</Text>
-              <Text size="xs" tone="secondary" className="mt-1 font-medium text-risk-caution/80">Your card will be automatically charged $49.00.</Text>
+            <div className="flex-1">
+              <Text size="sm" className="font-bold text-text-primary">Next billing: {new Date(planData.subscription.usageResetAt).toLocaleDateString()}</Text>
+              <Text size="xs" tone="secondary" className="mt-1 font-medium text-risk-caution/80">Your card will be automatically charged.</Text>
             </div>
           </div>
+          
+          {planData.plan.displayName.toLowerCase() !== 'starter' && (
+            <div className="mt-6 border-t border-border-subtle pt-6 flex flex-col gap-3 items-start">
+              <Text size="sm" className="font-bold text-text-primary">Danger Zone</Text>
+              <Text size="xs" tone="secondary" className="font-medium">Cancel your subscription. You will lose access to unmetered AI scans at the end of your billing cycle.</Text>
+              <Button variant="ghost" size="sm" className="text-risk-critical font-bold mt-2 hover:bg-risk-critical/10" onClick={() => window.confirm('Are you sure you want to cancel your Professional subscription? We would hate to see you go.')}>
+                Cancel Subscription
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Billing History */}

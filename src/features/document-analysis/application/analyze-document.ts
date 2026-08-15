@@ -54,6 +54,8 @@ export interface AnalyzeDocumentInput {
  readonly documentType: DocumentType;
  /** Optional. Derived from the document's own first line when absent. */
  readonly title?: string;
+ readonly fileUrl?: string;
+ readonly mimeType?: string;
 }
 
 /**
@@ -130,6 +132,16 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
 
  const rawText = flags.value.transcription || text || '[Media File: No text extracted]';
 
+ const dateEntities = flags.value.entities?.filter(e => e.iconHint === 'calendar' || e.label.toLowerCase().includes('date') || e.label.toLowerCase().includes('deadline'));
+ let deadlineDate: string | null = null;
+ const firstDateEntity = dateEntities?.[0];
+ if (firstDateEntity) {
+    const d = new Date(firstDateEntity.value);
+    if (!isNaN(d.getTime())) {
+      deadlineDate = d.toISOString();
+    }
+ }
+
  const draft: AnalysisDraft = {
  ownerId: input.ownerId,
  title: input.title?.trim() || deriveTitle(rawText, input.documentType),
@@ -138,11 +150,13 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
  flags: flags.value.flags,
  score: scoreOf(flags.value.flags),
  summary: flags.value.summary,
- actionPlan: flags.value.actionPlan,
- urgency: flags.value.urgency,
- rawText: rawText,
- entities: flags.value.entities,
- legitimacy: flags.value.legitimacy,
+    actionPlan: flags.value.actionPlan || [],
+    urgency: flags.value.urgency,
+    rawText,
+    fileUrl: input.fileUrl,
+    mimeType: input.mimeType,
+    entities: flags.value.entities || [],
+    legitimacy: flags.value.legitimacy,
  confidence: flags.value.confidence,
  suggestedQuestions: flags.value.suggestedQuestions,
  analyzedAt: deps.now().toISOString(),

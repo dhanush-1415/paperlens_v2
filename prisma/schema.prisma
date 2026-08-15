@@ -63,6 +63,8 @@ model DocumentAnalysis {
   title        String
   documentType String    @map("document_type")
   charCount    Int       @map("char_count")
+  fileUrl      String?   @map("file_url")
+  mimeType     String?   @map("mime_type")
 
   folder       Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
   scoreValue   Int       @map("score_value")
@@ -174,8 +176,24 @@ model Profile {
   lastName            String?   @map("last_name")
   phoneNumber         String?   @map("phone_number")
   avatarUrl           String?   @map("avatar_url")
+  inboxToken          String?   @unique @map("inbox_token")
   deletionRequestedAt DateTime? @map("deletion_requested_at") @db.Timestamptz()
   updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@map("profiles")
+}
+
+model ExpertLead {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  documentId   String?   @map("document_id") @db.Uuid
+  expertType   String    @map("expert_type")
+  contactName  String    @map("contact_name")
+  contactEmail String    @map("contact_email")
+  contactPhone String?   @map("contact_phone")
+  note         String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@index([userId])
+  @@map("expert_leads")
 }

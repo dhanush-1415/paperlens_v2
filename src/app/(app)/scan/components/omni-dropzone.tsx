@@ -12,6 +12,7 @@ import { UploadCloudIcon, ScanIcon, VaultIcon } from '@/shared/ui/icons/dashboar
 import { InfoIcon, ShieldIcon, DocumentIcon } from '@/shared/ui/icons';
 import { cn } from '@/shared/ui/cn';
 import { analyzeDocumentAction, analyzeUrlAction } from '@/features/document-analysis/presentation/actions';
+import { ScannerCamera } from '@/features/document-analysis/presentation/scanner-camera';
 import { AudioUploader } from './audio-uploader';
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
@@ -74,74 +75,6 @@ export function OmniDropzone() {
   }, [textState]);
 
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-
-  const [capturedBase64, setCapturedBase64] = useState<string | null>(null);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  
-  const startCamera = async () => {
-    setIsCameraActive(true);
-    setCapturedBase64(null);
-    setCameraError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      setCameraStream(stream);
-    } catch (err) {
-      setCameraError(err instanceof Error ? err.message : 'Camera access denied or unavailable.');
-    }
-  };
-
-  useEffect(() => {
-    if (cameraStream && videoRef.current) {
-      videoRef.current.srcObject = cameraStream;
-      videoRef.current.play().catch(e => console.error('Video play error:', e));
-    }
-  }, [cameraStream]);
-
-  const stopCamera = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    setCameraStream(null);
-    setIsCameraActive(false);
-  }, []);
-
-  const capturePhoto = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d')?.drawImage(video, 0, 0);
-    const base64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1] || '';
-    setCapturedBase64(base64);
-    stopCamera();
-  };
-
-  const analyzeImage = () => {
-    if (!capturedBase64) return;
-    const byteString = atob(capturedBase64);
-    const arr = new Uint8Array(byteString.length);
-    for (let i = 0; i < byteString.length; i++) arr[i] = byteString.charCodeAt(i);
-    const file = new File([arr], 'camera-capture.jpg', { type: 'image/jpeg' });
-    setCapturedBase64(null);
-    processFile(file);
-  };
-
-  // Ensure camera is stopped if component unmounts
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
-      }
-    };
-  }, []);
 
   const executeUpload = async (file: File) => {
     setIsUploading(true);
@@ -153,10 +86,13 @@ export function OmniDropzone() {
       
       const result = await analyzeDocumentAction(null, analysisFormData) as any;
       handleAnalysisResult(result);
+      if (result && !result.ok) throw new Error('Analysis failed');
     } catch (e: any) {
       if (e?.message?.includes('NEXT_REDIRECT')) throw e;
       console.error(e);
-      toast.error('Failed to process document. Please try again.');
+      // We rely on handleAnalysisResult to show the specific error (if any)
+      // but we throw so the caller (ScannerCamera) resets its state.
+      throw e;
     } finally {
       setIsUploading(false);
     }
@@ -654,216 +590,13 @@ export function OmniDropzone() {
               />
             </div>
           ) : (
-            <div key="default" className="relative z-10 flex flex-col w-full h-full items-center justify-center text-center animate-fade-in-up">
-              
-              {cameraError ? (
-                (() => {
-                  const isPermissionDenied = /not allowed|permission denied|notallowederror/i.test(cameraError);
-                  return (
-                    <div className="relative rounded-2xl overflow-hidden bg-surface-1/50 w-full max-w-3xl border border-border-strong/50 shadow-xl p-8 sm:p-12 flex flex-col items-center text-center gap-6 min-h-[400px] justify-center">
-                      <div className={cn("flex size-16 items-center justify-center rounded-full", isPermissionDenied ? "bg-surface-2" : "bg-red-500/10")}>
-                        {isPermissionDenied ? (
-                          <Camera className="size-8 text-text-tertiary" />
-                        ) : (
-                          <AlertTriangle className="size-8 text-red-500" />
-                        )}
-                      </div>
-                      <div className="max-w-md">
-                        <Heading level={3} size="sm" className={cn("font-semibold mb-2", isPermissionDenied ? "text-text-primary" : "text-red-500")}>
-                          {isPermissionDenied ? 'Camera access blocked' : 'Something went wrong'}
-                        </Heading>
-                        <Text size="sm" tone="secondary" className="leading-relaxed">
-                          {isPermissionDenied ? (
-                            <>Your browser blocked camera access. To re-enable it, click the <strong className="text-text-primary">camera or lock icon</strong> in your browser&apos;s address bar and allow camera access, then try again.</>
-                          ) : (
-                            cameraError
-                          )}
-                        </Text>
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[300px]">
-                        <Button
-                          variant="secondary"
-                          className="flex-1 transition-all"
-                          onClick={(e) => { e.stopPropagation(); setCameraError(null); setIsCameraActive(false); }}
-                        >
-                          Go Back
-                        </Button>
-                        <Button
-                          variant="premium"
-                          className="flex-1 transition-all shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.5)] border-none"
-                          onClick={(e) => { e.stopPropagation(); startCamera(); }}
-                        >
-                          Try Again
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })()
-              ) : isCameraActive ? (
-                <div className="relative rounded-2xl overflow-hidden bg-black w-full max-w-3xl border border-border-strong/50 shadow-xl min-h-[400px] sm:min-h-[500px] flex items-center justify-center">
-                  {cameraStream ? (
-                    <video
-                      ref={videoRef}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      playsInline
-                      muted
-                    />
-                  ) : (
-                    <div className="text-white/50 text-sm font-medium animate-pulse">Initializing camera...</div>
-                  )}
-                  <canvas ref={canvasRef} className="hidden" />
-                  {/* Controls */}
-                  <div className="absolute bottom-0 left-0 right-0 flex gap-4 bg-gradient-to-t from-black/80 to-transparent p-6 pb-8">
-                    <Button
-                      variant="secondary"
-                      className="flex-1 border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md transition-all font-semibold"
-                      onClick={(e) => { e.stopPropagation(); stopCamera(); }}
-                    >
-                      <X className="mr-2 size-4" />
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="premium"
-                      disabled={!cameraStream}
-                      className="flex-1 transition-all shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.5)] border-none"
-                      onClick={(e) => { e.stopPropagation(); capturePhoto(); }}
-                    >
-                      <Camera className="mr-2 size-4" />
-                      Capture
-                    </Button>
-                  </div>
-                </div>
-              ) : capturedBase64 ? (
-                <div className="relative rounded-2xl overflow-hidden bg-surface-1 w-full max-w-3xl border border-border-strong/50 shadow-xl p-6 flex flex-col gap-6 min-h-[400px] justify-center items-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`data:image/jpeg;base64,${capturedBase64}`}
-                    alt="Captured document"
-                    className="w-full object-contain rounded-xl border border-border-subtle"
-                    style={{ maxHeight: '55vh' }}
-                  />
-                  <div className="flex gap-4">
-                    <Button
-                      variant="secondary"
-                      className="flex-1 transition-all"
-                      onClick={(e) => { e.stopPropagation(); setCapturedBase64(null); startCamera(); }}
-                    >
-                      <X className="mr-2 size-4" />
-                      Retake
-                    </Button>
-                    <Button
-                      variant="premium"
-                      loading={isUploading}
-                      className="flex-1 transition-all shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.5)] border-none"
-                      onClick={(e) => { e.stopPropagation(); analyzeImage(); }}
-                    >
-                      {isUploading ? 'Uploading...' : 'Analyze Document'}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                /* Massive Dashed Dropzone Area */
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                "w-full max-w-3xl flex flex-col items-center justify-center p-12 sm:p-16 rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer group",
-                isDragging 
-                  ? "border-brand-primary bg-brand-primary/[0.05]" 
-                  : "border-border-strong/50 bg-surface-1/50 hover:border-brand-primary/50 hover:bg-brand-primary/[0.02]"
-              )}>
-                {/* Vibrant Gradient Icon */}
-                <div className="relative mb-6">
-                  <div className={cn(
-                    "absolute inset-0 rounded-full bg-brand-primary blur-2xl transition-opacity duration-500",
-                    isDragging ? "opacity-30" : "opacity-10 group-hover:opacity-20"
-                  )} />
-                  <div className={cn(
-                    "relative flex items-center justify-center rounded-full transition-all duration-500 z-10",
-                    isDragging 
-                      ? "size-20 bg-brand-primary/20 text-brand-primary scale-110" 
-                      : "size-16 bg-brand-primary/10 text-brand-primary group-hover:scale-105"
-                  )}>
-                    <UploadCloudIcon className={cn("transition-all duration-500", isDragging ? "size-10" : "size-8")} />
-                  </div>
-                </div>
-                
-                <Heading level={2} size="sm" className="font-geist font-extrabold tracking-tight mb-2 text-text-primary">
-                  {isDragging ? "Drop to instantly analyze" : "Drag & drop your file here"}
-                </Heading>
-                
-                <Text size="sm" tone="secondary" className="font-inter mb-6 pointer-events-auto">
-                  PDF, images, Word, Excel & more — up to 10 MB
-                </Text>
-
-                {/* Tags */}
-                <div className="flex flex-wrap justify-center gap-2 mb-8 pointer-events-auto">
-                  {['PDF', 'Images', 'DOCX'].map(tag => (
-                    <span key={tag} className="px-3 py-1 rounded-full bg-surface-1 border border-border-strong/50 text-xs font-semibold text-text-secondary shadow-sm">
-                      {tag}
-                    </span>
-                  ))}
-                  <span className="px-3 py-1 rounded-full bg-surface-1/50 border border-border-strong/30 text-xs font-medium text-text-tertiary italic">
-                    & more
-                  </span>
-                </div>
-                
-                <input 
-                  type="file" 
-                  ref={fileInputRef}
-                  className="hidden" 
-                  onChange={onFileChange} 
-                  accept=".pdf,.docx,.rtf,.md,.txt,.csv,.tsv,.xlsx,.xls,.json,.jpeg,.jpg,.png,.webp,.heic,.heif,.gif,.bmp,.tiff,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus,.mp4,.mov,.avi,.mkv,.js,.ts,.css,.html,.py,.go,.rs,.java,.cpp,.cs,.php,.rb,.swift,.kt,.sh,.sql,.xml,.yml,.yaml,.toml,.ini,.conf,.env,.log"
-                />
-                
-                {/* Separator */}
-                <div className="w-full flex items-center gap-4 mb-8">
-                  <div className="h-px bg-border-subtle flex-1" />
-                  <span className="text-xs text-text-tertiary font-medium">or choose an option</span>
-                  <div className="h-px bg-border-subtle flex-1" />
-                </div>
-
-                {/* Side-by-Side Large Square Buttons */}
-                <div className="grid grid-cols-2 gap-4 w-full pointer-events-auto">
-                  <button
-                    disabled={isUploading}
-                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    className={cn(
-                      "flex flex-col items-center justify-center p-6 rounded-2xl border transition-all text-center group/btn",
-                      isUploading ? "opacity-50 cursor-not-allowed" : "hover:-translate-y-0.5",
-                      "bg-brand-primary/5 border-brand-primary/20 hover:border-brand-primary/40 hover:bg-brand-primary/10 hover:shadow-md"
-                    )}
-                  >
-                    <div className="size-12 rounded-full bg-brand-primary/10 flex items-center justify-center mb-4 text-brand-primary transition-transform group-hover/btn:scale-110">
-                      <UploadCloudIcon className="size-5" />
-                    </div>
-                    <span className="font-bold text-text-primary text-base mb-1">{isUploading ? 'Uploading...' : 'Browse Files'}</span>
-                    <span className="text-[11px] text-text-tertiary font-medium">PDF, images, DOCX & more</span>
-                  </button>
-                  
-                  <button
-                    disabled={isUploading}
-                    onClick={(e) => { e.stopPropagation(); startCamera(); }}
-                    className={cn(
-                      "flex flex-col items-center justify-center p-6 rounded-2xl border transition-all text-center group/btn",
-                      isUploading ? "opacity-50 cursor-not-allowed" : "hover:-translate-y-0.5",
-                      "bg-surface-1 border-border-strong/60 hover:border-border-strong hover:bg-surface-2 hover:shadow-md"
-                    )}
-                  >
-                    <div className="size-12 rounded-full bg-surface-2 border border-border-subtle flex items-center justify-center mb-4 text-text-secondary transition-transform group-hover/btn:scale-110">
-                      <Camera className="size-5" />
-                    </div>
-                    <span className="font-bold text-text-primary text-base mb-1">Use Camera</span>
-                    <span className="text-[11px] text-text-tertiary font-medium">Take a photo live</span>
-                  </button>
-                </div>
-
-                <div className="mt-8">
-                  <Text size="xs" tone="secondary" className="font-medium">
-                    Your files are encrypted and only visible to you
-                  </Text>
-                </div>
-              </div>
-              )}
+            <div key="default" className="relative z-10 flex flex-col w-full h-full items-center justify-center animate-fade-in-up">
+              <ScannerCamera
+                onResult={handleAnalysisResult}
+                onFileReady={executeUpload}
+                onScanningChange={setIsUploading}
+                disabled={isUploading}
+              />
             </div>
           )}
         </div>

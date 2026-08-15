@@ -75,6 +75,8 @@ export interface AnalysisDto {
  readonly actionPlan: readonly string[];
  readonly urgency: string | null;
  readonly rawText: string;
+ readonly fileUrl?: string | null;
+ readonly mimeType?: string | null;
  readonly entities: readonly KeyEntity[];
  readonly legitimacy: string | null;
  readonly confidence: string | null;
@@ -140,6 +142,8 @@ export function toAnalysisDto(analysis: DocumentAnalysis): AnalysisDto {
  actionPlan: analysis.actionPlan,
  urgency: analysis.urgency,
  rawText: analysis.rawText,
+ fileUrl: analysis.fileUrl,
+ mimeType: analysis.mimeType,
  entities: analysis.entities,
  legitimacy: analysis.legitimacy,
  confidence: analysis.confidence,
