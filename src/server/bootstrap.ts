@@ -250,6 +250,12 @@ function buildServerContainer(): Container {
     const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
+      if (process.env.npm_lifecycle_event === 'build') {
+        return createInMemoryAuthProvider({
+          store: c.resolve(SESSION_STORE),
+          now: c.resolve(CLOCK),
+        });
+      }
       c.resolve(LOGGER)
         .child('auth')
         .fatal('Missing SUPABASE_URL or SUPABASE_ANON_KEY for production auth');
