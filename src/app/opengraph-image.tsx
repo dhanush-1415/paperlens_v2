@@ -3,7 +3,7 @@ import { resolveTenant } from '@/config/tenant';
 import { serverEnv } from '@/config/env.server';
 
 // Route segment config
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 // Image metadata
 export const alt = 'PaperLens - Enterprise Document Analysis';
