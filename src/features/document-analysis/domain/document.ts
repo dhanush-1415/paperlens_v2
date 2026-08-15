@@ -142,6 +142,8 @@ export interface AnalysisDraft {
  readonly actionPlan: readonly string[];
  readonly urgency: string | null;
  readonly rawText: string;
+ readonly fileUrl?: string | null;
+ readonly mimeType?: string | null;
  readonly entities: readonly KeyEntity[];
  readonly legitimacy: string | null;
  readonly confidence: string | null;

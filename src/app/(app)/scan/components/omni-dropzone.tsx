@@ -86,10 +86,13 @@ export function OmniDropzone() {
       
       const result = await analyzeDocumentAction(null, analysisFormData) as any;
       handleAnalysisResult(result);
+      if (result && !result.ok) throw new Error('Analysis failed');
     } catch (e: any) {
       if (e?.message?.includes('NEXT_REDIRECT')) throw e;
       console.error(e);
-      toast.error('Failed to process document. Please try again.');
+      // We rely on handleAnalysisResult to show the specific error (if any)
+      // but we throw so the caller (ScannerCamera) resets its state.
+      throw e;
     } finally {
       setIsUploading(false);
     }

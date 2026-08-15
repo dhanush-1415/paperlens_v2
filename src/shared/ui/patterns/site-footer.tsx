@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 
 import { cn } from '@/shared/ui/cn';
+import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 
 export interface FooterLink {
     readonly href: Route;
@@ -66,11 +67,8 @@ export function SiteFooter({
             <div className="mx-auto w-[95%] max-w-7xl pt-16 pb-16 lg:pt-24 lg:pb-24 relative z-10">
                 <div className="grid gap-16 md:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] md:gap-8">
                     <div className="max-w-xs flex flex-col gap-6 items-start">
-                        <Link href="/" className="inline-flex items-center gap-3 text-2xl font-extrabold text-text-primary tracking-tight transition-opacity hover:opacity-90">
-                            <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-primary-hover text-canvas shadow-[0_0_20px_-3px_rgba(var(--brand-primary-rgb),0.5)]">
-                                {productName[0]}
-                            </span>
-                            {productName}
+                        <Link href="/" className="inline-flex items-center gap-3 transition-opacity hover:opacity-90">
+                            <PaperLensLogo size="lg" />
                         </Link>
                         <p className="text-sm text-text-secondary leading-relaxed pr-4">
                             {tagline}

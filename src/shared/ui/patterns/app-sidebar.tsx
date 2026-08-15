@@ -32,6 +32,7 @@ import { type ReactNode, useEffect } from 'react';
 
 import { cn } from '@/shared/ui/cn';
 import { Badge, Text, Tooltip, Drawer } from '@/shared/ui';
+import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 import type { UserRole } from '@/core/auth/types';
 import type { PlanTier } from '@/shared/constants/limits';
 import { PLANS, planOf } from '@/shared/constants/limits';
@@ -358,17 +359,7 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
                 isCollapsed ? "w-full justify-center gap-0" : "gap-3"
               )}
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary shadow-lg shadow-brand-primary/20">
-                <ScanIcon className="size-5 text-white" />
-              </div>
-              <div className={cn(
-                "overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-                isCollapsed ? "opacity-0 w-0 min-w-0" : "opacity-100 w-auto"
-              )}>
-                <span className="text-xl font-bold tracking-tight text-text-primary whitespace-nowrap">
-                  {productName}
-                </span>
-              </div>
+              <PaperLensLogo size={isCollapsed ? "md" : "lg"} showText={!isCollapsed} />
             </Link>
 
             <button

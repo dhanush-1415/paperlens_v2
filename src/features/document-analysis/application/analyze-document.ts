@@ -54,6 +54,8 @@ export interface AnalyzeDocumentInput {
  readonly documentType: DocumentType;
  /** Optional. Derived from the document's own first line when absent. */
  readonly title?: string;
+ readonly fileUrl?: string;
+ readonly mimeType?: string;
 }
 
 /**
@@ -148,12 +150,13 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
  flags: flags.value.flags,
  score: scoreOf(flags.value.flags),
  summary: flags.value.summary,
- actionPlan: flags.value.actionPlan,
- deadlineDate: deadlineDate,
- urgency: flags.value.urgency,
- rawText: rawText,
- entities: flags.value.entities,
- legitimacy: flags.value.legitimacy,
+    actionPlan: flags.value.actionPlan || [],
+    urgency: flags.value.urgency,
+    rawText,
+    fileUrl: input.fileUrl,
+    mimeType: input.mimeType,
+    entities: flags.value.entities || [],
+    legitimacy: flags.value.legitimacy,
  confidence: flags.value.confidence,
  suggestedQuestions: flags.value.suggestedQuestions,
  analyzedAt: deps.now().toISOString(),

@@ -63,6 +63,8 @@ model DocumentAnalysis {
   title        String
   documentType String    @map("document_type")
   charCount    Int       @map("char_count")
+  fileUrl      String?   @map("file_url")
+  mimeType     String?   @map("mime_type")
 
   folder       Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
   scoreValue   Int       @map("score_value")

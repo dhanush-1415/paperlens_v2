@@ -46,17 +46,17 @@ export function CalendarMenu({ title, dateString, options, variant = 'link', cla
 
   if (variant === 'icon') {
     return (
-      <div ref={ref} className={cn('relative inline-flex', className)}>
+      <div ref={ref} className={cn('relative inline-flex w-full sm:w-auto', className)}>
         <button 
           onClick={() => setOpen(o => !o)}
           title="Add to Calendar" 
-          className="group flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150 w-full"
+          className="group w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-text-secondary bg-surface-2 border border-border-subtle hover:text-text-primary hover:bg-surface-raised hover:border-border-strong hover:shadow-sm transition-all duration-200"
         >
-          <CalendarPlus className="h-4 w-4" />
-          <span className="text-[10px] font-medium leading-none">Calendar</span>
+          <CalendarPlus className="h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors" />
+          <span className="text-xs font-semibold leading-none hidden sm:inline">Calendar</span>
         </button>
         {open && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 z-30 mb-2 min-w-[160px] overflow-hidden rounded-xl border border-border-subtle bg-surface-1 shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-150">
+          <div className="absolute top-full left-0 z-30 mt-2 min-w-[160px] overflow-hidden rounded-xl border border-border-subtle bg-surface-1 shadow-lg animate-in fade-in slide-in-from-top-1 duration-150">
             <button type="button" onClick={() => openExternal('google')} className="w-full px-3 py-2 text-left text-[12px] font-medium text-text-primary transition-colors hover:bg-surface-2 cursor-pointer">Google Calendar</button>
             <button type="button" onClick={() => openExternal('outlook')} className="w-full px-3 py-2 text-left text-[12px] font-medium text-text-primary transition-colors hover:bg-surface-2 cursor-pointer">Outlook Calendar</button>
             <button type="button" onClick={exportApple} className="w-full px-3 py-2 text-left text-[12px] font-medium text-text-primary transition-colors hover:bg-surface-2 cursor-pointer">Apple / Other (.ics)</button>

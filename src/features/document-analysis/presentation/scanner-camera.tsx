@@ -629,50 +629,50 @@ export function ScannerCamera({ onResult, onFileReady, onScanningChange, classNa
 
         {/* -- UPLOADING: Storage upload in progress ------------------------- */}
         {mode === 'uploading' && (
-          <div className={cn(
-            'flex min-h-[50vh] sm:min-h-[70vh] flex-col items-center justify-center gap-6 rounded-2xl',
-            'border-2 border-dashed border-muted-foreground/25 bg-primary/[0.03] px-8',
-          )}>
-            {/* Spinner */}
-            <div className="relative flex items-center justify-center">
-              <div
-                className="h-16 w-16 animate-spin rounded-full border-2 border-border border-t-primary"
-                aria-hidden="true"
-              />
-              <ShieldCheck
-                className="absolute inset-0 m-auto h-6 w-6 text-primary"
-                aria-hidden="true"
-              />
-            </div>
+          <div className="relative flex min-h-[400px] sm:min-h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-3xl border border-brand-primary/20 bg-surface-1 shadow-2xl p-8 max-w-3xl mx-auto">
+            {/* Ambient Glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 via-transparent to-brand-secondary/5 pointer-events-none blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+            
+            <div className="relative flex flex-col items-center max-w-sm w-full mx-auto z-10">
+              <div className="relative mb-8">
+                 <div className="absolute -inset-4 animate-ping rounded-full bg-brand-primary/20" style={{ animationDuration: '3s' }} />
+                 <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-primary/5 border border-brand-primary/30 shadow-[0_0_40px_-10px_rgba(37,99,235,0.4)] backdrop-blur-md">
+                    <ScanLine className="h-10 w-10 text-brand-primary animate-pulse" />
+                 </div>
+              </div>
 
-            {/* Cycling phase text */}
-            <div className="space-y-1.5 text-center">
-              <p
-                key={phaseIdx}
-                className="font-semibold text-foreground animate-in fade-in duration-500"
-              >
-                {uploadPhases[phaseIdx]}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Usually under 20 seconds — hang tight.
-              </p>
-            </div>
+              <h3 className="text-xl sm:text-2xl font-bold font-geist text-text-primary tracking-tight mb-2">
+                Processing Document
+              </h3>
+              <div className="text-sm text-text-secondary font-medium text-center mb-8 h-5 flex items-center justify-center gap-2">
+                 <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-primary" />
+                 <span className="animate-in fade-in slide-in-from-bottom-2 duration-500 inline-block" key={phaseIdx}>
+                   {uploadPhases[phaseIdx]}...
+                 </span>
+              </div>
 
-            {/* Phase dots */}
-            <div className="flex gap-1.5">
-              {uploadPhases.map((_, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    'h-1.5 w-1.5 rounded-full transition-all duration-500',
-                    i === phaseIdx
-                      ? 'w-4 bg-primary'
-                      : i < phaseIdx
-                        ? 'bg-primary/40'
-                        : 'bg-muted-foreground/20',
-                  )}
-                />
-              ))}
+              {/* Progress bar */}
+              <div className="w-full h-2 rounded-full bg-surface-2 overflow-hidden border border-border-subtle mb-8 shadow-inner">
+                 <div 
+                   className="h-full bg-brand-primary rounded-full transition-all duration-[3000ms] ease-out relative overflow-hidden" 
+                   style={{ width: `${Math.max(5, (phaseIdx / (uploadPhases.length - 1)) * 100)}%` }}
+                 >
+                   <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+                 </div>
+              </div>
+
+              {/* Simulated AI extraction logs */}
+              <div className="w-full rounded-xl bg-[#0a0a0a] border border-[#222] p-4 sm:p-5 font-mono text-[10px] sm:text-xs leading-relaxed text-[#4ade80] opacity-90 h-40 overflow-hidden relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex flex-col justify-end">
+                 <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-transparent z-10 pointer-events-none h-8" />
+                 <div className="flex flex-col gap-1.5 translate-y-2 transition-transform duration-500">
+                    <div className="opacity-40">&gt; Initializing secure container... [OK]</div>
+                    <div className="opacity-50">&gt; Parsing byte stream...</div>
+                    <div className="opacity-60">&gt; Extracting vectors and tokenizing text...</div>
+                    {phaseIdx > 1 && <div className="animate-in fade-in slide-in-from-bottom-1 opacity-70">&gt; Locating legally binding clauses... [FOUND]</div>}
+                    {phaseIdx > 2 && <div className="animate-in fade-in slide-in-from-bottom-1 opacity-80 text-white">&gt; Analyzing entity constraints and risk profiles...</div>}
+                    {phaseIdx > 3 && <div className="animate-in fade-in slide-in-from-bottom-1 font-bold text-brand-primary">&gt; Finalizing specialized compliance report...</div>}
+                 </div>
+              </div>
             </div>
           </div>
         )}
@@ -746,7 +746,7 @@ export function ScannerCamera({ onResult, onFileReady, onScanningChange, classNa
                       Upload a file instead
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       className="w-full gap-2 transition-all duration-200 active:scale-[0.98]"
                       onClick={reset}
                     >
@@ -770,7 +770,7 @@ export function ScannerCamera({ onResult, onFileReady, onScanningChange, classNa
                   <p className="mt-1.5 text-sm text-text-secondary">{errorMessage}</p>
                 </div>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   className="gap-2 transition-all duration-200 active:scale-[0.98] w-full mt-2"
                   onClick={reset}
                 >

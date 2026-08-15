@@ -38,16 +38,16 @@ export default async function HomePage() {
   return (
     <>
       <LandingHero ctaLabel={ctaLabel} reassurance="" specimenId="sample-analysis" />
-      <LandingBenefits />
       <LandingSocialProofAndCta />
+      <LandingBenefits />
+      <LandingBentoGrid />
       <LandingHowItWorks />
-
+      
       {/* Additional Sections */}
-      <LandingAssurances />
       <LandingCoverage groups={groups} />
+      <LandingAssurances />
       <LandingClosingCta ctaLabel={ctaLabel} reassurance="No credit card required. Secure processing." />
       <LandingSpecimen id="sample-analysis" />
-      <LandingBentoGrid />
     </>
   );
 }

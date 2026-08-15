@@ -6,6 +6,7 @@ import { CookieConsent } from '@/shared/ui';
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants/routes';
 import { AuthAnimation } from './auth-animation';
+import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 
 const tenant = resolveTenant(serverEnv.TENANT_ID);
 
@@ -23,10 +24,8 @@ export default async function AuthLayout({ children }: LayoutProps<'/'>) {
         
         <div className="relative z-10 auth-text-stagger">
           <Link href="/" className="flex items-center gap-3 w-fit group">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-white text-brand-primary shadow-lg transition-transform group-hover:scale-105">
-              <span className="text-xl font-extrabold">P</span>
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white">{tenant.productName}</span>
+            <PaperLensLogo size="xl" showText={false} />
+            <span className="text-3xl font-extrabold tracking-tight text-white drop-shadow-md">{tenant.productName}</span>
           </Link>
         </div>
 
@@ -65,10 +64,7 @@ export default async function AuthLayout({ children }: LayoutProps<'/'>) {
         {/* Mobile Header */}
         <div className="absolute top-8 left-8 flex lg:hidden z-20">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-brand-primary text-white shadow-md">
-              <span className="font-extrabold text-sm">P</span>
-            </div>
-            <span className="font-bold text-text-primary tracking-tight">{tenant.productName}</span>
+            <PaperLensLogo size="sm" showText={true} />
           </Link>
         </div>
 

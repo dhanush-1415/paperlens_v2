@@ -359,11 +359,9 @@ export function ReminderButton({
         </button>
       ) : variant === 'icon' ? (
         <button onClick={handleOpen} aria-label="Set email reminder"
-          className={cn('flex flex-col items-center justify-center gap-1.5 rounded-xl py-3 px-1 cursor-pointer w-full',
-            'text-text-secondary hover:text-text-primary hover:bg-surface-2 border border-transparent hover:border-border-subtle transition-all duration-150',
-          )}>
-          <Bell className="h-4 w-4" />
-          <span className="text-[10px] font-medium leading-none">Remind</span>
+          className={cn('group w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-text-secondary bg-surface-2 border border-border-subtle hover:text-text-primary hover:bg-surface-raised hover:border-border-strong hover:shadow-sm transition-all duration-200')}>
+          <Bell className="h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors" />
+          <span className="text-xs font-semibold leading-none hidden sm:inline">Remind</span>
         </button>
       ) : (
         <button onClick={handleOpen}
