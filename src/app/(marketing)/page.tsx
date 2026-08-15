@@ -11,10 +11,12 @@ import {
   LandingAssurances,
   LandingClosingCta,
   LandingCoverage,
-  LandingSpecimen,
   LandingBentoGrid,
   LIST_GUIDES_BY_CATEGORY,
 } from '@/features/marketing';
+import dynamic from 'next/dynamic';
+
+const LandingSpecimen = dynamic(() => import('@/features/marketing').then((mod) => mod.LandingSpecimen));
 import { getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
 

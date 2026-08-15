@@ -60,7 +60,7 @@ export function LandingBentoGrid({ id = 'features' }: LandingBentoGridProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Card 1: Risk Radar */}
-          <div className="bento-card md:col-span-2 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-primary/10 hover:border-brand-primary/30 overflow-hidden">
+          <div tabIndex={0} aria-label="Feature: Financial Risk Radar" className="bento-card md:col-span-2 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-primary/10 hover:border-brand-primary/30 overflow-hidden focus:outline-none focus:ring-2 focus:ring-brand-primary">
             <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="relative z-10 flex flex-col gap-2">
@@ -89,7 +89,7 @@ export function LandingBentoGrid({ id = 'features' }: LandingBentoGridProps) {
           </div>
 
           {/* Card 2: Deadline Extraction */}
-          <div className="bento-card md:col-span-1 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-accent/10 hover:border-brand-accent/30 overflow-hidden">
+          <div tabIndex={0} aria-label="Feature: Timeline Engine" className="bento-card md:col-span-1 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-accent/10 hover:border-brand-accent/30 overflow-hidden focus:outline-none focus:ring-2 focus:ring-brand-accent">
             <div className="absolute inset-0 bg-gradient-to-bl from-brand-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="relative z-10 flex flex-col gap-2">
@@ -111,7 +111,7 @@ export function LandingBentoGrid({ id = 'features' }: LandingBentoGridProps) {
           </div>
 
           {/* Card 3: AI Chat */}
-          <div className="bento-card md:col-span-1 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-risk-safe/10 hover:border-risk-safe/30 overflow-hidden">
+          <div tabIndex={0} aria-label="Feature: Interrogate Documents" className="bento-card md:col-span-1 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-risk-safe/10 hover:border-risk-safe/30 overflow-hidden focus:outline-none focus:ring-2 focus:ring-risk-safe">
             <div className="absolute inset-0 bg-gradient-to-tr from-risk-safe/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="relative z-10 flex flex-col gap-2">
@@ -128,7 +128,7 @@ export function LandingBentoGrid({ id = 'features' }: LandingBentoGridProps) {
           </div>
 
           {/* Card 4: Plain English Translation */}
-          <div className="bento-card md:col-span-2 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-primary/10 hover:border-brand-primary/30 overflow-hidden">
+          <div tabIndex={0} aria-label="Feature: Legalese to English Translation" className="bento-card md:col-span-2 group relative flex flex-col justify-between gap-6 rounded-3xl border border-border-strong/50 bg-surface-1/40 backdrop-blur-xl p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-primary/10 hover:border-brand-primary/30 overflow-hidden focus:outline-none focus:ring-2 focus:ring-brand-primary">
             <div className="absolute inset-0 bg-gradient-to-tl from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
             <div className="relative z-10 flex flex-col gap-2">
