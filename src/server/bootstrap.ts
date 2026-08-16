@@ -519,8 +519,18 @@ let booted = false;
  * Idempotent, because `register()` can run again after a hot reload.
  */
 export function bootstrapServer(): void {
+ console.log('[DEBUG-TRACE] bootstrapServer: starting initialization');
  if (booted) return;
  booted = true;
+
+ if (typeof process !== 'undefined') {
+  process.on('uncaughtException', (err) => {
+   console.error('[CRITICAL-TRACE] Uncaught Exception in Node process:', err);
+  });
+  process.on('unhandledRejection', (reason, promise) => {
+   console.error('[CRITICAL-TRACE] Unhandled Rejection in Node process:', reason);
+  });
+ }
 
  const container = getServerContainer();
  const log = container.resolve(LOGGER).child('bootstrap');
