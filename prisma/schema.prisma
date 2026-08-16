@@ -1,9 +1,11 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model Plan {
@@ -90,6 +92,8 @@ model DocumentAnalysis {
   analyzedAt      DateTime  @map("analyzed_at") @db.Timestamptz()
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
 
+  contentChunks   DocumentContent[]
+
   @@map("document_analyses")
 }
 
@@ -107,7 +111,6 @@ model Document {
   updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
 
   folder           Folder?           @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  contentChunks    DocumentContent[]
 
   @@map("documents")
 }
@@ -158,16 +161,16 @@ model ChatMessage {
 
 model DocumentContent {
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  documentId   String    @map("document_id") @db.Uuid
-  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  analysisId   String    @map("analysis_id") @db.Uuid
+  analysis     DocumentAnalysis  @relation(fields: [analysisId], references: [id], onDelete: Cascade)
   
   chunkIndex   Int       @map("chunk_index")
   textContent  String    @map("text_content")
   
   // Note: pgvector vector extension is required for this in the actual DB
-  // embedding    Unsupported("vector(1536)")?
+  embedding    Unsupported("vector(768)")?
 
-  @@index([documentId])
+  @@index([analysisId])
   @@map("document_content")
 }
 

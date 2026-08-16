@@ -20,6 +20,7 @@ import { ANALYSIS_SOURCE, ANALYZE_RATE_SCOPE } from '../constants';
 import { ANALYZE_DOCUMENT } from '../tokens';
 import { analyzeDocumentSchema } from '../validation';
 import { extractTextFromFile } from '../application';
+import { vectorizeDocument } from '../application/vectorize-document';
 
 /**
  * The mutation entry point (requirements 2, 3, 4, 5, 11, 15, 16).
@@ -184,6 +185,9 @@ export const analyzeDocumentAction = action(
  durationMs: container.resolve(CLOCK)().getTime() - startedAt,
  flagCount: analysis.flags.length,
  });
+
+ // Background vectorize for RAG Semantic Search
+ void vectorizeDocument(analysis.id, analysis.rawText);
 
  // 5.5 ─ Increment Usage Tracking
  await incrementScanUsage(session.userId);

@@ -3,6 +3,8 @@ import { connection } from 'next/server';
 import { requireSession } from '@/server/bootstrap';
 import { prisma } from '@/server/db/prisma';
 import { scoreOf } from '@/features/document-analysis/domain/risk';
+import { embed } from 'ai';
+import { google } from '@ai-sdk/google';
 
 export async function GET(req: Request) {
   try {
@@ -15,36 +17,72 @@ export async function GET(req: Request) {
       return NextResponse.json({ documents: [] });
     }
 
-    // Step 1: Text-based search across filenames (Semantic pgvector search will be layered here later)
-    const documents = await prisma.document.findMany({
-      where: { 
-        userId: session.userId,
-        filename: {
-          contains: query,
-          mode: 'insensitive' // ILIKE
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    // Step 2: Decorate with Risk Analysis
-    const analyses = await prisma.documentAnalysis.findMany({
-      where: { ownerId: session.userId, deletedAt: null }
-    });
+    let analysisIdsToFetch: string[] | null = null;
     
-    const analysisMap = new Map(analyses.map(a => [a.title, a]));
+    // Only perform semantic search if the query is descriptive enough
+    if (query.split(' ').length > 2 || query.length > 10) {
+      try {
+        const { embedding } = await embed({
+          model: google.textEmbeddingModel('text-embedding-004'),
+          value: query,
+        });
+        
+        const vectorLiteral = `[${embedding.join(',')}]`;
+        
+        // Find top 10 chunks matching the query
+        const semanticResults = await prisma.$queryRaw<Array<{ analysis_id: string }>>`
+          SELECT analysis_id
+          FROM document_content
+          ORDER BY embedding <=> ${vectorLiteral}::vector
+          LIMIT 10
+        `;
+        
+        if (semanticResults.length > 0) {
+          analysisIdsToFetch = [...new Set(semanticResults.map(r => r.analysis_id))];
+        }
+      } catch (err) {
+        console.error('Semantic search failed, falling back to text search:', err);
+      }
+    }
 
-    const mappedDocuments = documents.map(d => {
-      const analysis = analysisMap.get(d.filename);
-      const allFlags = analysis && Array.isArray(analysis.flags) ? analysis.flags : [];
-      const risk = analysis ? scoreOf(allFlags as any).level : 'safe';
+    // Step 2: Fetch documents
+    const whereClause: any = { 
+      ownerId: session.userId, 
+      deletedAt: null 
+    };
+
+    if (analysisIdsToFetch) {
+      // If we have semantic hits, we combine them with a title fallback
+      whereClause.OR = [
+        { id: { in: analysisIdsToFetch } },
+        { title: { contains: query, mode: 'insensitive' } }
+      ];
+    } else {
+      // Just title text search
+      whereClause.title = { contains: query, mode: 'insensitive' };
+    }
+
+    const analyses = await prisma.documentAnalysis.findMany({
+      where: whereClause,
+      orderBy: { analyzedAt: 'desc' },
+      take: 20
+    });
+
+    const mappedDocuments = analyses.map(a => {
+      const allFlags = Array.isArray(a.flags) ? a.flags : [];
+      const risk = scoreOf(allFlags as any).level;
+      const resolved = (a.resolvedFlagIds || []).length >= allFlags.length;
+      
       return {
-        id: d.id,
-        name: d.filename || 'Untitled Document',
-        type: (d.fileType || 'unknown').toUpperCase(),
+        id: a.id,
+        folderId: a.folderId,
+        name: a.title || 'Untitled Document',
+        type: (a.documentType || 'unknown').toUpperCase(),
         risk,
-        date: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
-        size: d.byteSize ? `${(d.byteSize / (1024 * 1024)).toFixed(1)} MB` : '0 MB'
+        resolved,
+        deadlineDate: a.deadlineDate?.toISOString() || null,
+        date: a.analyzedAt ? new Date(a.analyzedAt).toISOString() : new Date().toISOString(),
+        size: 'Text Only'
       };
     });
 
