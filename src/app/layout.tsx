@@ -9,7 +9,6 @@ import { fontVariables } from '@/shared/ui/fonts';
 import { TenantTokens, ThemeScript } from '@/shared/ui/theme';
 
 import { Providers } from './providers';
-import { CookieBanner } from '@/features/marketing/presentation/cookie-banner';
 
 import './globals.css';
 
@@ -131,7 +130,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
  </head>
  <body suppressHydrationWarning className="flex min-h-full flex-col antialiased text-text-primary bg-canvas">
  <Providers>{children}</Providers>
-        <CookieBanner />
  </body>
  </html>
  );

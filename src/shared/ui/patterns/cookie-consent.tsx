@@ -31,7 +31,7 @@
  * the one that ships events.
  */
 
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 
 import type { Route } from 'next';
@@ -73,29 +73,42 @@ export function CookieConsent({ labels, policyHref, className }: CookieConsentPr
  const clock = useService(CLOCK);
  const analytics = useService(ANALYTICS);
 
- const needsDecision = useSyncExternalStore(
- subscribeNever,
- useCallback(() => needsConsentDecision(createConsentStore(driver).get()), [driver]),
- () => false,
- );
- const [hasDecided, setDecided] = useState(false);
+  const needsDecision = useSyncExternalStore(
+  subscribeNever,
+  useCallback(() => needsConsentDecision(createConsentStore(driver).get()), [driver]),
+  () => false,
+  );
+  const [hasDecided, setDecided] = useState(false);
+  const [forceOpen, setForceOpen] = useState(false);
 
- if (!needsDecision || hasDecided) return null;
+  useEffect(() => {
+    function onOpen() { setForceOpen(true); }
+    window.addEventListener('openCookieSettings', onOpen);
+    return () => window.removeEventListener('openCookieSettings', onOpen);
+  }, []);
 
- const decide = (granted: boolean) => {
- const now = epochMillis(clock)();
- const next = granted ? grantAll(now) : denyAll(now);
+  if (!forceOpen && (!needsDecision || hasDecided)) return null;
 
- createConsentStore(driver).set(next);
- /**
- * The analytics client is told directly rather than being left to re-read storage on the
- * next page load. Without this, a user who accepts has to navigate before anything is
- * recorded — and the single most valuable event to record is the one that happens on the
- * page where they accepted.
- */
- analytics.setConsent(next);
- setDecided(true);
- };
+  const decide = (granted: boolean) => {
+  const now = epochMillis(clock)();
+  const next = granted ? grantAll(now) : denyAll(now);
+
+  createConsentStore(driver).set(next);
+  /**
+  * The analytics client is told directly rather than being left to re-read storage on the
+  * next page load. Without this, a user who accepts has to navigate before anything is
+  * recorded — and the single most valuable event to record is the one that happens on the
+  * page where they accepted.
+  */
+  analytics.setConsent(next);
+  
+  // Provide compatibility with older pl_cookie_consent mechanisms
+  try { localStorage.setItem('pl_cookie_consent', granted ? 'accepted' : 'rejected'); } catch { /* ignore */ }
+  window.dispatchEvent(new CustomEvent('cookieConsent', { detail: granted ? 'accepted' : 'rejected' }));
+
+  setDecided(true);
+  setForceOpen(false);
+  };
 
  return (
  <div
