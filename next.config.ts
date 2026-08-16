@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
   },
 
 
-  serverExternalPackages: ['@prisma/client', 'prisma'],
+  serverExternalPackages: ['@prisma/client', 'prisma', 'pg', '@prisma/adapter-pg'],
 
   /**
    * React Compiler is stable in Next 16 but off here deliberately: it is a performance
