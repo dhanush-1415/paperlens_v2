@@ -24,6 +24,7 @@ export default async function ProfileRoute() {
   return <ProfilePage 
     profile={profile} 
     userEmail={user?.email || ''} 
-    displayName={user?.user_metadata?.display_name || ''} 
+    displayName={user?.user_metadata?.display_name || ''}
+    loginActivity={[]} 
   />;
 }

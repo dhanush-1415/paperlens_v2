@@ -26,6 +26,14 @@ export default async function BillingRoute() {
     }
   };
 
+  const dbSub = await prisma.userSubscription.findUnique({
+    where: { userId: session.userId }
+  });
+  
+  const paymentMethod = dbSub?.lemonSubscriptionId ? 'LemonSqueezy' 
+                      : dbSub?.razorpaySubscriptionId ? 'Razorpay' 
+                      : null;
+
   const analyses = await prisma.documentAnalysis.findMany({
     where: { ownerId: session.userId, deletedAt: null }
   });
@@ -55,5 +63,5 @@ export default async function BillingRoute() {
     lastScanDate: analyses.length > 0 ? analyses.reduce((latest, a) => new Date(Math.max(latest.getTime(), new Date(a.analyzedAt).getTime())), new Date(0)) : null
   };
 
-  return <BillingPage planData={planData} usageData={usageData} />;
+  return <BillingPage planData={planData} usageData={usageData} paymentMethod={paymentMethod} invoices={[]} />;
 }

@@ -11,13 +11,7 @@ const PLANS = [
   { name: 'Enterprise', price: 'Custom', features: ['Unlimited scans', 'Custom Risk Playbooks', 'Dedicated Account Manager', 'SSO & Advanced Security'], isCurrent: false },
 ];
 
-const INVOICES = [
-  { id: 'INV-2026-003', date: 'Aug 1, 2026', amount: '$49.00', status: 'Paid', downloadUrl: '#' },
-  { id: 'INV-2026-002', date: 'Jul 1, 2026', amount: '$49.00', status: 'Paid', downloadUrl: '#' },
-  { id: 'INV-2026-001', date: 'Jun 1, 2026', amount: '$49.00', status: 'Paid', downloadUrl: '#' },
-];
-
-export function BillingPage({ planData, usageData }: { planData: any, usageData: any }) {
+export function BillingPage({ planData, usageData, paymentMethod, invoices }: { planData: any, usageData: any, paymentMethod: string | null, invoices: any[] }) {
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const handleUpgrade = async (planName: string) => {
@@ -44,7 +38,7 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
     }
   };
 
-  const invoiceColumns: Column<typeof INVOICES[0]>[] = [
+  const invoiceColumns: Column<any>[] = [
     { id: 'id', header: 'Invoice Number', cell: (inv) => <span className="font-bold text-text-primary">{inv.id}</span> },
     { id: 'date', header: 'Date', cell: (inv) => <span className="font-medium text-text-secondary">{inv.date}</span> },
     { id: 'amount', header: 'Amount', cell: (inv) => <span className="font-bold">{inv.amount}</span> },
@@ -219,15 +213,21 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
             <Button variant="ghost" size="sm" className="text-brand-primary font-bold h-8 px-2">Update</Button>
           </div>
           
-          <div className="flex items-center gap-4 p-4 rounded-xl border border-border-subtle bg-surface-2/50">
-            <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-surface-1 border border-border-subtle shadow-sm">
-              <CreditCardIcon className="size-6 text-brand-primary" />
+          {paymentMethod ? (
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-border-subtle bg-surface-2/50">
+              <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-surface-1 border border-border-subtle shadow-sm">
+                <CreditCardIcon className="size-6 text-brand-primary" />
+              </div>
+              <div>
+                <Text className="font-bold text-text-primary">Managed via {paymentMethod}</Text>
+                <Text size="xs" tone="secondary" className="font-medium mt-0.5">Active Subscription</Text>
+              </div>
             </div>
-            <div>
-              <Text className="font-bold text-text-primary">Visa ending in 4242</Text>
-              <Text size="xs" tone="secondary" className="font-medium mt-0.5">Expires 12/2028</Text>
+          ) : (
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-border-subtle bg-surface-2/50">
+              <Text className="font-medium text-text-secondary text-sm">No active payment method.</Text>
             </div>
-          </div>
+          )}
           
           <div className="mt-6 rounded-xl border border-risk-caution/20 bg-risk-caution/5 p-4 flex gap-3 items-start">
             <AlertTriangleIcon className="size-5 text-risk-caution shrink-0 mt-0.5" />
@@ -254,11 +254,17 @@ export function BillingPage({ planData, usageData }: { planData: any, usageData:
             <Heading level={2} size="sm" className="font-bold uppercase tracking-wider text-text-tertiary">Billing History</Heading>
           </div>
           <div className="flex-1 rounded-xl overflow-hidden border border-border-subtle">
-            <DataTable 
-              data={INVOICES} 
-              columns={invoiceColumns} 
-              keyExtractor={(inv) => inv.id} 
-            />
+            {invoices.length > 0 ? (
+              <DataTable 
+                data={invoices} 
+                columns={invoiceColumns} 
+                keyExtractor={(inv) => inv.id} 
+              />
+            ) : (
+              <div className="flex items-center justify-center py-12 text-center bg-surface-1">
+                <Text size="sm" tone="secondary" className="font-medium">No invoices available.</Text>
+              </div>
+            )}
           </div>
         </div>
       </div>

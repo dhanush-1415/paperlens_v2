@@ -94,9 +94,10 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
     return stripHtml(text);
   }
 
-  // Explicitly block images, audio, and video to prevent raw binary from being sent to the AI
+  // Images, audio, and video are bypassed by actions.ts and sent directly to Gemini as multi-modal media.
+  // If this function is somehow called with one of those types, return empty string so the fallback kicks in.
   if (type.startsWith('image/') || type.startsWith('audio/') || type.startsWith('video/')) {
-    throw new Error(`Extraction for ${type} is not yet supported in this version. OCR and Media processing are pending implementation.`);
+    return '';
   }
 
   // Everything else (TXT, MD, CSV, JSON, etc.)

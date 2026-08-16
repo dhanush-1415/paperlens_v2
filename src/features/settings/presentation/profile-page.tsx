@@ -10,9 +10,10 @@ interface ProfilePageProps {
   profile: any;
   userEmail: string;
   displayName: string;
+  loginActivity: any[];
 }
 
-export function ProfilePage({ profile, userEmail, displayName }: ProfilePageProps) {
+export function ProfilePage({ profile, userEmail, displayName, loginActivity }: ProfilePageProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleSave = (formData: FormData) => {
@@ -153,11 +154,7 @@ export function ProfilePage({ profile, userEmail, displayName }: ProfilePageProp
               <Text size="sm" tone="secondary" className="mt-1">Review where your account has been accessed from.</Text>
             </div>
             <div className="flex flex-col divide-y divide-border-subtle">
-               {[
-                 { os: 'Mac OS X • Chrome', loc: 'San Francisco, USA', time: 'Current session', status: 'Active now' },
-                 { os: 'iOS 17 • Safari', loc: 'San Francisco, USA', time: 'Yesterday at 4:32 PM', status: 'Verified' },
-                 { os: 'Windows 11 • Edge', loc: 'New York, USA', time: 'Aug 10, 2026', status: 'Verified' },
-               ].map((log, i) => (
+               {loginActivity && loginActivity.length > 0 ? loginActivity.map((log, i) => (
                  <div key={i} className="py-3 first:pt-0 last:pb-0 flex flex-col sm:flex-row justify-between sm:items-center gap-1">
                    <div>
                      <Text size="sm" className="font-bold text-text-primary">{log.os}</Text>
@@ -168,7 +165,11 @@ export function ProfilePage({ profile, userEmail, displayName }: ProfilePageProp
                      <Text size="xs" className={log.status === 'Active now' ? 'text-safe font-bold' : 'text-text-tertiary'}>{log.status}</Text>
                    </div>
                  </div>
-               ))}
+               )) : (
+                 <div className="py-6 text-center">
+                   <Text size="sm" tone="secondary" className="font-medium">No recent login activity available.</Text>
+                 </div>
+               )}
             </div>
           </div>
         </div>
