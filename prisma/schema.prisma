@@ -84,6 +84,7 @@ model DocumentAnalysis {
   // Storing the flags as JSONB is efficient for retrieval 
   // since they are always fetched as a complete aggregate.
   flags           Json      @default("[]")
+  timeline        Json      @default("[]")
   resolvedFlagIds String[]  @default([]) @map("resolved_flag_ids")
   
   analyzedAt      DateTime  @map("analyzed_at") @db.Timestamptz()

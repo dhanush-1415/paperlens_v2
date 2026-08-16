@@ -61,6 +61,11 @@ const RISK_FLAG_SCHEMA = z.object({
   confidence: z.enum(['HIGH', 'MEDIUM', 'LOW']),
   suggestedQuestions: z.array(z.string()).length(4).describe('Exactly 4 questions the user could ask the copilot about this document.'),
   transcription: z.string().optional().describe('If the input is an image or media file without text, provide the fully transcribed text (OCR) here so the user can read what you analyzed. If text was already provided, leave this empty.'),
+  timeline: z.array(z.object({
+    timestamp: z.string().describe('The timestamp in the video or audio (e.g., "12:04")'),
+    riskLevel: z.enum(['critical', 'caution', 'safe']),
+    description: z.string().describe('A brief description of what was discussed or agreed upon at this timestamp.')
+  })).optional().describe('For video or audio files, map identified risks or key topics to specific timestamps.'),
 });
 
 export function createGeminiAnalyzer(): DocumentAnalyzer {
@@ -142,6 +147,7 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
           confidence: object.confidence,
           suggestedQuestions: object.suggestedQuestions,
           transcription: object.transcription,
+          timeline: object.timeline,
         };
       });
     },

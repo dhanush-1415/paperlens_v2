@@ -14,6 +14,7 @@ import { cn } from '@/shared/ui/cn';
 import { analyzeDocumentAction, analyzeUrlAction } from '@/features/document-analysis/presentation/actions';
 import { ScannerCamera } from '@/features/document-analysis/presentation/scanner-camera';
 import { AudioUploader } from './audio-uploader';
+import { VideoUploader } from './video-uploader';
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
 const MAX_COMPRESSIBLE_SIZE = 10 * 1024 * 1024;
@@ -415,7 +416,7 @@ export function OmniDropzone() {
             { id: 'link', label: 'URL', icon: <ScanIcon className="size-4" /> },
             { id: 'text', label: 'Text', icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="21" x2="3" y1="6" y2="6"/><line x1="15" x2="3" y1="12" y2="12"/><line x1="17" x2="3" y1="18" y2="18"/></svg> },
             { id: 'audio', label: 'Audio', icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg> },
-            { id: 'video', label: 'Video', icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect height="14" rx="2" ry="2" width="15" x="1" y="5"/></svg>, soon: true },
+            { id: 'video', label: 'Video', icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect height="14" rx="2" ry="2" width="15" x="1" y="5"/></svg> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -431,11 +432,6 @@ export function OmniDropzone() {
                 {tab.icon}
               </span>
               {tab.label}
-              {tab.soon && (
-                <span className="ml-1.5 px-1.5 py-0.5 rounded-md bg-brand-primary/10 text-brand-primary text-[9px] uppercase tracking-widest font-bold">
-                  Soon
-                </span>
-              )}
             </button>
           ))}
         </div>
@@ -551,36 +547,10 @@ export function OmniDropzone() {
             </div>
           ) : activeTab === 'video' ? (
             <div key="video" className="relative z-10 flex flex-col w-full h-full items-center justify-center text-center animate-fade-in-up">
-              <div className="relative mb-8 group cursor-not-allowed">
-                {/* Glowing Background */}
-                <div className="absolute inset-0 bg-brand-primary/20 blur-2xl rounded-full scale-150 opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
-                {/* Main Video Icon Container */}
-                <div className="relative flex items-center justify-center size-24 rounded-3xl bg-gradient-to-br from-brand-primary/10 to-brand-primary/[0.02] border border-brand-primary/30 shadow-lg shadow-brand-primary/5 overflow-hidden backdrop-blur-xl">
-                  {/* Decorative Play Button */}
-                  <svg className="size-10 text-brand-primary ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                  
-                  {/* Glass Overlay for "Coming Soon" */}
-                  <div className="absolute inset-0 bg-black/10 dark:bg-white/5 backdrop-blur-[2px] flex items-center justify-center">
-                    <div className="bg-surface-1/90 px-3 py-1 rounded-lg border border-border-subtle shadow-sm flex items-center gap-1.5">
-                      <ShieldIcon className="size-3 text-text-tertiary" />
-                      <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">Locked</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <Heading level={2} size="lg" className="font-geist font-extrabold tracking-tight mb-4 text-text-primary">
-                Automated Video Analysis
-              </Heading>
-              <Text size="md" tone="secondary" className="font-inter max-w-md mx-auto leading-relaxed mb-8">
-                Upload lecture recordings or screen captures. Our AI will auto-extract frames, synchronize audio, and map out critical liabilities seamlessly.
-              </Text>
-              
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1.5 rounded-lg bg-surface-2 border border-border-subtle text-xs font-semibold text-text-secondary shadow-sm">MP4</span>
-                <span className="px-3 py-1.5 rounded-lg bg-surface-2 border border-border-subtle text-xs font-semibold text-text-secondary shadow-sm">MOV</span>
-                <span className="px-3 py-1.5 rounded-lg bg-brand-primary/10 border border-brand-primary/20 text-xs font-bold text-brand-primary shadow-sm ring-1 ring-brand-primary/10">Auto-Framing AI</span>
-              </div>
+              <VideoUploader
+                onFileReady={async (file) => { await executeUpload(file); }}
+                disabled={isUploading}
+              />
             </div>
           ) : activeTab === 'audio' ? (
             <div key="audio" className="relative z-10 flex flex-col w-full h-full items-center justify-center text-center animate-fade-in-up">

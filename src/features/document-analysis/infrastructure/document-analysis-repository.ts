@@ -68,6 +68,7 @@ function toEntity(record: any): DocumentAnalysis {
     legitimacy: record.legitimacy,
     confidence: record.confidence,
     suggestedQuestions: record.suggestedQuestions || [],
+    timeline: (record.timeline as any) || [],
     deadlineDate: record.deadlineDate?.toISOString() || null,
     analyzedAt: record.analyzedAt.toISOString(),
   };
@@ -119,6 +120,7 @@ export function createDocumentAnalysisRepository(
             legitimacy: draft.legitimacy,
             confidence: draft.confidence,
             suggestedQuestions: draft.suggestedQuestions as string[],
+            timeline: (draft.timeline || []) as any,
             deadlineDate: draft.deadlineDate ? new Date(draft.deadlineDate) : null,
             analyzedAt: new Date(draft.analyzedAt),
             flags: draft.flags.map(f => ({

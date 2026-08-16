@@ -160,6 +160,9 @@ export const ALLOWED_UPLOAD_TYPES = [
  'image/webp',
  'image/heic',
  'text/plain',
+ 'video/mp4',
+ 'video/webm',
+ 'audio/mpeg'
 ] as const;
 
 export const uploadFileSchema = z

@@ -57,6 +57,7 @@ export interface AnalyzerResult {
  readonly confidence: string | null;
  readonly suggestedQuestions: readonly string[];
  readonly transcription?: string;
+ readonly timeline?: any[];
 }
 
 export interface DocumentAnalyzer {

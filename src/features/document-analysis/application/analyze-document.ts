@@ -159,6 +159,7 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
     legitimacy: flags.value.legitimacy,
  confidence: flags.value.confidence,
  suggestedQuestions: flags.value.suggestedQuestions,
+ timeline: flags.value.timeline,
  analyzedAt: deps.now().toISOString(),
  };
 
