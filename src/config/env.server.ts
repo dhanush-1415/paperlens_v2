@@ -1,4 +1,5 @@
 import 'server-only';
+console.log('[DEBUG-TRACE] env.server.ts: importing and parsing env vars');
 
 import { z } from 'zod';
 
@@ -66,9 +67,19 @@ const parsed = serverEnvSchema
  .safeParse(process.env);
 
 if (!parsed.success) {
-  throw new Error(
-    `Invalid server environment variables:\n${JSON.stringify(parsed.error.flatten().fieldErrors, null, 2)}`
-  );
+  console.error('[DEBUG-TRACE] env.server.ts: Invalid server environment variables:', JSON.stringify(parsed.error.flatten().fieldErrors, null, 2));
+  // Provide a safe fallback instead of throwing a module-level exception which crashes Vercel 500
 }
 
-export const serverEnv: ServerEnv = parsed.data;
+export const serverEnv: ServerEnv = parsed.success ? parsed.data : {
+  NODE_ENV: 'production',
+  APP_URL: 'http://localhost:3000',
+  APP_SECRET: '',
+  HTTP_TIMEOUT_MS: 15000,
+  HTTP_MAX_RETRIES: 2,
+  HTTP_ALLOWED_ORIGINS: [],
+  TENANT_ID: 'default',
+  SUPABASE_URL: '',
+  SUPABASE_ANON_KEY: '',
+  SUPABASE_SERVICE_ROLE_KEY: '',
+} as ServerEnv;

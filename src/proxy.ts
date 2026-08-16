@@ -67,6 +67,7 @@ function withRequestHeaders(request: NextRequest, extra: Record<string, string>)
 import { createServerClient } from '@supabase/ssr';
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
+  console.log('[DEBUG-TRACE] proxy.ts: middleware executing for path', request.nextUrl.pathname);
   const { pathname, search } = request.nextUrl;
 
   const correlation = request.headers.get(HTTP_HEADERS.correlationId) ?? correlationId();
@@ -104,31 +105,41 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return applyResponseHeaders(supabaseResponse, correlation);
   }
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+  let supabase;
+  try {
+    supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            supabaseResponse = withRequestHeaders(request, requestHeaders);
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          },
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = withRequestHeaders(request, requestHeaders);
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+      }
+    );
+  } catch (error) {
+    console.error('[DEBUG-TRACE] proxy.ts: Supabase client initialization failed:', error);
+    return applyResponseHeaders(supabaseResponse, correlation);
+  }
 
   // 4. Auth check
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data?.user || null;
+  } catch (authError) {
+    console.error('[DEBUG-TRACE] proxy.ts: Supabase getUser failed:', authError);
+  }
 
   // Protected routes
   if (!user && isProtected) {

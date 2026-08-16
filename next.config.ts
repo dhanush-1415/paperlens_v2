@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 
+console.log('[DEBUG-TRACE] next.config.ts is loading');
+
 import { CACHE_PROFILES } from './src/core/cache/profiles';
 import { API_SECURITY_HEADERS, SECURITY_HEADERS } from './src/core/security/headers';
 
