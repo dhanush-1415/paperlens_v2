@@ -4,18 +4,21 @@ import { useTransition } from 'react';
 import { Button, Heading, Text, Badge, cn } from '@/shared/ui';
 import { SettingsIcon, BellIcon, UsersIcon, MailIcon } from '@/shared/ui/icons/dashboard-icons';
 import { ShieldIcon } from '@/shared/ui/icons';
-import { Trash2 } from 'lucide-react';
+import { Trash2, WebhookIcon } from 'lucide-react';
 import { DeleteAccountButton, CancelDeletionButton } from './delete-account-dialog';
 import { InboxAddress } from '@/features/document-analysis/presentation/inbox-address';
 import { formatInboxAddress } from '@/shared/utils/inbox';
+import { WebhookSettings } from './webhook-settings';
+import type { Webhook } from '@prisma/client';
 
 interface SettingsPageProps {
   profile?: any;
   userEmail?: string;
   displayName?: string;
+  webhooks?: Webhook[];
 }
 
-export function SettingsPage({ profile, userEmail, displayName }: SettingsPageProps) {
+export function SettingsPage({ profile, userEmail, displayName, webhooks = [] }: SettingsPageProps) {
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -117,6 +120,21 @@ export function SettingsPage({ profile, userEmail, displayName }: SettingsPagePr
                       </div>
                       <Badge tone="safe" className="text-[10px] font-bold px-2 py-0.5 shadow-sm">• Active</Badge>
                    </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 border-t border-border-subtle pt-8">
+                <div className="md:col-span-1">
+                   <div className="flex items-center gap-2 text-text-primary font-semibold text-sm">
+                     <WebhookIcon className="size-4 text-text-secondary" />
+                     Webhooks & API
+                   </div>
+                   <Text size="xs" tone="secondary" className="mt-1.5 leading-relaxed">
+                     Configure endpoints to receive automated POST requests when background analysis completes.
+                   </Text>
+                </div>
+                <div className="md:col-span-2">
+                   <WebhookSettings webhooks={webhooks} />
                 </div>
               </div>
 

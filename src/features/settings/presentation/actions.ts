@@ -47,3 +47,33 @@ export async function cancelAccountDeletionAction(): Promise<{ error?: string; s
     return { error: 'Failed to cancel deletion. Please try again.' };
   }
 }
+
+export const createWebhookAction = async (_previous: unknown, formData: FormData): Promise<void> => {
+  const session = await requireSession();
+  const url = formData.get('url') as string;
+  const secret = formData.get('secret') as string | null;
+
+  if (!url || !url.startsWith('http')) {
+    throw new Error('Invalid URL');
+  }
+
+  await prisma.webhook.create({
+    data: {
+      userId: session.userId,
+      url,
+      secret: secret || null,
+      events: ['document.analyzed']
+    }
+  });
+  revalidatePath('/settings');
+};
+
+export const deleteWebhookAction = async (_previous: unknown, formData: FormData): Promise<void> => {
+  const session = await requireSession();
+  const id = formData.get('id') as string;
+
+  await prisma.webhook.deleteMany({
+    where: { id, userId: session.userId }
+  });
+  revalidatePath('/settings');
+};
