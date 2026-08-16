@@ -1,6 +1,3 @@
-import * as mammoth from 'mammoth';
-import * as XLSX from 'xlsx';
-import { PDFParse } from 'pdf-parse';
 // Types for input files since we might handle browser `File` objects or Node `Buffer`s in v2.1
 export type FileInput = {
   name: string;
@@ -42,6 +39,7 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
   if (type === 'application/pdf' || name.endsWith('.pdf')) {
     const buffer = Buffer.from(await file.arrayBuffer());
     
+    const { PDFParse } = await import('pdf-parse');
     const parser = new PDFParse({ data: buffer });
     try {
       const parsed = await parser.getText();
@@ -60,6 +58,7 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
     name.endsWith('.docx')
   ) {
     const buffer = Buffer.from(await file.arrayBuffer());
+    const mammoth = await import('mammoth');
     const result = await mammoth.extractRawText({ buffer });
     return result.value.trim();
   }
@@ -72,6 +71,7 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
     name.endsWith('.xls')
   ) {
     const buffer = await file.arrayBuffer();
+    const XLSX = await import('xlsx');
     const wb = XLSX.read(buffer, { type: 'array' });
     const parts = wb.SheetNames.map((sheetName: string) => {
       const ws = wb.Sheets[sheetName];
