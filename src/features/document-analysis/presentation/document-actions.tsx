@@ -54,7 +54,7 @@ export function DocumentActions({ documentId, initialResolved = false }: { docum
   };
 
   const handleExport = () => {
-    toast.success('Exporting report as PDF...');
+    window.open(`/api/export/pdf?id=${documentId}`, '_blank');
   };
 
   return (
