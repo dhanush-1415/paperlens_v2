@@ -13,61 +13,61 @@ import type { SessionStore } from '@/core/auth';
  */
 
 export interface SessionStoreContractDeps {
- /** Fresh, empty, per test. */
- createStore(): SessionStore;
+  /** Fresh, empty, per test. */
+  createStore(): SessionStore;
 }
 
 export function describeSessionStoreContract(
- name: string,
- { createStore }: SessionStoreContractDeps,
+  name: string,
+  { createStore }: SessionStoreContractDeps,
 ): void {
- describe(`SessionStore contract: ${name}`, () => {
- let store: SessionStore;
+  describe(`SessionStore contract: ${name}`, () => {
+    let store: SessionStore;
 
- beforeEach(() => {
- store = createStore();
- });
+    beforeEach(() => {
+      store = createStore();
+    });
 
- it('names itself', () => {
- expect(store.name).toBeTypeOf('string');
- expect(store.name.length).toBeGreaterThan(0);
- });
+    it('names itself', () => {
+      expect(store.name).toBeTypeOf('string');
+      expect(store.name.length).toBeGreaterThan(0);
+    });
 
- it('reads null before anything is written', async () => {
- expect(await store.read()).toBeNull();
- });
+    it('reads null before anything is written', async () => {
+      expect(await store.read()).toBeNull();
+    });
 
- it('reads back what was written', async () => {
- await store.write('token-abc', 3600);
- expect(await store.read()).toBe('token-abc');
- });
+    it('reads back what was written', async () => {
+      await store.write('token-abc', 3600);
+      expect(await store.read()).toBe('token-abc');
+    });
 
- it('replaces rather than accumulates — one session per store', async () => {
- await store.write('first', 3600);
- await store.write('second', 3600);
+    it('replaces rather than accumulates — one session per store', async () => {
+      await store.write('first', 3600);
+      await store.write('second', 3600);
 
- expect(await store.read()).toBe('second');
- });
+      expect(await store.read()).toBe('second');
+    });
 
- it('reads null after clear', async () => {
- await store.write('token-abc', 3600);
- await store.clear();
+    it('reads null after clear', async () => {
+      await store.write('token-abc', 3600);
+      await store.clear();
 
- expect(await store.read()).toBeNull();
- });
+      expect(await store.read()).toBeNull();
+    });
 
- it('tolerates clearing when there is nothing to clear', async () => {
- await expect(store.clear()).resolves.toBeUndefined();
- expect(await store.read()).toBeNull();
- });
+    it('tolerates clearing when there is nothing to clear', async () => {
+      await expect(store.clear()).resolves.toBeUndefined();
+      expect(await store.read()).toBeNull();
+    });
 
- it('stores the token verbatim — it is opaque to this layer', async () => {
- // Base64url and JWT-shaped values both contain characters some encoders mangle. This
- // layer must not interpret, re-encode or trim any of it.
- const token = 'eyJhbGciOiJIUzI1NiJ9.e30.-signature_with-punctuation~';
- await store.write(token, 3600);
+    it('stores the token verbatim — it is opaque to this layer', async () => {
+      // Base64url and JWT-shaped values both contain characters some encoders mangle. This
+      // layer must not interpret, re-encode or trim any of it.
+      const token = 'eyJhbGciOiJIUzI1NiJ9.e30.-signature_with-punctuation~';
+      await store.write(token, 3600);
 
- expect(await store.read()).toBe(token);
- });
- });
+      expect(await store.read()).toBe(token);
+    });
+  });
 }

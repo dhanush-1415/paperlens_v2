@@ -41,12 +41,12 @@ import { experimental_taintObjectReference, experimental_taintUniqueValue } from
  * runtime, which is a high price for a safety net.
  */
 const taintObject: typeof experimental_taintObjectReference | undefined =
- typeof experimental_taintObjectReference === 'function'
- ? experimental_taintObjectReference
- : undefined;
+  typeof experimental_taintObjectReference === 'function'
+    ? experimental_taintObjectReference
+    : undefined;
 
 const taintValue: typeof experimental_taintUniqueValue | undefined =
- typeof experimental_taintUniqueValue === 'function' ? experimental_taintUniqueValue : undefined;
+  typeof experimental_taintUniqueValue === 'function' ? experimental_taintUniqueValue : undefined;
 
 /**
  * Forbid an entire object from reaching the client.
@@ -56,12 +56,12 @@ const taintValue: typeof experimental_taintUniqueValue | undefined =
  * what went wrong.
  */
 export function taintEntity<T extends object>(entity: T, name: string): T {
- taintObject?.(
- `${name} must not be passed to a Client Component. Map it to a DTO in the feature's ` +
- 'application layer and pass that instead.',
- entity,
- );
- return entity;
+  taintObject?.(
+    `${name} must not be passed to a Client Component. Map it to a DTO in the feature's ` +
+      'application layer and pass that instead.',
+    entity,
+  );
+  return entity;
 }
 
 /**
@@ -72,12 +72,12 @@ export function taintEntity<T extends object>(entity: T, name: string): T {
  * because reading a property produces a fresh, untainted string.
  */
 export function taintSecret(value: string, name: string, lifetime: object): string {
- // Empty strings are skipped: React throws on tainting a value that could collide with
- // another (a poisoned empty string would make every empty string in the app un-passable).
- if (value.length === 0) return value;
+  // Empty strings are skipped: React throws on tainting a value that could collide with
+  // another (a poisoned empty string would make every empty string in the app un-passable).
+  if (value.length === 0) return value;
 
- taintValue?.(`${name} is a secret and must never reach the client.`, lifetime, value);
- return value;
+  taintValue?.(`${name} is a secret and must never reach the client.`, lifetime, value);
+  return value;
 }
 
 /**
@@ -87,18 +87,18 @@ export function taintSecret(value: string, name: string, lifetime: object): stri
  * three of its fields must not travel even if extracted.
  */
 export function taintRecord<T extends object>(
- record: T,
- name: string,
- secretFields: readonly (keyof T)[] = [],
+  record: T,
+  name: string,
+  secretFields: readonly (keyof T)[] = [],
 ): T {
- taintEntity(record, name);
+  taintEntity(record, name);
 
- for (const field of secretFields) {
- const value = record[field];
- if (typeof value === 'string') {
- taintSecret(value, `${name}.${String(field)}`, record);
- }
- }
+  for (const field of secretFields) {
+    const value = record[field];
+    if (typeof value === 'string') {
+      taintSecret(value, `${name}.${String(field)}`, record);
+    }
+  }
 
- return record;
+  return record;
 }

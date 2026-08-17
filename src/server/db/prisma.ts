@@ -16,12 +16,12 @@ declare global {
 
 /**
  * Lazy Initialization via Proxy
- * 
+ *
  * We do not immediately instantiate the DB pool and Prisma client when this file is evaluated.
  * Next.js statically analyzes files during build and pre-rendering, which would otherwise
  * cause unwanted database connection attempts.
- * 
- * The Proxy intercepts the very first access (e.g. `prisma.plan.findUnique(...)`) 
+ *
+ * The Proxy intercepts the very first access (e.g. `prisma.plan.findUnique(...)`)
  * and initializes the connection pool at that exact moment.
  */
 export const prisma = new Proxy({} as PrismaClient, {
@@ -31,27 +31,27 @@ export const prisma = new Proxy({} as PrismaClient, {
       try {
         // Native PostgreSQL connection pool (highly optimized for Node.js environments)
         const connectionString = process.env.DATABASE_URL;
-        
+
         if (!connectionString) {
           console.warn('DATABASE_URL is missing. Prisma cannot connect.');
         }
 
         const pool = new Pool({ connectionString });
         const adapter = new PrismaPg(pool);
-        
+
         const { PrismaClient: PrismaClientConstructor } = require('@prisma/client');
-        globalThis.prismaGlobal = new PrismaClientConstructor({ 
+        globalThis.prismaGlobal = new PrismaClientConstructor({
           adapter,
-          log: ['error', 'warn'], 
+          log: ['error', 'warn'],
         });
       } catch (e) {
-        console.error("Prisma Client Initialization Error:", e);
+        console.error('Prisma Client Initialization Error:', e);
         // Failsafe: assign an empty object to prevent hard crashing on Next.js startup
         globalThis.prismaGlobal = {} as PrismaClient;
       }
     }
-    
+
     // Return the accessed property/method from the real Prisma instance
     return (globalThis.prismaGlobal as any)[prop];
-  }
+  },
 });

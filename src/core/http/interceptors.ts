@@ -22,36 +22,36 @@ import { HTTP_HEADERS } from '@/shared/constants/http';
  * time is stale by definition.
  */
 export function bearerAuthInterceptor(
- getToken: () => Promise<string | undefined> | string | undefined,
+  getToken: () => Promise<string | undefined> | string | undefined,
 ): HttpInterceptor {
- return {
- name: 'bearer-auth',
- async onRequest(context) {
- const token = await getToken();
- if (token) context.headers.set(HTTP_HEADERS.authorization, `Bearer ${token}`);
- },
- };
+  return {
+    name: 'bearer-auth',
+    async onRequest(context) {
+      const token = await getToken();
+      if (token) context.headers.set(HTTP_HEADERS.authorization, `Bearer ${token}`);
+    },
+  };
 }
 
 /** Stamp the tenant on every outbound request, for multi-tenant upstreams. */
 export function tenantInterceptor(getTenantId: () => string | undefined): HttpInterceptor {
- return {
- name: 'tenant',
- onRequest(context) {
- const tenantId = getTenantId();
- if (tenantId) context.headers.set(HTTP_HEADERS.tenantId, tenantId);
- },
- };
+  return {
+    name: 'tenant',
+    onRequest(context) {
+      const tenantId = getTenantId();
+      if (tenantId) context.headers.set(HTTP_HEADERS.tenantId, tenantId);
+    },
+  };
 }
 
 export function localeInterceptor(getLocale: () => string | undefined): HttpInterceptor {
- return {
- name: 'locale',
- onRequest(context) {
- const locale = getLocale();
- if (locale) context.headers.set(HTTP_HEADERS.locale, locale);
- },
- };
+  return {
+    name: 'locale',
+    onRequest(context) {
+      const locale = getLocale();
+      if (locale) context.headers.set(HTTP_HEADERS.locale, locale);
+    },
+  };
 }
 
 /**
@@ -62,28 +62,28 @@ export function localeInterceptor(getLocale: () => string | undefined): HttpInte
  * cheaper and safer than relying on redaction as the only line of defence.
  */
 export function loggingInterceptor(logger: Logger): HttpInterceptor {
- const scoped = logger.child('http');
+  const scoped = logger.child('http');
 
- return {
- name: 'logging',
- onRequest(context) {
- scoped.debug('→ request', {
- method: context.method,
- url: stripQuery(context.url),
- attempt: context.attempt,
- correlationId: context.correlationId,
- });
- },
- onError(error, context) {
- scoped.warn('← failed', {
- method: context.method,
- url: stripQuery(context.url),
- attempt: context.attempt,
- code: error.code,
- correlationId: context.correlationId,
- });
- },
- };
+  return {
+    name: 'logging',
+    onRequest(context) {
+      scoped.debug('→ request', {
+        method: context.method,
+        url: stripQuery(context.url),
+        attempt: context.attempt,
+        correlationId: context.correlationId,
+      });
+    },
+    onError(error, context) {
+      scoped.warn('← failed', {
+        method: context.method,
+        url: stripQuery(context.url),
+        attempt: context.attempt,
+        code: error.code,
+        correlationId: context.correlationId,
+      });
+    },
+  };
 }
 
 /**
@@ -93,30 +93,30 @@ export function loggingInterceptor(logger: Logger): HttpInterceptor {
  * times out, the user has already left.
  */
 export function timingInterceptor(logger: Logger, budgetMs = 2_000): HttpInterceptor {
- const started = new WeakMap<object, number>();
- const scoped = logger.child('http.timing');
+  const started = new WeakMap<object, number>();
+  const scoped = logger.child('http.timing');
 
- return {
- name: 'timing',
- onRequest(context) {
- started.set(context, performance.now());
- },
- onResponse(response, context) {
- const startedAt = started.get(context);
- if (startedAt === undefined) return;
+  return {
+    name: 'timing',
+    onRequest(context) {
+      started.set(context, performance.now());
+    },
+    onResponse(response, context) {
+      const startedAt = started.get(context);
+      if (startedAt === undefined) return;
 
- const durationMs = Math.round(performance.now() - startedAt);
- if (durationMs > budgetMs) {
- scoped.warn('slow request', {
- url: stripQuery(context.url),
- durationMs,
- budgetMs,
- status: response.status,
- correlationId: context.correlationId,
- });
- }
- },
- };
+      const durationMs = Math.round(performance.now() - startedAt);
+      if (durationMs > budgetMs) {
+        scoped.warn('slow request', {
+          url: stripQuery(context.url),
+          durationMs,
+          budgetMs,
+          status: response.status,
+          correlationId: context.correlationId,
+        });
+      }
+    },
+  };
 }
 
 /**
@@ -126,18 +126,18 @@ export function timingInterceptor(logger: Logger, budgetMs = 2_000): HttpInterce
  * handlers, which do not.
  */
 export function csrfInterceptor(getToken: () => string | undefined): HttpInterceptor {
- return {
- name: 'csrf',
- onRequest(context) {
- if (context.method === 'GET' || context.method === 'HEAD') return;
- const csrfToken = getToken();
- if (csrfToken) context.headers.set(HTTP_HEADERS.csrfToken, csrfToken);
- },
- };
+  return {
+    name: 'csrf',
+    onRequest(context) {
+      if (context.method === 'GET' || context.method === 'HEAD') return;
+      const csrfToken = getToken();
+      if (csrfToken) context.headers.set(HTTP_HEADERS.csrfToken, csrfToken);
+    },
+  };
 }
 
 /** The query string can carry search terms and IDs. Not something to write to a log. */
 function stripQuery(url: string): string {
- const index = url.indexOf('?');
- return index === -1 ? url : `${url.slice(0, index)}?…`;
+  const index = url.indexOf('?');
+  return index === -1 ? url : `${url.slice(0, index)}?…`;
 }

@@ -22,58 +22,58 @@
  * different rules — brand is a preference, risk is a safety signal.
  */
 export const THEME_TOKENS = {
- surface: ['canvas', 'surface-1', 'surface-2', 'surface-raised', 'surface-overlay'],
- border: ['border-subtle', 'border-strong'],
- text: ['text-primary', 'text-secondary', 'text-tertiary', 'text-inverse', 'text-on-brand'],
- brand: [
- 'brand-primary',
- 'brand-primary-hover',
- 'brand-solid',
- 'brand-solid-hover',
- 'brand-ink',
- 'brand-secondary',
- 'brand-tertiary',
- 'brand-gradient',
- ],
- risk: [
- 'risk-critical',
- 'risk-critical-fg',
- 'risk-critical-bg',
- 'risk-critical-border',
- 'risk-caution',
- 'risk-caution-fg',
- 'risk-caution-bg',
- 'risk-caution-border',
- 'risk-safe',
- 'risk-safe-fg',
- 'risk-safe-bg',
- 'risk-safe-border',
- 'risk-info',
- 'risk-info-fg',
- 'risk-info-bg',
- 'risk-info-border',
- ],
- depth: ['elevation-card', 'elevation-inset-highlight', 'overlay-scrim'],
- focus: ['focus-ring', 'focus-ring-width', 'focus-ring-offset'],
- motion: [
- 'duration-micro',
- 'duration-standard',
- 'duration-entrance',
- 'stagger-step',
- 'ease-standard',
- ],
- layout: ['measure'],
- layer: [
- 'z-base',
- 'z-raised',
- 'z-sticky',
- 'z-drawer',
- 'z-overlay',
- 'z-modal',
- 'z-popover',
- 'z-tooltip',
- 'z-toast',
- ],
+  surface: ['canvas', 'surface-1', 'surface-2', 'surface-raised', 'surface-overlay'],
+  border: ['border-subtle', 'border-strong'],
+  text: ['text-primary', 'text-secondary', 'text-tertiary', 'text-inverse', 'text-on-brand'],
+  brand: [
+    'brand-primary',
+    'brand-primary-hover',
+    'brand-solid',
+    'brand-solid-hover',
+    'brand-ink',
+    'brand-secondary',
+    'brand-tertiary',
+    'brand-gradient',
+  ],
+  risk: [
+    'risk-critical',
+    'risk-critical-fg',
+    'risk-critical-bg',
+    'risk-critical-border',
+    'risk-caution',
+    'risk-caution-fg',
+    'risk-caution-bg',
+    'risk-caution-border',
+    'risk-safe',
+    'risk-safe-fg',
+    'risk-safe-bg',
+    'risk-safe-border',
+    'risk-info',
+    'risk-info-fg',
+    'risk-info-bg',
+    'risk-info-border',
+  ],
+  depth: ['elevation-card', 'elevation-inset-highlight', 'overlay-scrim'],
+  focus: ['focus-ring', 'focus-ring-width', 'focus-ring-offset'],
+  motion: [
+    'duration-micro',
+    'duration-standard',
+    'duration-entrance',
+    'stagger-step',
+    'ease-standard',
+  ],
+  layout: ['measure'],
+  layer: [
+    'z-base',
+    'z-raised',
+    'z-sticky',
+    'z-drawer',
+    'z-overlay',
+    'z-modal',
+    'z-popover',
+    'z-tooltip',
+    'z-toast',
+  ],
 } as const satisfies Readonly<Record<string, readonly string[]>>;
 
 export type ThemeTokenGroup = keyof typeof THEME_TOKENS;
@@ -104,7 +104,7 @@ export type TenantOverridableGroup = (typeof TENANT_OVERRIDABLE_GROUPS)[number];
 export type TenantOverridableToken = (typeof THEME_TOKENS)[TenantOverridableGroup][number];
 
 export const TENANT_OVERRIDABLE_TOKENS: readonly TenantOverridableToken[] =
- TENANT_OVERRIDABLE_GROUPS.flatMap((group) => [...THEME_TOKENS[group]]);
+  TENANT_OVERRIDABLE_GROUPS.flatMap((group) => [...THEME_TOKENS[group]]);
 
 /**
  * `'surface-1'` → `'--surface-1'`.
@@ -114,14 +114,14 @@ export const TENANT_OVERRIDABLE_TOKENS: readonly TenantOverridableToken[] =
  * convention is one edit.
  */
 export function cssVarName(token: ThemeTokenName): string {
- return `--${token}`;
+  return `--${token}`;
 }
 
 /** `'canvas'` → `'var(--canvas)'`, for inline styles and canvas/SVG fills. */
 export function cssVar(token: ThemeTokenName): string {
- return `var(${cssVarName(token)})`;
+  return `var(${cssVarName(token)})`;
 }
 
 export function isThemeTokenName(value: string): value is ThemeTokenName {
- return (THEME_TOKEN_NAMES as readonly string[]).includes(value);
+  return (THEME_TOKEN_NAMES as readonly string[]).includes(value);
 }

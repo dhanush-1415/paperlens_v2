@@ -16,7 +16,9 @@ async function main() {
     await prisma.$executeRawUnsafe(`DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;`);
     console.log('Successfully removed legacy triggers.');
   } catch (e) {
-    console.log('Note: Could not drop legacy triggers (they might not exist or lack permission). Proceeding...');
+    console.log(
+      'Note: Could not drop legacy triggers (they might not exist or lack permission). Proceeding...',
+    );
   }
 
   const freePlan = await prisma.plan.upsert({
@@ -41,7 +43,7 @@ async function main() {
       capExport: false,
       capShare: true,
       capPrioritySupport: false,
-    }
+    },
   });
 
   const proPlan = await prisma.plan.upsert({
@@ -65,7 +67,7 @@ async function main() {
       capExport: true,
       capShare: true,
       capPrioritySupport: true,
-    }
+    },
   });
 
   const enterprisePlan = await prisma.plan.upsert({
@@ -89,7 +91,7 @@ async function main() {
       capExport: true,
       capShare: true,
       capPrioritySupport: true,
-    }
+    },
   });
 
   console.log('Seeded plans:', { freePlan, proPlan, enterprisePlan });

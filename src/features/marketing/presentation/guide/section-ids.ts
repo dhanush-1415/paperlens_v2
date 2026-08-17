@@ -11,7 +11,7 @@
  */
 
 export const GUIDE_SECTION_IDS = {
- risks: 'risks',
- checklist: 'checklist',
- faq: 'questions',
+  risks: 'risks',
+  checklist: 'checklist',
+  faq: 'questions',
 } as const;

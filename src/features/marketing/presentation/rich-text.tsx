@@ -36,37 +36,37 @@ import { Fragment, type ReactNode } from 'react';
 const INLINE_PATTERN = /(\*\*[^*]+\*\*|[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z0-9.-]+)/g;
 
 export function renderInline(text: string): ReactNode {
- const parts = text.split(INLINE_PATTERN);
+  const parts = text.split(INLINE_PATTERN);
 
- return parts.map((part, index) => {
- // Odd indices are the captured delimiters; even indices are the plain runs between them.
- if (index % 2 === 0) return part === '' ? null : <Fragment key={index}>{part}</Fragment>;
+  return parts.map((part, index) => {
+    // Odd indices are the captured delimiters; even indices are the plain runs between them.
+    if (index % 2 === 0) return part === '' ? null : <Fragment key={index}>{part}</Fragment>;
 
- if (part.startsWith('**')) {
- return (
- <strong key={index} className="font-semibold text-text-primary">
- {part.slice(2, -2)}
- </strong>
- );
- }
+    if (part.startsWith('**')) {
+      return (
+        <strong key={index} className="font-semibold text-text-primary">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
 
- return (
- <a
- key={index}
- href={`mailto:${part}`}
- className="text-text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-(--duration-micro) hover:decoration-current"
- >
- {part}
- </a>
- );
- });
+    return (
+      <a
+        key={index}
+        href={`mailto:${part}`}
+        className="text-text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-(--duration-micro) hover:decoration-current"
+      >
+        {part}
+      </a>
+    );
+  });
 }
 
 export interface RichTextProps {
- text: string;
+  text: string;
 }
 
 /** `renderInline` as a component, for the common case of a whole string. */
 export function RichText({ text }: RichTextProps) {
- return <>{renderInline(text)}</>;
+  return <>{renderInline(text)}</>;
 }

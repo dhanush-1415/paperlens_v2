@@ -43,94 +43,94 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
 export interface UseNativeDialogOptions {
- open: boolean;
- /**
- * Called whenever the dialog closes, for any reason. The owner is expected to flip `open`
- * to `false` in response; until it does, the effect will reopen the element, which is the
- * correct behaviour for a modal the caller is refusing to let go of (an unsaved-changes
- * guard, for instance).
- */
- onClose: () => void;
- /**
- * Whether clicking the backdrop dismisses. Off for anything with unsaved input — a stray
- * click outside a half-filled form that discards it is a genuinely bad afternoon.
- */
- dismissOnBackdropClick?: boolean;
+  open: boolean;
+  /**
+   * Called whenever the dialog closes, for any reason. The owner is expected to flip `open`
+   * to `false` in response; until it does, the effect will reopen the element, which is the
+   * correct behaviour for a modal the caller is refusing to let go of (an unsaved-changes
+   * guard, for instance).
+   */
+  onClose: () => void;
+  /**
+   * Whether clicking the backdrop dismisses. Off for anything with unsaved input — a stray
+   * click outside a half-filled form that discards it is a genuinely bad afternoon.
+   */
+  dismissOnBackdropClick?: boolean;
 }
 
 export interface NativeDialogHandles {
- ref: RefObject<HTMLDialogElement | null>;
- /** Spread onto the `<dialog>`. Handles backdrop clicks. */
- onClick: (event: React.MouseEvent<HTMLDialogElement>) => void;
+  ref: RefObject<HTMLDialogElement | null>;
+  /** Spread onto the `<dialog>`. Handles backdrop clicks. */
+  onClick: (event: React.MouseEvent<HTMLDialogElement>) => void;
 }
 
 export function useNativeDialog({
- open,
- onClose,
- dismissOnBackdropClick = true,
+  open,
+  onClose,
+  dismissOnBackdropClick = true,
 }: UseNativeDialogOptions): NativeDialogHandles {
- const ref = useRef<HTMLDialogElement>(null);
+  const ref = useRef<HTMLDialogElement>(null);
 
- /**
- * `onClose` in a ref so the subscription effect below does not re-run on every render of
- * a parent that passes an inline arrow function. Re-subscribing is cheap, but tearing down
- * and re-adding the listener mid-transition is the kind of thing that loses an event.
- */
- const onCloseRef = useRef(onClose);
- useEffect(() => {
- onCloseRef.current = onClose;
- }, [onClose]);
+  /**
+   * `onClose` in a ref so the subscription effect below does not re-run on every render of
+   * a parent that passes an inline arrow function. Re-subscribing is cheap, but tearing down
+   * and re-adding the listener mid-transition is the kind of thing that loses an event.
+   */
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
- // Drive the element toward the React state. Guarded on `el.open` so re-rendering while
- // already open does not call `showModal()` twice — the second call throws `InvalidStateError`.
- useEffect(() => {
- const el = ref.current;
- if (!el) return;
- if (open && !el.open) el.showModal();
- else if (!open && el.open) el.close();
- }, [open]);
+  // Drive the element toward the React state. Guarded on `el.open` so re-rendering while
+  // already open does not call `showModal()` twice — the second call throws `InvalidStateError`.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (open && !el.open) el.showModal();
+    else if (!open && el.open) el.close();
+  }, [open]);
 
- // Every close path arrives here, including Esc and `<form method="dialog">`.
- useEffect(() => {
- const el = ref.current;
- if (!el) return;
- const handleClose = () => onCloseRef.current();
- el.addEventListener('close', handleClose);
- return () => el.removeEventListener('close', handleClose);
- }, []);
+  // Every close path arrives here, including Esc and `<form method="dialog">`.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const handleClose = () => onCloseRef.current();
+    el.addEventListener('close', handleClose);
+    return () => el.removeEventListener('close', handleClose);
+  }, []);
 
- /**
- * Background scroll lock.
- *
- * Restores the previous value rather than clearing it, so two nested dialogs — a confirm
- * inside a drawer — do not have the inner one unlock the page when it closes.
- */
- useEffect(() => {
- if (!open) return;
- const root = document.documentElement;
- const previous = root.style.overflow;
- root.style.overflow = 'hidden';
- return () => {
- root.style.overflow = previous;
- };
- }, [open]);
+  /**
+   * Background scroll lock.
+   *
+   * Restores the previous value rather than clearing it, so two nested dialogs — a confirm
+   * inside a drawer — do not have the inner one unlock the page when it closes.
+   */
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => {
+      root.style.overflow = previous;
+    };
+  }, [open]);
 
- /**
- * Backdrop click.
- *
- * `::backdrop` is not an element and cannot receive a listener, so the click lands on the
- * `<dialog>` itself. `event.target === ref.current` is what distinguishes "clicked the
- * dark area" from "clicked something inside the panel", because the panel's children are
- * descendants and would report themselves as the target.
- *
- * This is why the visible panel must be a child of the `<dialog>` and not the dialog's own
- * box: if the dialog *is* the panel, its padding is part of it and every click on the
- * padding closes the modal.
- */
- const onClick = (event: React.MouseEvent<HTMLDialogElement>) => {
- if (!dismissOnBackdropClick) return;
- if (event.target === ref.current) ref.current?.close();
- };
+  /**
+   * Backdrop click.
+   *
+   * `::backdrop` is not an element and cannot receive a listener, so the click lands on the
+   * `<dialog>` itself. `event.target === ref.current` is what distinguishes "clicked the
+   * dark area" from "clicked something inside the panel", because the panel's children are
+   * descendants and would report themselves as the target.
+   *
+   * This is why the visible panel must be a child of the `<dialog>` and not the dialog's own
+   * box: if the dialog *is* the panel, its padding is part of it and every click on the
+   * padding closes the modal.
+   */
+  const onClick = (event: React.MouseEvent<HTMLDialogElement>) => {
+    if (!dismissOnBackdropClick) return;
+    if (event.target === ref.current) ref.current?.close();
+  };
 
- return { ref, onClick };
+  return { ref, onClick };
 }

@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Day 14 drip — upgrade nudge for free users who have used ≥5 of their 10 scans.
@@ -14,11 +14,12 @@ export async function sendDripDay14(
   name?: string | null,
   scansUsed = 0,
 ): Promise<void> {
-  const firstName  = name?.split(' ')[0]?.trim() || 'there';
-  const scansLeft  = Math.max(0, 10 - scansUsed);
-  const usageLabel = scansLeft === 0
-    ? "You've used all 10 of your free uploads."
-    : `You've used ${scansUsed} of your 10 free uploads — ${scansLeft} left.`;
+  const firstName = name?.split(' ')[0]?.trim() || 'there';
+  const scansLeft = Math.max(0, 10 - scansUsed);
+  const usageLabel =
+    scansLeft === 0
+      ? "You've used all 10 of your free uploads."
+      : `You've used ${scansUsed} of your 10 free uploads — ${scansLeft} left.`;
 
   const proPerks = [
     ['Unlimited scans', 'No monthly ceiling — upload everything.'],
@@ -29,8 +30,8 @@ export async function sendDripDay14(
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
+      from: FROM,
+      to: email,
       subject: `${firstName}, you're almost out of free scans.`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
@@ -67,7 +68,9 @@ export async function sendDripDay14(
               Go Pro and never worry about limits:
             </p>
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:24px;">
-              ${proPerks.map(([title, desc]) => `
+              ${proPerks
+                .map(
+                  ([title, desc]) => `
                 <tr>
                   <td style="padding:6px 10px 6px 0;vertical-align:top;width:20px;">
                     <span style="color:#d97706;font-size:14px;font-weight:700;">✓</span>
@@ -77,7 +80,9 @@ export async function sendDripDay14(
                     <span style="font-size:13px;color:#64748b;"> — ${desc}</span>
                   </td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join('')}
             </table>
 
             <!-- Price callout -->

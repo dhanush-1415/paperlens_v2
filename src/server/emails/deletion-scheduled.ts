@@ -7,19 +7,24 @@ export async function sendDeletionScheduledEmail(
   deleteAt: string,
   name?: string | null,
 ): Promise<void> {
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
-  const fromEmail = process.env.RESEND_FROM_EMAIL   ?? 'PaperLens <hello@paperlens.co>';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
   const firstName = name?.split(' ')[0] ?? 'there';
 
   const deleteDate = new Date(deleteAt).toLocaleString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
   });
 
   try {
     const { error } = await resend.emails.send({
-      from:    fromEmail,
-      to:      email,
+      from: fromEmail,
+      to: email,
       subject: '⚠️ Your PaperLens account is scheduled for deletion',
       html: `
 <!DOCTYPE html>

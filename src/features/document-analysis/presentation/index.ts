@@ -23,9 +23,9 @@
 
 export { AnalysisForm, type AnalysisFormLabels, type AnalysisFormProps } from './analysis-form';
 export {
- AnalysisReport,
- type AnalysisReportLabels,
- type AnalysisReportProps,
+  AnalysisReport,
+  type AnalysisReportLabels,
+  type AnalysisReportProps,
 } from './analysis-report';
 export { RiskFlagCard, type RiskFlagCardProps } from './risk-flag-card';
 export { DocumentActions } from './document-actions';

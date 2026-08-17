@@ -3,10 +3,10 @@ import { isOk } from '@/core/result/result';
 import { resolveTenant } from '@/config/tenant';
 import { serverEnv } from '@/config/env.server';
 import {
- LIST_DOCUMENT_GUIDES,
- siteFooterGroups,
- siteLegalLinks,
- siteNavItems,
+  LIST_DOCUMENT_GUIDES,
+  siteFooterGroups,
+  siteLegalLinks,
+  siteNavItems,
 } from '@/features/marketing';
 import { getRequestScope, getPublicSession } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
@@ -69,82 +69,82 @@ const tenant = resolveTenant(serverEnv.TENANT_ID);
  * is redeployed. For a copyright notice that is the correct trade, and it is the same trade
  * every static site makes.
  */
-// eslint-disable-next-line no-restricted-syntax -- see above: a build constant, not a clock read.
+
 const COPYRIGHT_YEAR = new Date().getFullYear();
 
 export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
- const scope = getRequestScope();
- const t = scope.resolve(TRANSLATOR);
- const listGuides = scope.resolve(LIST_DOCUMENT_GUIDES);
+  const scope = getRequestScope();
+  const t = scope.resolve(TRANSLATOR);
+  const listGuides = scope.resolve(LIST_DOCUMENT_GUIDES);
 
- const listed = await listGuides();
- const guides = isOk(listed) ? listed.value : [];
- const session = await getPublicSession();
+  const listed = await listGuides();
+  const guides = isOk(listed) ? listed.value : [];
+  const session = await getPublicSession();
 
- return (
- <ScrollProvider>
- <div className="flex min-h-full flex-1 flex-col">
- <SiteHeader
- productName={tenant.productName}
- items={siteNavItems(t)}
- signInHref={ROUTES.login}
- ctaHref={ROUTES.scan}
- dashboardHref={ROUTES.welcome}
- isAuthenticated={!!session}
- labels={{
- menu: t.t('nav.menu'),
- closeMenu: t.t('nav.closeMenu'),
- signIn: t.t('common.signIn'),
- cta: t.t('cta.analyze'),
- ctaNote: t.t('cta.reassurance'),
- theme: t.t('theme.label'),
- themeOptions: {
- light: t.t('theme.light'),
- dark: t.t('theme.dark'),
- system: t.t('theme.system'),
- },
- }}
- />
+  return (
+    <ScrollProvider>
+      <div className="flex min-h-full flex-1 flex-col">
+        <SiteHeader
+          productName={tenant.productName}
+          items={siteNavItems(t)}
+          signInHref={ROUTES.login}
+          ctaHref={ROUTES.scan}
+          dashboardHref={ROUTES.welcome}
+          isAuthenticated={!!session}
+          labels={{
+            menu: t.t('nav.menu'),
+            closeMenu: t.t('nav.closeMenu'),
+            signIn: t.t('common.signIn'),
+            cta: t.t('cta.analyze'),
+            ctaNote: t.t('cta.reassurance'),
+            theme: t.t('theme.label'),
+            themeOptions: {
+              light: t.t('theme.light'),
+              dark: t.t('theme.dark'),
+              system: t.t('theme.system'),
+            },
+          }}
+        />
 
- {/*
+        {/*
  `id="main"` is the target of the skip link `SiteHeader` renders. The header cannot own
  the landmark it skips *to*, so the contract is: the header provides the link, every
  layout that uses it provides `#main`.
  */}
- <main id="main" className="flex-1">
- {children}
- </main>
+        <main id="main" className="flex-1">
+          {children}
+        </main>
 
- <SiteFooter
- productName={tenant.productName}
- tagline={tenant.tagline}
- groups={siteFooterGroups({ t, guides, guideCount: guides.length })}
- legal={siteLegalLinks(t)}
- year={COPYRIGHT_YEAR}
- ctaHref={ROUTES.scan}
- ctaLabel={t.t('cta.analyze')}
- />
+        <SiteFooter
+          productName={tenant.productName}
+          tagline={tenant.tagline}
+          groups={siteFooterGroups({ t, guides, guideCount: guides.length })}
+          legal={siteLegalLinks(t)}
+          year={COPYRIGHT_YEAR}
+          ctaHref={ROUTES.scan}
+          ctaLabel={t.t('cta.analyze')}
+        />
 
- <StickyCta
- campaignId="marketing-global-conversion"
- threshold={0.2}
- message="Unlock hidden risks and deadlines right now. First scan is free."
- ctaLabel="Analyze Your Document"
- ctaHref={ROUTES.scan}
- dismissLabel={t.t('common.close')}
- />
+        <StickyCta
+          campaignId="marketing-global-conversion"
+          threshold={0.2}
+          message="Unlock hidden risks and deadlines right now. First scan is free."
+          ctaLabel="Analyze Your Document"
+          ctaHref={ROUTES.scan}
+          dismissLabel={t.t('common.close')}
+        />
 
- <CookieConsent
- policyHref={ROUTES.cookies}
- labels={{
- title: t.t('consent.title'),
- body: t.t('consent.body'),
- accept: t.t('consent.acceptAll'),
- reject: t.t('consent.rejectAll'),
- policyLink: t.t('footer.cookies'),
- }}
- />
- </div>
- </ScrollProvider>
- );
+        <CookieConsent
+          policyHref={ROUTES.cookies}
+          labels={{
+            title: t.t('consent.title'),
+            body: t.t('consent.body'),
+            accept: t.t('consent.acceptAll'),
+            reject: t.t('consent.rejectAll'),
+            policyLink: t.t('footer.cookies'),
+          }}
+        />
+      </div>
+    </ScrollProvider>
+  );
 }

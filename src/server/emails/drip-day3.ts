@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Day 3 drip — sent to users who signed up 3 days ago and have never uploaded a document.
@@ -13,9 +13,9 @@ export async function sendDripDay3(email: string, name?: string | null): Promise
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
-      subject: 'Still haven\'t tried PaperLens? Here\'s what you\'re missing.',
+      from: FROM,
+      to: email,
+      subject: "Still haven't tried PaperLens? Here's what you're missing.",
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
 
@@ -60,12 +60,16 @@ export async function sendDripDay3(email: string, name?: string | null): Promise
                   ['✓', 'Your urgency level (is this critical or can it wait?)'],
                   ['✓', 'Every deadline extracted automatically'],
                   ['✓', 'Exactly what to do next, step by step'],
-                ].map(([icon, text]) => `
+                ]
+                  .map(
+                    ([icon, text]) => `
                   <tr>
                     <td style="padding:4px 8px 4px 0;vertical-align:top;width:20px;font-size:14px;color:#d97706;">${icon}</td>
                     <td style="padding:4px 0;font-size:13px;color:#374151;line-height:1.5;">${text}</td>
                   </tr>
-                `).join('')}
+                `,
+                  )
+                  .join('')}
               </table>
             </div>
 

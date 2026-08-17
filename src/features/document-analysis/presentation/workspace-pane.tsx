@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { FileText, MessageSquare, ChevronsUp, ChevronsDown, ChevronUp, ChevronDown, Pause } from 'lucide-react';
+import {
+  FileText,
+  MessageSquare,
+  ChevronsUp,
+  ChevronsDown,
+  ChevronUp,
+  ChevronDown,
+  Pause,
+} from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { CopilotChatWindow } from './copilot-chat-window';
 import { TextPreview } from './text-preview';
@@ -16,7 +24,14 @@ export interface WorkspacePaneProps {
   plan?: { canChat: boolean; usage: { chatMsgs: number }; limits: { chatMsgs: number } };
 }
 
-export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl, mimeType, plan }: WorkspacePaneProps) {
+export function WorkspacePane({
+  documentId,
+  suggestedQuestions,
+  rawText,
+  fileUrl,
+  mimeType,
+  plan,
+}: WorkspacePaneProps) {
   const [tab, setTab] = useState<'chat' | 'document'>('chat');
   const viewerRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +40,7 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const [autoScrollDir, setAutoScrollDir] = useState<'up' | 'down'>('down');
   const rafRef = useRef<number | null>(null);
-  
+
   // Clean up RAF on unmount
   useEffect(() => {
     return () => {
@@ -33,16 +48,19 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
     };
   }, []);
 
-  const toggleAutoScroll = useCallback((dir: 'up' | 'down') => {
-    setIsAutoScrolling(prev => {
-      if (prev && autoScrollDir === dir) {
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        return false;
-      }
-      setAutoScrollDir(dir);
-      return true;
-    });
-  }, [autoScrollDir]);
+  const toggleAutoScroll = useCallback(
+    (dir: 'up' | 'down') => {
+      setIsAutoScrolling((prev) => {
+        if (prev && autoScrollDir === dir) {
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          return false;
+        }
+        setAutoScrollDir(dir);
+        return true;
+      });
+    },
+    [autoScrollDir],
+  );
 
   useEffect(() => {
     if (!isAutoScrolling) {
@@ -73,7 +91,7 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
     setIsAutoScrolling(false);
     viewerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  
+
   const scrollToBottom = () => {
     setIsAutoScrolling(false);
     if (viewerRef.current) {
@@ -82,17 +100,16 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
   };
 
   return (
-    <div className="w-full lg:w-[450px] xl:w-[500px] h-[60vh] lg:h-full border-t lg:border-t-0 lg:border-l border-border-strong bg-surface-2 shrink-0 flex flex-col shadow-2xl relative">
-      
+    <div className="relative flex h-[60vh] w-full shrink-0 flex-col border-t border-border-strong bg-surface-2 shadow-2xl lg:h-full lg:w-[450px] lg:border-t-0 lg:border-l xl:w-[500px]">
       {/* Tab switcher */}
-      <div className="absolute top-4 left-4 right-4 z-20 shrink-0 flex rounded-2xl border border-border-subtle bg-surface-1/80 p-1 gap-1 backdrop-blur-2xl shadow-sm">
+      <div className="absolute top-4 right-4 left-4 z-20 flex shrink-0 gap-1 rounded-2xl border border-border-subtle bg-surface-1/80 p-1 shadow-sm backdrop-blur-2xl">
         <button
           onClick={() => setTab('chat')}
           className={cn(
-            'flex flex-1 cursor-pointer items-center justify-center gap-2 px-3 py-1.5 transition-all duration-200 rounded-xl',
+            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-1.5 transition-all duration-200',
             tab === 'chat'
               ? 'bg-brand-primary text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-surface-3'
+              : 'hover:bg-surface-3 text-text-secondary hover:text-text-primary',
           )}
         >
           <MessageSquare className="h-4 w-4 shrink-0" />
@@ -101,10 +118,10 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
         <button
           onClick={() => setTab('document')}
           className={cn(
-            'flex flex-1 cursor-pointer items-center justify-center gap-2 px-3 py-1.5 transition-all duration-200 rounded-xl',
+            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-1.5 transition-all duration-200',
             tab === 'document'
               ? 'bg-brand-primary text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-surface-3'
+              : 'hover:bg-surface-3 text-text-secondary hover:text-text-primary',
           )}
         >
           <FileText className="h-4 w-4 shrink-0" />
@@ -112,39 +129,57 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
         </button>
       </div>
 
-      <div className="flex-1 relative overflow-hidden mt-16">
+      <div className="relative mt-16 flex-1 overflow-hidden">
         {/* Tab 1 — AI Chat */}
-        <div className={cn(
-          'absolute inset-0 flex flex-col transition-transform duration-300 ease-in-out',
-          tab === 'chat' ? 'translate-x-0' : '-translate-x-full',
-        )}>
+        <div
+          className={cn(
+            'absolute inset-0 flex flex-col transition-transform duration-300 ease-in-out',
+            tab === 'chat' ? 'translate-x-0' : '-translate-x-full',
+          )}
+        >
           {/* We strip the internal header of CopilotChatWindow if needed, or just let it render below the tabs */}
-          <CopilotChatWindow documentId={documentId} suggestedQuestions={suggestedQuestions} plan={plan} />
+          <CopilotChatWindow
+            documentId={documentId}
+            suggestedQuestions={suggestedQuestions}
+            plan={plan}
+          />
         </div>
 
         {/* Tab 2 — Original Document */}
-        <div className={cn(
-          'absolute inset-0 flex flex-col bg-surface-1 transition-transform duration-300 ease-in-out overflow-hidden',
-          tab === 'document' ? 'translate-x-0' : 'translate-x-full',
-        )}>
-          <div className="flex items-center gap-2 border-b border-border-subtle p-4 pb-3 shrink-0">
-             <FileText className="size-4 text-brand-primary" />
-             <span className="text-sm font-semibold text-text-primary">Source Text</span>
+        <div
+          className={cn(
+            'absolute inset-0 flex flex-col overflow-hidden bg-surface-1 transition-transform duration-300 ease-in-out',
+            tab === 'document' ? 'translate-x-0' : 'translate-x-full',
+          )}
+        >
+          <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle p-4 pb-3">
+            <FileText className="size-4 text-brand-primary" />
+            <span className="text-sm font-semibold text-text-primary">Source Text</span>
           </div>
 
-          <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col">
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
             {fileUrl && mimeType?.startsWith('application/pdf') ? (
               <PdfViewer src={fileUrl} ref={viewerRef} />
             ) : fileUrl && mimeType?.startsWith('image/') ? (
-              <div ref={viewerRef} className="flex-1 overflow-auto p-4 flex items-center justify-center">
-                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={fileUrl} alt="Original Document" className="max-w-full rounded-lg shadow-sm" />
+              <div
+                ref={viewerRef}
+                className="flex flex-1 items-center justify-center overflow-auto p-4"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={fileUrl}
+                  alt="Original Document"
+                  className="max-w-full rounded-lg shadow-sm"
+                />
               </div>
             ) : fileUrl && mimeType?.startsWith('audio/') ? (
-              <div ref={viewerRef} className="flex-1 overflow-auto p-6 flex flex-col items-center justify-center gap-6 text-text-tertiary">
-                <div className="size-20 rounded-full bg-brand-primary/10 flex items-center justify-center relative">
-                   <div className="absolute inset-0 rounded-full bg-brand-primary/20 animate-ping" />
-                   <MessageSquare className="size-8 text-brand-primary relative z-10" />
+              <div
+                ref={viewerRef}
+                className="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto p-6 text-text-tertiary"
+              >
+                <div className="relative flex size-20 items-center justify-center rounded-full bg-brand-primary/10">
+                  <div className="absolute inset-0 animate-ping rounded-full bg-brand-primary/20" />
+                  <MessageSquare className="relative z-10 size-8 text-brand-primary" />
                 </div>
                 <audio controls src={fileUrl} className="w-full max-w-sm" />
               </div>
@@ -153,13 +188,16 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
             ) : fileUrl && (mimeType === 'text/html' || mimeType === 'application/xml') ? (
               <TextPreview type="html" src={fileUrl} innerRef={viewerRef} />
             ) : (
-              <TextPreview type="text" initialContent={rawText || 'No source text available.'} innerRef={viewerRef} />
+              <TextPreview
+                type="text"
+                initialContent={rawText || 'No source text available.'}
+                innerRef={viewerRef}
+              />
             )}
-            
+
             {/* -- Scroll controls ------------ */}
             <div className="pointer-events-none absolute inset-y-0 right-2 z-10 flex flex-col items-center justify-center">
               <div className="pointer-events-auto flex flex-col items-center gap-1 rounded-xl border border-border-strong bg-surface-1/90 p-1 shadow-md backdrop-blur-sm">
-                
                 {/* Scroll to top */}
                 <button
                   onClick={scrollToTop}
@@ -180,15 +218,17 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
                       : 'text-text-tertiary hover:bg-surface-2 hover:text-text-primary',
                   )}
                 >
-                  {isAutoScrolling && autoScrollDir === 'up'
-                    ? <Pause      className="h-4 w-4" />
-                    : <ChevronUp  className="h-5 w-5" />}
+                  {isAutoScrolling && autoScrollDir === 'up' ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-5 w-5" />
+                  )}
                 </button>
 
                 <div className="h-px w-full bg-border-subtle" />
 
                 {/* Speed selector */}
-                {([1, 2, 5, 10] as const).map(s => (
+                {([1, 2, 5, 10] as const).map((s) => (
                   <button
                     key={s}
                     onClick={() => setScrollSpeed(s)}
@@ -217,9 +257,11 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
                       : 'text-text-tertiary hover:bg-surface-2 hover:text-text-primary',
                   )}
                 >
-                  {isAutoScrolling && autoScrollDir === 'down'
-                    ? <Pause       className="h-4 w-4" />
-                    : <ChevronDown className="h-5 w-5" />}
+                  {isAutoScrolling && autoScrollDir === 'down' ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
                 </button>
 
                 {/* Scroll to bottom */}
@@ -230,7 +272,6 @@ export function WorkspacePane({ documentId, suggestedQuestions, rawText, fileUrl
                 >
                   <ChevronsDown className="h-5 w-5" />
                 </button>
-
               </div>
             </div>
           </div>

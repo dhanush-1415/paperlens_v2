@@ -14,7 +14,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-async function SignUp({ searchParams }: { readonly searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
+async function SignUp({
+  searchParams,
+}: {
+  readonly searchParams: Promise<{ [k: string]: string | string[] | undefined }>;
+}) {
   const params = await searchParams;
   const raw = params[QUERY_PARAMS.redirectTo];
 
@@ -34,18 +38,27 @@ export default function SignUpPage(props: PageProps<'/signup'>) {
           <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">
             Create Account
           </h1>
-          <p className="text-sm text-text-secondary leading-relaxed font-medium">
+          <p className="text-sm leading-relaxed font-medium text-text-secondary">
             Start analyzing documents securely in seconds.
           </p>
         </div>
 
-        <Suspense fallback={<Card><CardContent>Loading…</CardContent></Card>}>
+        <Suspense
+          fallback={
+            <Card>
+              <CardContent>Loading…</CardContent>
+            </Card>
+          }
+        >
           <SignUp searchParams={props.searchParams} />
         </Suspense>
 
-        <p className="text-center text-sm text-text-secondary mt-2">
+        <p className="mt-2 text-center text-sm text-text-secondary">
           Already have an account?{' '}
-          <Link href={(ROUTES as any).login} className="text-brand-primary font-bold hover:underline transition-all">
+          <Link
+            href={(ROUTES as any).login}
+            className="font-bold text-brand-primary transition-all hover:underline"
+          >
             Sign in
           </Link>
         </p>

@@ -28,7 +28,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 const listeners = new Set<() => void>();
 
 function notify(): void {
- for (const listener of listeners) listener();
+  for (const listener of listeners) listener();
 }
 
 /**
@@ -40,20 +40,20 @@ function notify(): void {
  * appears or appears immediately.
  */
 function subscribe(listener: () => void): () => void {
- if (listeners.size === 0) {
- window.addEventListener('scroll', notify, { passive: true });
- window.addEventListener('resize', notify, { passive: true });
- }
+  if (listeners.size === 0) {
+    window.addEventListener('scroll', notify, { passive: true });
+    window.addEventListener('resize', notify, { passive: true });
+  }
 
- listeners.add(listener);
+  listeners.add(listener);
 
- return () => {
- listeners.delete(listener);
- if (listeners.size === 0) {
- window.removeEventListener('scroll', notify);
- window.removeEventListener('resize', notify);
- }
- };
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) {
+      window.removeEventListener('scroll', notify);
+      window.removeEventListener('resize', notify);
+    }
+  };
 }
 
 /**
@@ -63,8 +63,8 @@ function subscribe(listener: () => void): () => void {
  * the single-pixel jitter of a trackpad resting on a page, do not flicker the border.
  */
 export function useScrolledDown(offset = 8): boolean {
- const getSnapshot = useCallback(() => window.scrollY > offset, [offset]);
- return useSyncExternalStore(subscribe, getSnapshot, () => false);
+  const getSnapshot = useCallback(() => window.scrollY > offset, [offset]);
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
 /**
@@ -75,11 +75,11 @@ export function useScrolledDown(offset = 8): boolean {
  * every short page instantly "fully read", which is the opposite of the intent.
  */
 export function useScrolledPast(fraction: number): boolean {
- const getSnapshot = useCallback(() => {
- const scrollable = document.documentElement.scrollHeight - window.innerHeight;
- if (scrollable <= 0) return false;
- return window.scrollY / scrollable >= fraction;
- }, [fraction]);
+  const getSnapshot = useCallback(() => {
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    if (scrollable <= 0) return false;
+    return window.scrollY / scrollable >= fraction;
+  }, [fraction]);
 
- return useSyncExternalStore(subscribe, getSnapshot, () => false);
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }

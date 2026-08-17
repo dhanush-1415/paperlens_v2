@@ -23,51 +23,59 @@ export interface ScrollRevealProps {
   delay?: number;
 }
 
-export function ScrollReveal({ children, className, variant = 'fade-up', delay = 0 }: ScrollRevealProps) {
+export function ScrollReveal({
+  children,
+  className,
+  variant = 'fade-up',
+  delay = 0,
+}: ScrollRevealProps) {
   const container = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    if (!container.current) return;
+  useGSAP(
+    () => {
+      if (!container.current) return;
 
-    if (variant === 'fade-up') {
-      gsap.fromTo(
-        container.current,
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.5,
-          delay,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: container.current,
-            start: 'top 105%',
-            toggleActions: 'play none none none',
-            fastScrollEnd: true,
+      if (variant === 'fade-up') {
+        gsap.fromTo(
+          container.current,
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            delay,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: container.current,
+              start: 'top 105%',
+              toggleActions: 'play none none none',
+              fastScrollEnd: true,
+            },
           },
-        }
-      );
-    } else if (variant === 'stagger-children') {
-      gsap.fromTo(
-        gsap.utils.toArray('.reveal-item', container.current),
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.5,
-          stagger: 0.05,
-          delay,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: container.current,
-            start: 'top 105%',
-            toggleActions: 'play none none none',
-            fastScrollEnd: true,
+        );
+      } else if (variant === 'stagger-children') {
+        gsap.fromTo(
+          gsap.utils.toArray('.reveal-item', container.current),
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.05,
+            delay,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: container.current,
+              start: 'top 105%',
+              toggleActions: 'play none none none',
+              fastScrollEnd: true,
+            },
           },
-        }
-      );
-    }
-  }, { scope: container });
+        );
+      }
+    },
+    { scope: container },
+  );
 
   return (
     <div ref={container} className={cn('will-change-[opacity,transform]', className)}>

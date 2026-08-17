@@ -20,54 +20,54 @@ import type { HttpMethod } from '@/shared/constants/http';
  */
 
 export interface RequestConfig<TResponse = unknown> {
- /** Path relative to the client's `baseUrl`, or an absolute URL. */
- url: string;
- method?: HttpMethod;
- /** Serialized into the query string; `undefined` and `''` entries are dropped. */
- query?: Record<string, string | number | boolean | null | undefined>;
- headers?: Record<string, string>;
- /** JSON-serialized unless it is `FormData`, `Blob`, `URLSearchParams` or a string. */
- body?: unknown;
+  /** Path relative to the client's `baseUrl`, or an absolute URL. */
+  url: string;
+  method?: HttpMethod;
+  /** Serialized into the query string; `undefined` and `''` entries are dropped. */
+  query?: Record<string, string | number | boolean | null | undefined>;
+  headers?: Record<string, string>;
+  /** JSON-serialized unless it is `FormData`, `Blob`, `URLSearchParams` or a string. */
+  body?: unknown;
 
- /**
- * Schema the response is parsed against.
- *
- * Not optional in spirit. An unvalidated response is `any` wearing a type annotation: the
- * compiler believes the shape, the runtime does not check it, and an upstream field
- * rename becomes a `undefined is not a function` three components deep. A failure here is
- * `UPSTREAM_CONTRACT_VIOLATION`, which is reported — the upstream broke a promise.
- */
- schema?: z.ZodType<TResponse>;
+  /**
+   * Schema the response is parsed against.
+   *
+   * Not optional in spirit. An unvalidated response is `any` wearing a type annotation: the
+   * compiler believes the shape, the runtime does not check it, and an upstream field
+   * rename becomes a `undefined is not a function` three components deep. A failure here is
+   * `UPSTREAM_CONTRACT_VIOLATION`, which is reported — the upstream broke a promise.
+   */
+  schema?: z.ZodType<TResponse>;
 
- /** Overrides the client default. `AbortSignal.timeout` under the hood. */
- timeoutMs?: number;
- /** Total attempts including the first. Non-idempotent methods ignore this unless keyed. */
- retries?: number;
- signal?: AbortSignal;
+  /** Overrides the client default. `AbortSignal.timeout` under the hood. */
+  timeoutMs?: number;
+  /** Total attempts including the first. Non-idempotent methods ignore this unless keyed. */
+  retries?: number;
+  signal?: AbortSignal;
 
- /**
- * Deduplicates a retried mutation upstream.
- *
- * Supplying this is what makes a POST safe to retry: without it, a retry after a timeout
- * may create a second charge, a second document, a second email. The client refuses to
- * retry a non-idempotent method unless this is present.
- */
- idempotencyKey?: string;
+  /**
+   * Deduplicates a retried mutation upstream.
+   *
+   * Supplying this is what makes a POST safe to retry: without it, a retry after a timeout
+   * may create a second charge, a second document, a second email. The client refuses to
+   * retry a non-idempotent method unless this is present.
+   */
+  idempotencyKey?: string;
 
- /** Next.js fetch cache options. Only meaningful server-side. */
- cache?: RequestCache;
- next?: { revalidate?: number | false; tags?: string[] };
+  /** Next.js fetch cache options. Only meaningful server-side. */
+  cache?: RequestCache;
+  next?: { revalidate?: number | false; tags?: string[] };
 
- /** Attached to the log line and the error context. Name the operation, not the URL. */
- operation?: string;
+  /** Attached to the log line and the error context. Name the operation, not the URL. */
+  operation?: string;
 }
 
 export interface HttpResponse<T> {
- readonly data: T;
- readonly status: number;
- readonly headers: Headers;
- /** Wall-clock duration in milliseconds, for the log line. */
- readonly durationMs: number;
+  readonly data: T;
+  readonly status: number;
+  readonly headers: Headers;
+  /** Wall-clock duration in milliseconds, for the log line. */
+  readonly durationMs: number;
 }
 
 /**
@@ -78,13 +78,13 @@ export interface HttpResponse<T> {
  * is bad, which is exactly when you cannot debug it.
  */
 export interface HttpRequestContext {
- url: string;
- method: HttpMethod;
- headers: Headers;
- body: BodyInit | undefined;
- config: RequestConfig<unknown>;
- correlationId: string;
- attempt: number;
+  url: string;
+  method: HttpMethod;
+  headers: Headers;
+  body: BodyInit | undefined;
+  config: RequestConfig<unknown>;
+  correlationId: string;
+  attempt: number;
 }
 
 /**
@@ -95,17 +95,35 @@ export interface HttpRequestContext {
  * rather than interleaving.
  */
 export interface HttpInterceptor {
- readonly name: string;
- onRequest?(context: HttpRequestContext): Promise<void> | void;
- onResponse?(response: Response, context: HttpRequestContext): Promise<void> | void;
- onError?(error: AppError, context: HttpRequestContext): Promise<void> | void;
+  readonly name: string;
+  onRequest?(context: HttpRequestContext): Promise<void> | void;
+  onResponse?(response: Response, context: HttpRequestContext): Promise<void> | void;
+  onError?(error: AppError, context: HttpRequestContext): Promise<void> | void;
 }
 
 export interface HttpClient {
- request<T>(config: RequestConfig<T>): Promise<Result<HttpResponse<T>, AppError>>;
- get<T>(url: string, config?: Omit<RequestConfig<T>, 'url' | 'method'>): Promise<Result<HttpResponse<T>, AppError>>;
- post<T>(url: string, body?: unknown, config?: Omit<RequestConfig<T>, 'url' | 'method' | 'body'>): Promise<Result<HttpResponse<T>, AppError>>;
- put<T>(url: string, body?: unknown, config?: Omit<RequestConfig<T>, 'url' | 'method' | 'body'>): Promise<Result<HttpResponse<T>, AppError>>;
- patch<T>(url: string, body?: unknown, config?: Omit<RequestConfig<T>, 'url' | 'method' | 'body'>): Promise<Result<HttpResponse<T>, AppError>>;
- delete<T>(url: string, config?: Omit<RequestConfig<T>, 'url' | 'method'>): Promise<Result<HttpResponse<T>, AppError>>;
+  request<T>(config: RequestConfig<T>): Promise<Result<HttpResponse<T>, AppError>>;
+  get<T>(
+    url: string,
+    config?: Omit<RequestConfig<T>, 'url' | 'method'>,
+  ): Promise<Result<HttpResponse<T>, AppError>>;
+  post<T>(
+    url: string,
+    body?: unknown,
+    config?: Omit<RequestConfig<T>, 'url' | 'method' | 'body'>,
+  ): Promise<Result<HttpResponse<T>, AppError>>;
+  put<T>(
+    url: string,
+    body?: unknown,
+    config?: Omit<RequestConfig<T>, 'url' | 'method' | 'body'>,
+  ): Promise<Result<HttpResponse<T>, AppError>>;
+  patch<T>(
+    url: string,
+    body?: unknown,
+    config?: Omit<RequestConfig<T>, 'url' | 'method' | 'body'>,
+  ): Promise<Result<HttpResponse<T>, AppError>>;
+  delete<T>(
+    url: string,
+    config?: Omit<RequestConfig<T>, 'url' | 'method'>,
+  ): Promise<Result<HttpResponse<T>, AppError>>;
 }

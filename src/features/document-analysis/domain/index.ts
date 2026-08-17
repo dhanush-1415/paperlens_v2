@@ -7,24 +7,20 @@
  */
 
 export {
- CLAUSE_CATEGORIES,
- DOCUMENT_TYPES,
- toSummary,
- type AnalysisDraft,
- type ClauseCategory,
- type DocumentAnalysis,
- type DocumentAnalysisSummary,
- type DocumentType,
- type RiskFlag,
- type RiskLevel,
- type RiskScore,
- type KeyEntity,
+  CLAUSE_CATEGORIES,
+  DOCUMENT_TYPES,
+  toSummary,
+  type AnalysisDraft,
+  type ClauseCategory,
+  type DocumentAnalysis,
+  type DocumentAnalysisSummary,
+  type DocumentType,
+  type RiskFlag,
+  type RiskLevel,
+  type RiskScore,
+  type KeyEntity,
 } from './document';
 
 export { countByLevel, highestLevel, RISK_SEVERITY, scoreOf, sortFlags } from './risk';
 
-export type {
- AnalysisRequest,
- DocumentAnalysisRepository,
- DocumentAnalyzer,
-} from './ports';
+export type { AnalysisRequest, DocumentAnalysisRepository, DocumentAnalyzer } from './ports';

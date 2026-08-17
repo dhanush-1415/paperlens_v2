@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Share2, Copy, Check, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-export function ShareExportMenu({ documentId, title }: { documentId: string, title?: string }) {
+export function ShareExportMenu({ documentId, title }: { documentId: string; title?: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = async () => {
@@ -42,21 +42,21 @@ export function ShareExportMenu({ documentId, title }: { documentId: string, tit
 
   return (
     <>
-      <button 
+      <button
         onClick={handleNativeShare}
-        title="Share document" 
-        className="group flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-brand-primary bg-brand-primary/5 border border-brand-primary/20 hover:bg-brand-primary/10 hover:border-brand-primary/40 hover:shadow-sm transition-all duration-200"
+        title="Share document"
+        className="group flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-2.5 text-brand-primary transition-all duration-200 hover:border-brand-primary/40 hover:bg-brand-primary/10 hover:shadow-sm"
       >
         <Share2 className="h-4 w-4" />
-        <span className="text-xs font-semibold leading-none hidden sm:inline">Share</span>
+        <span className="hidden text-xs leading-none font-semibold sm:inline">Share</span>
       </button>
-      <button 
+      <button
         onClick={handleExportPDF}
-        title="Export to PDF" 
-        className="group flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer text-text-secondary bg-surface-2 border border-border-subtle hover:text-text-primary hover:bg-surface-raised hover:border-border-strong hover:shadow-sm transition-all duration-200"
+        title="Export to PDF"
+        className="group flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-subtle bg-surface-2 px-4 py-2.5 text-text-secondary transition-all duration-200 hover:border-border-strong hover:bg-surface-raised hover:text-text-primary hover:shadow-sm"
       >
-        <Download className="h-4 w-4 text-text-tertiary group-hover:text-text-primary transition-colors" />
-        <span className="text-xs font-semibold leading-none hidden sm:inline">Export</span>
+        <Download className="h-4 w-4 text-text-tertiary transition-colors group-hover:text-text-primary" />
+        <span className="hidden text-xs leading-none font-semibold sm:inline">Export</span>
       </button>
     </>
   );

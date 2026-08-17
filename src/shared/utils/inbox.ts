@@ -9,6 +9,7 @@ import { randomBytes } from 'node:crypto';
 // The domain whose MX records point at the inbound-email provider. Public so the
 // settings UI can display the address; override per-environment.
 export const INBOUND_DOMAIN =
+   
   process.env.NEXT_PUBLIC_INBOUND_DOMAIN?.trim() || 'inbox.paperlens.app';
 
 /** Generate a fresh, unguessable inbox token (32 lowercase hex chars = 128 bits). */

@@ -45,20 +45,20 @@
  * runtime weight.
  */
 export {
- CLAUSE_CATEGORIES,
- DOCUMENT_TYPES,
- /**
- * Public because it is half of `DocumentAnalysisRepository.save()`. A port whose argument
- * type is private cannot be implemented from outside the feature, which would make the
- * abstraction decorative — and it is what the repository contract suite constructs.
- */
- type AnalysisDraft,
- type ClauseCategory,
- type DocumentAnalysis,
- type DocumentAnalysisSummary,
- type DocumentType,
- type RiskFlag,
- type RiskLevel,
+  CLAUSE_CATEGORIES,
+  DOCUMENT_TYPES,
+  /**
+   * Public because it is half of `DocumentAnalysisRepository.save()`. A port whose argument
+   * type is private cannot be implemented from outside the feature, which would make the
+   * abstraction decorative — and it is what the repository contract suite constructs.
+   */
+  type AnalysisDraft,
+  type ClauseCategory,
+  type DocumentAnalysis,
+  type DocumentAnalysisSummary,
+  type DocumentType,
+  type RiskFlag,
+  type RiskLevel,
 } from './domain';
 
 /* ── Ports ────────────────────────────────────────────────────────────────────────────────
@@ -74,51 +74,47 @@ export type { AnalysisRequest, DocumentAnalysisRepository, DocumentAnalyzer } fr
  * factories that build them are an implementation detail of `module.ts`.
  */
 export type {
- AnalyzeDocument,
- AnalyzeDocumentInput,
- GetDocumentAnalysis,
- ListRecentAnalyses,
+  AnalyzeDocument,
+  AnalyzeDocumentInput,
+  GetDocumentAnalysis,
+  ListRecentAnalyses,
 } from './application';
 
 /* ── DTOs and their mappers ───────────────────────────────────────────────────────────────
  * The only shapes permitted to cross to a client, and the only sanctioned way to produce one.
  */
 export {
- toAnalysisDto,
- toSummaryDto,
- type AnalysisDto,
- type AnalysisSummaryDto,
- type RiskFlagDto,
- type RiskScoreDto,
+  toAnalysisDto,
+  toSummaryDto,
+  type AnalysisDto,
+  type AnalysisSummaryDto,
+  type RiskFlagDto,
+  type RiskScoreDto,
 } from './application';
 
 /* ── DI tokens ────────────────────────────────────────────────────────────────────────────
  * How a route asks for a use case. The tokens are exported and the implementations are not,
  * which is the entire point: a caller can name what it wants and cannot name what provides it.
  */
-export {
- ANALYZE_DOCUMENT,
- GET_DOCUMENT_ANALYSIS,
- LIST_RECENT_ANALYSES,
-} from './tokens';
+export { ANALYZE_DOCUMENT, GET_DOCUMENT_ANALYSIS, LIST_RECENT_ANALYSES } from './tokens';
 
 /* ── Presentation ─────────────────────────────────────────────────────────────────────────
  * Components and the label bags they render. No route builds this feature's UI out of
  * primitives; if a screen needs a different arrangement, it gets a component here.
  */
 export {
- AnalysisForm,
- AnalysisReport,
- analyzeDocumentAction,
- DocumentActions,
- SidebarCollapser,
- BackButton,
- RiskFlagCard,
- type AnalysisFormLabels,
- type AnalysisFormProps,
- type AnalysisReportLabels,
- type AnalysisReportProps,
- type RiskFlagCardProps,
+  AnalysisForm,
+  AnalysisReport,
+  analyzeDocumentAction,
+  DocumentActions,
+  SidebarCollapser,
+  BackButton,
+  RiskFlagCard,
+  type AnalysisFormLabels,
+  type AnalysisFormProps,
+  type AnalysisReportLabels,
+  type AnalysisReportProps,
+  type RiskFlagCardProps,
 } from './presentation';
 
 /* ── Feature constants ────────────────────────────────────────────────────────────────────

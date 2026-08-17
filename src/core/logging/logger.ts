@@ -1,10 +1,10 @@
 import { redact, redactContext } from './redact';
 import {
- isLevelEnabled,
- type LogLevel,
- type LogRecord,
- type LogTransport,
- type Logger,
+  isLevelEnabled,
+  type LogLevel,
+  type LogRecord,
+  type LogTransport,
+  type Logger,
 } from './types';
 
 /**
@@ -21,70 +21,70 @@ import {
  * gets `undefined` and simply logs without a correlation ID.
  */
 export interface LoggerOptions {
- /** Dotted subsystem name, e.g. `http.client`. Appears on every record. */
- scope: string;
- /** Records below this level are dropped before redaction — the cheap check comes first. */
- level: LogLevel;
- transports: readonly LogTransport[];
- /** Merged into every record this logger and its children write. */
- bindings?: Record<string, unknown>;
- /**
- * Ambient per-request fields (correlation ID, user ID, route). Called per record so a
- * long-lived logger picks up the *current* request rather than the one it was made in.
- */
- context?: () => Record<string, unknown>;
- /** Injected so tests get deterministic timestamps. */
- now?: () => Date;
+  /** Dotted subsystem name, e.g. `http.client`. Appears on every record. */
+  scope: string;
+  /** Records below this level are dropped before redaction — the cheap check comes first. */
+  level: LogLevel;
+  transports: readonly LogTransport[];
+  /** Merged into every record this logger and its children write. */
+  bindings?: Record<string, unknown>;
+  /**
+   * Ambient per-request fields (correlation ID, user ID, route). Called per record so a
+   * long-lived logger picks up the *current* request rather than the one it was made in.
+   */
+  context?: () => Record<string, unknown>;
+  /** Injected so tests get deterministic timestamps. */
+  now?: () => Date;
 }
 
 export function createLogger(options: LoggerOptions): Logger {
- const { scope, level, transports, bindings = {}, context, now = () => new Date() } = options;
+  const { scope, level, transports, bindings = {}, context, now = () => new Date() } = options;
 
- function write(
- recordLevel: LogLevel,
- message: string,
- error: unknown,
- callContext: Record<string, unknown> | undefined,
- ): void {
- if (!isLevelEnabled(recordLevel, level)) return;
+  function write(
+    recordLevel: LogLevel,
+    message: string,
+    error: unknown,
+    callContext: Record<string, unknown> | undefined,
+  ): void {
+    if (!isLevelEnabled(recordLevel, level)) return;
 
- const merged = { ...(context?.() ?? {}), ...bindings, ...(callContext ?? {}) };
+    const merged = { ...(context?.() ?? {}), ...bindings, ...(callContext ?? {}) };
 
- const record: LogRecord = {
- level: recordLevel,
- message,
- timestamp: now().toISOString(),
- scope,
- context: redactContext(merged),
- ...(error !== undefined && error !== null
- ? { error: redact(serializeError(error)) as Record<string, unknown> }
- : {}),
- };
+    const record: LogRecord = {
+      level: recordLevel,
+      message,
+      timestamp: now().toISOString(),
+      scope,
+      context: redactContext(merged),
+      ...(error !== undefined && error !== null
+        ? { error: redact(serializeError(error)) as Record<string, unknown> }
+        : {}),
+    };
 
- for (const transport of transports) {
- try {
- transport.write(record);
- } catch {
- // A transport that throws must not fail the request that logged. There is nowhere
- // useful to report this — reporting it would go through a transport.
- }
- }
- }
+    for (const transport of transports) {
+      try {
+        transport.write(record);
+      } catch {
+        // A transport that throws must not fail the request that logged. There is nowhere
+        // useful to report this — reporting it would go through a transport.
+      }
+    }
+  }
 
- return {
- trace: (message, ctx) => write('trace', message, undefined, ctx),
- debug: (message, ctx) => write('debug', message, undefined, ctx),
- info: (message, ctx) => write('info', message, undefined, ctx),
- warn: (message, ctx) => write('warn', message, undefined, ctx),
- error: (message, error, ctx) => write('error', message, error, ctx),
- fatal: (message, error, ctx) => write('fatal', message, error, ctx),
- child: (childScope, childBindings) =>
- createLogger({
- ...options,
- scope: `${scope}.${childScope}`,
- bindings: { ...bindings, ...(childBindings ?? {}) },
- }),
- };
+  return {
+    trace: (message, ctx) => write('trace', message, undefined, ctx),
+    debug: (message, ctx) => write('debug', message, undefined, ctx),
+    info: (message, ctx) => write('info', message, undefined, ctx),
+    warn: (message, ctx) => write('warn', message, undefined, ctx),
+    error: (message, error, ctx) => write('error', message, error, ctx),
+    fatal: (message, error, ctx) => write('fatal', message, error, ctx),
+    child: (childScope, childBindings) =>
+      createLogger({
+        ...options,
+        scope: `${scope}.${childScope}`,
+        bindings: { ...bindings, ...(childBindings ?? {}) },
+      }),
+  };
 }
 
 /**
@@ -95,64 +95,68 @@ export function createLogger(options: LoggerOptions): Logger {
  * handling logs.
  */
 function serializeError(error: unknown): Record<string, unknown> {
- if (error instanceof Error) {
- const output: Record<string, unknown> = {
- name: error.name,
- message: error.message,
- stack: error.stack,
- };
+  if (error instanceof Error) {
+    const output: Record<string, unknown> = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
 
- const candidate = error as { toLog?: unknown };
- if (typeof candidate.toLog === 'function') {
- return { ...output, ...(candidate.toLog.call(error) as Record<string, unknown>) };
- }
+    const candidate = error as { toLog?: unknown };
+    if (typeof candidate.toLog === 'function') {
+      return { ...output, ...(candidate.toLog.call(error) as Record<string, unknown>) };
+    }
 
- if (error.cause !== undefined) output['cause'] = serializeError(error.cause);
- return output;
- }
+    if (error.cause !== undefined) output['cause'] = serializeError(error.cause);
+    return output;
+  }
 
- if (typeof error === 'object' && error !== null) {
- if (error instanceof Event) {
- return {
- message: `DOM Event: ${error.type}`,
- type: error.type,
- ...(error instanceof ErrorEvent ? {
- errorMessage: error.message,
- filename: error.filename,
- lineno: error.lineno,
- colno: error.colno
- } : {}),
- ...(error instanceof PromiseRejectionEvent ? {
- reason: String(error.reason)
- } : {})
- };
- }
- 
- // Fallback for other objects
- try {
- const keys = Object.getOwnPropertyNames(error);
- if (keys.length > 0) {
- const obj: Record<string, unknown> = {};
- for (const k of keys) {
- obj[k] = (error as Record<string, unknown>)[k];
- }
- return obj;
- }
- } catch {}
- 
- return { ...error };
- }
+  if (typeof error === 'object' && error !== null) {
+    if (error instanceof Event) {
+      return {
+        message: `DOM Event: ${error.type}`,
+        type: error.type,
+        ...(error instanceof ErrorEvent
+          ? {
+              errorMessage: error.message,
+              filename: error.filename,
+              lineno: error.lineno,
+              colno: error.colno,
+            }
+          : {}),
+        ...(error instanceof PromiseRejectionEvent
+          ? {
+              reason: String(error.reason),
+            }
+          : {}),
+      };
+    }
 
- return { message: String(error) };
+    // Fallback for other objects
+    try {
+      const keys = Object.getOwnPropertyNames(error);
+      if (keys.length > 0) {
+        const obj: Record<string, unknown> = {};
+        for (const k of keys) {
+          obj[k] = (error as Record<string, unknown>)[k];
+        }
+        return obj;
+      }
+    } catch {}
+
+    return { ...error };
+  }
+
+  return { message: String(error) };
 }
 
 /** A logger that discards everything. The safe default before the container is wired. */
 export const noopLogger: Logger = {
- trace: () => {},
- debug: () => {},
- info: () => {},
- warn: () => {},
- error: () => {},
- fatal: () => {},
- child: () => noopLogger,
+  trace: () => {},
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  fatal: () => {},
+  child: () => noopLogger,
 };

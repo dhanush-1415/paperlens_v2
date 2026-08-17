@@ -55,34 +55,36 @@ import { Text } from '../components/text';
 const subscribeNever = () => () => {};
 
 export interface CookieConsentLabels {
- readonly title: string;
- readonly body: string;
- readonly accept: string;
- readonly reject: string;
- readonly policyLink: string;
+  readonly title: string;
+  readonly body: string;
+  readonly accept: string;
+  readonly reject: string;
+  readonly policyLink: string;
 }
 
 export interface CookieConsentProps {
- labels: CookieConsentLabels;
- policyHref: Route;
- className?: string;
+  labels: CookieConsentLabels;
+  policyHref: Route;
+  className?: string;
 }
 
 export function CookieConsent({ labels, policyHref, className }: CookieConsentProps) {
- const driver = useService(LOCAL_STORAGE_DRIVER);
- const clock = useService(CLOCK);
- const analytics = useService(ANALYTICS);
+  const driver = useService(LOCAL_STORAGE_DRIVER);
+  const clock = useService(CLOCK);
+  const analytics = useService(ANALYTICS);
 
   const needsDecision = useSyncExternalStore(
-  subscribeNever,
-  useCallback(() => needsConsentDecision(createConsentStore(driver).get()), [driver]),
-  () => false,
+    subscribeNever,
+    useCallback(() => needsConsentDecision(createConsentStore(driver).get()), [driver]),
+    () => false,
   );
   const [hasDecided, setDecided] = useState(false);
   const [forceOpen, setForceOpen] = useState(false);
 
   useEffect(() => {
-    function onOpen() { setForceOpen(true); }
+    function onOpen() {
+      setForceOpen(true);
+    }
     window.addEventListener('openCookieSettings', onOpen);
     return () => window.removeEventListener('openCookieSettings', onOpen);
   }, []);
@@ -90,93 +92,100 @@ export function CookieConsent({ labels, policyHref, className }: CookieConsentPr
   if (!forceOpen && (!needsDecision || hasDecided)) return null;
 
   const decide = (granted: boolean) => {
-  const now = epochMillis(clock)();
-  const next = granted ? grantAll(now) : denyAll(now);
+    const now = epochMillis(clock)();
+    const next = granted ? grantAll(now) : denyAll(now);
 
-  createConsentStore(driver).set(next);
-  /**
-  * The analytics client is told directly rather than being left to re-read storage on the
-  * next page load. Without this, a user who accepts has to navigate before anything is
-  * recorded — and the single most valuable event to record is the one that happens on the
-  * page where they accepted.
-  */
-  analytics.setConsent(next);
-  
-  // Provide compatibility with older pl_cookie_consent mechanisms
-  try { localStorage.setItem('pl_cookie_consent', granted ? 'accepted' : 'rejected'); } catch { /* ignore */ }
-  window.dispatchEvent(new CustomEvent('cookieConsent', { detail: granted ? 'accepted' : 'rejected' }));
+    createConsentStore(driver).set(next);
+    /**
+     * The analytics client is told directly rather than being left to re-read storage on the
+     * next page load. Without this, a user who accepts has to navigate before anything is
+     * recorded — and the single most valuable event to record is the one that happens on the
+     * page where they accepted.
+     */
+    analytics.setConsent(next);
 
-  setDecided(true);
-  setForceOpen(false);
+    // Provide compatibility with older pl_cookie_consent mechanisms
+    try {
+       
+      localStorage.setItem('pl_cookie_consent', granted ? 'accepted' : 'rejected');
+    } catch {
+      /* ignore */
+    }
+    window.dispatchEvent(
+      new CustomEvent('cookieConsent', { detail: granted ? 'accepted' : 'rejected' }),
+    );
+
+    setDecided(true);
+    setForceOpen(false);
   };
 
- return (
- <div
- /**
- * `role="region"` with a label, not `role="dialog"`. A dialog implies a focus trap and
- * a modal barrier, neither of which is present — announcing one to a screen-reader user
- * and then letting focus wander into the page behind is worse than not announcing it.
- */
- role="region"
- aria-label={labels.title}
- className={cn(
- 'fixed inset-x-0 bottom-0 z-50 p-4 sm:p-5',
- // `pb-[env(safe-area-inset-bottom)]` keeps the buttons clear of the iOS home
- // indicator, which otherwise overlaps the bottom 34px of a full-bleed bar.
- 'pb-[max(1rem,env(safe-area-inset-bottom))]',
- // `starting:` → `@starting-style`. See the note in `sticky-cta.tsx`; the entrance is
- // pure CSS, and `globals.css` already collapses it for `prefers-reduced-motion`.
- 'transition-[opacity,translate] duration-(--duration-entrance) ease-brand',
- 'starting:translate-y-4 starting:opacity-0',
- className,
- )}
- >
- <div
- className={cn(
- 'mx-auto flex max-w-shell flex-col gap-4 rounded-panel border border-border-subtle',
- 'bg-surface-overlay p-5 shadow-card sm:flex-row sm:items-center sm:gap-6',
- )}
- >
- <div className="min-w-0 flex-1">
- <Text as="p" size="sm" tone="primary" weight="medium">
- {labels.title}
- </Text>
- <Text as="p" size="xs" tone="secondary" className="mt-1">
- {labels.body}{' '}
- <Link href={policyHref} className="text-text-primary underline underline-offset-4">
- {labels.policyLink}
- </Link>
- </Text>
- </div>
+  return (
+    <div
+      /**
+       * `role="region"` with a label, not `role="dialog"`. A dialog implies a focus trap and
+       * a modal barrier, neither of which is present — announcing one to a screen-reader user
+       * and then letting focus wander into the page behind is worse than not announcing it.
+       */
+      role="region"
+      aria-label={labels.title}
+      className={cn(
+        'fixed inset-x-0 bottom-0 z-50 p-4 sm:p-5',
+        // `pb-[env(safe-area-inset-bottom)]` keeps the buttons clear of the iOS home
+        // indicator, which otherwise overlaps the bottom 34px of a full-bleed bar.
+        'pb-[max(1rem,env(safe-area-inset-bottom))]',
+        // `starting:` → `@starting-style`. See the note in `sticky-cta.tsx`; the entrance is
+        // pure CSS, and `globals.css` already collapses it for `prefers-reduced-motion`.
+        'transition-[opacity,translate] duration-(--duration-entrance) ease-brand',
+        'starting:translate-y-4 starting:opacity-0',
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          'mx-auto flex max-w-shell flex-col gap-4 rounded-panel border border-border-subtle',
+          'bg-surface-overlay p-5 shadow-card sm:flex-row sm:items-center sm:gap-6',
+        )}
+      >
+        <div className="min-w-0 flex-1">
+          <Text as="p" size="sm" tone="primary" weight="medium">
+            {labels.title}
+          </Text>
+          <Text as="p" size="xs" tone="secondary" className="mt-1">
+            {labels.body}{' '}
+            <Link href={policyHref} className="text-text-primary underline underline-offset-4">
+              {labels.policyLink}
+            </Link>
+          </Text>
+        </div>
 
- {/*
+        {/*
  Equal weight, reject first in the DOM.
  Both are `secondary`, so neither is visually privileged, and the reject button comes
  first in source order — which is the order a keyboard and a screen reader encounter
  them. On a phone they stack, and the one under the thumb is still the one the user
  chose rather than the one we wanted them to choose.
  */}
- <div className="flex shrink-0 gap-2">
- <Button
- variant="secondary"
- size="sm"
- onClick={() => {
- decide(false);
- }}
- >
- {labels.reject}
- </Button>
- <Button
- variant="secondary"
- size="sm"
- onClick={() => {
- decide(true);
- }}
- >
- {labels.accept}
- </Button>
- </div>
- </div>
- </div>
- );
+        <div className="flex shrink-0 gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              decide(false);
+            }}
+          >
+            {labels.reject}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              decide(true);
+            }}
+          >
+            {labels.accept}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }

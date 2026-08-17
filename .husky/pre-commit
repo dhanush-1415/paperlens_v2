@@ -1,5 +1,2 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 # Run lint, type‑check formatting, and coverage threshold before committing
 npm run lint && npm run format:check && npm run coverage:check

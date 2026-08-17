@@ -1,5 +1,5 @@
 import { requireSession } from '@/server/bootstrap';
-import { getPlatformConfig, updatePlatformConfig, PlatformConfig } from '@/server/dal/config';
+import { getPlatformConfig, updatePlatformConfig, type PlatformConfig } from '@/server/dal/config';
 import { ConfigForm } from './config-form';
 import { revalidatePath } from 'next/cache';
 
@@ -9,7 +9,7 @@ export const metadata = {
 
 export default async function AdminConfigPage() {
   await requireSession();
-  
+
   const config = await getPlatformConfig();
 
   async function saveAction(newConfig: Partial<PlatformConfig>) {

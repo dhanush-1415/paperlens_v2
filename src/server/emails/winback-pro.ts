@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Win-back email — sent to users who cancelled Pro within the last 7–14 days.
@@ -36,13 +36,13 @@ export async function sendWinbackProEmail(
   // Monthly: ₹399 × 0.70 = ₹279  → create in Razorpay dashboard → Payment Links
   // Yearly:  ₹3192 × 0.70 = ₹2234 → create separately
   const rzpMonthlyLink = process.env.RAZORPAY_WINBACK_LINK_MONTHLY ?? `${appUrl}/pricing`;
-  const rzpYearlyLink  = process.env.RAZORPAY_WINBACK_LINK_YEARLY  ?? `${appUrl}/pricing`;
+  const rzpYearlyLink = process.env.RAZORPAY_WINBACK_LINK_YEARLY ?? `${appUrl}/pricing`;
 
   const offerBlock = isRazorpay
-    // Razorpay: two buttons — monthly and yearly discounted links
-    ? `<p style="font-size:13px;color:#92400e;margin:8px 0 0;">Price already reduced — no code needed. Pick your plan below.</p>`
-    // LemonSqueezy: show the coupon code
-    : `
+    ? // Razorpay: two buttons — monthly and yearly discounted links
+      `<p style="font-size:13px;color:#92400e;margin:8px 0 0;">Price already reduced — no code needed. Pick your plan below.</p>`
+    : // LemonSqueezy: show the coupon code
+      `
       <div style="background:#ffffff;border:1px dashed #d97706;border-radius:10px;padding:12px 20px;display:inline-block;">
         <p style="font-size:11px;color:#64748b;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.06em;">Your coupon code</p>
         <p style="font-size:22px;font-weight:900;color:#0f172a;margin:0;letter-spacing:0.12em;font-family:monospace;">${lemonCoupon}</p>
@@ -76,8 +76,8 @@ export async function sendWinbackProEmail(
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
+      from: FROM,
+      to: email,
       subject: `${firstName}, here's 30% off to come back to PaperLens Pro.`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
@@ -116,12 +116,16 @@ export async function sendWinbackProEmail(
                 'Unlimited AI follow-up questions',
                 'Re-analyse any document at any time',
                 'Priority processing — results in under 5 seconds',
-              ].map(item => `
+              ]
+                .map(
+                  (item) => `
                 <tr>
                   <td style="padding:5px 8px 5px 0;vertical-align:top;width:20px;color:#d97706;font-size:14px;font-weight:700;">✓</td>
                   <td style="padding:5px 0;font-size:13px;color:#475569;line-height:1.5;">${item}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join('')}
             </table>
 
             <!-- Price note -->

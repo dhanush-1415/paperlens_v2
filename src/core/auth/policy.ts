@@ -20,23 +20,23 @@ import { can, type Capability, type PlanTier } from '@/shared/constants/limits';
  */
 
 export const PERMISSIONS = [
- 'document.read',
- 'document.create',
- 'document.delete',
- 'document.reanalyze',
- 'document.export',
- 'document.chat',
- 'vault.read',
- 'vault.write',
- 'share.create',
- 'share.revoke',
- 'account.read',
- 'account.update',
- 'account.delete',
- 'billing.manage',
- 'admin.impersonate',
- 'admin.readAny',
- 'support.readAny',
+  'document.read',
+  'document.create',
+  'document.delete',
+  'document.reanalyze',
+  'document.export',
+  'document.chat',
+  'vault.read',
+  'vault.write',
+  'share.create',
+  'share.revoke',
+  'account.read',
+  'account.update',
+  'account.delete',
+  'billing.manage',
+  'admin.impersonate',
+  'admin.readAny',
+  'support.readAny',
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -50,46 +50,42 @@ export type Permission = (typeof PERMISSIONS)[number];
  * permission to `user` cannot silently grant it to `admin` by accident.
  */
 const ROLE_PERMISSIONS: Readonly<Record<UserRole, readonly Permission[]>> = {
- user: [
- 'document.read',
- 'document.create',
- 'document.delete',
- 'document.reanalyze',
- 'document.export',
- 'document.chat',
- 'vault.read',
- 'vault.write',
- 'share.create',
- 'share.revoke',
- 'account.read',
- 'account.update',
- 'account.delete',
- 'billing.manage',
- ],
- support: [
- 'document.read',
- 'account.read',
- 'support.readAny',
- ],
- admin: [
- 'document.read',
- 'document.create',
- 'document.delete',
- 'document.reanalyze',
- 'document.export',
- 'document.chat',
- 'vault.read',
- 'vault.write',
- 'share.create',
- 'share.revoke',
- 'account.read',
- 'account.update',
- 'account.delete',
- 'billing.manage',
- 'admin.impersonate',
- 'admin.readAny',
- 'support.readAny',
- ],
+  user: [
+    'document.read',
+    'document.create',
+    'document.delete',
+    'document.reanalyze',
+    'document.export',
+    'document.chat',
+    'vault.read',
+    'vault.write',
+    'share.create',
+    'share.revoke',
+    'account.read',
+    'account.update',
+    'account.delete',
+    'billing.manage',
+  ],
+  support: ['document.read', 'account.read', 'support.readAny'],
+  admin: [
+    'document.read',
+    'document.create',
+    'document.delete',
+    'document.reanalyze',
+    'document.export',
+    'document.chat',
+    'vault.read',
+    'vault.write',
+    'share.create',
+    'share.revoke',
+    'account.read',
+    'account.update',
+    'account.delete',
+    'billing.manage',
+    'admin.impersonate',
+    'admin.readAny',
+    'support.readAny',
+  ],
 };
 
 /**
@@ -100,26 +96,26 @@ const ROLE_PERMISSIONS: Readonly<Record<UserRole, readonly Permission[]>> = {
  * table, not a search.
  */
 const PERMISSION_CAPABILITY: Partial<Readonly<Record<Permission, Capability>>> = {
- 'vault.read': 'vault',
- 'vault.write': 'vault',
- 'document.reanalyze': 'reanalysis',
- 'document.export': 'export',
- 'share.create': 'share',
+  'vault.read': 'vault',
+  'vault.write': 'vault',
+  'document.reanalyze': 'reanalysis',
+  'document.export': 'export',
+  'share.create': 'share',
 };
 
 /** Permissions that require a verified email address. */
 const REQUIRES_VERIFIED_EMAIL: ReadonlySet<Permission> = new Set([
- 'document.create',
- 'share.create',
- 'billing.manage',
+  'document.create',
+  'share.create',
+  'billing.manage',
 ]);
 
 export interface PermissionCheck {
- readonly allowed: boolean;
- /** Why it was denied. Drives whether the UI shows an upsell or an error. */
- readonly reason?: 'role' | 'plan' | 'email_unverified';
- /** The capability that would unlock it. Present only when `reason === 'plan'`. */
- readonly requiredCapability?: Capability;
+  readonly allowed: boolean;
+  /** Why it was denied. Drives whether the UI shows an upsell or an error. */
+  readonly reason?: 'role' | 'plan' | 'email_unverified';
+  /** The capability that would unlock it. Present only when `reason === 'plan'`. */
+  readonly requiredCapability?: Capability;
 }
 
 /**
@@ -131,38 +127,38 @@ export interface PermissionCheck {
  * means the UI has to guess, and it guesses wrong.
  */
 export function checkPermission(
- session: Pick<Session, 'role' | 'plan' | 'emailVerified'>,
- permission: Permission,
+  session: Pick<Session, 'role' | 'plan' | 'emailVerified'>,
+  permission: Permission,
 ): PermissionCheck {
- if (!ROLE_PERMISSIONS[session.role].includes(permission)) {
- return { allowed: false, reason: 'role' };
- }
+  if (!ROLE_PERMISSIONS[session.role].includes(permission)) {
+    return { allowed: false, reason: 'role' };
+  }
 
- if (REQUIRES_VERIFIED_EMAIL.has(permission) && !session.emailVerified) {
- return { allowed: false, reason: 'email_unverified' };
- }
+  if (REQUIRES_VERIFIED_EMAIL.has(permission) && !session.emailVerified) {
+    return { allowed: false, reason: 'email_unverified' };
+  }
 
- const capability = PERMISSION_CAPABILITY[permission];
- if (capability && !can(session.plan, capability)) {
- return { allowed: false, reason: 'plan', requiredCapability: capability };
- }
+  const capability = PERMISSION_CAPABILITY[permission];
+  if (capability && !can(session.plan, capability)) {
+    return { allowed: false, reason: 'plan', requiredCapability: capability };
+  }
 
- return { allowed: true };
+  return { allowed: true };
 }
 
 /** Boolean form, for the common case. */
 export function hasPermission(
- session: Pick<Session, 'role' | 'plan' | 'emailVerified'>,
- permission: Permission,
+  session: Pick<Session, 'role' | 'plan' | 'emailVerified'>,
+  permission: Permission,
 ): boolean {
- return checkPermission(session, permission).allowed;
+  return checkPermission(session, permission).allowed;
 }
 
 /** Every permission a session holds. For rendering navigation without N separate checks. */
 export function permissionsOf(
- session: Pick<Session, 'role' | 'plan' | 'emailVerified'>,
+  session: Pick<Session, 'role' | 'plan' | 'emailVerified'>,
 ): Permission[] {
- return PERMISSIONS.filter((permission) => hasPermission(session, permission));
+  return PERMISSIONS.filter((permission) => hasPermission(session, permission));
 }
 
 /**
@@ -172,9 +168,9 @@ export function permissionsOf(
  * enforces the rule, so the marketing copy cannot drift from the behaviour.
  */
 export function planWouldAllow(
- session: Pick<Session, 'role' | 'emailVerified'>,
- permission: Permission,
- plan: PlanTier,
+  session: Pick<Session, 'role' | 'emailVerified'>,
+  permission: Permission,
+  plan: PlanTier,
 ): boolean {
- return hasPermission({ ...session, plan }, permission);
+  return hasPermission({ ...session, plan }, permission);
 }

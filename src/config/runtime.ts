@@ -10,9 +10,7 @@
  */
 
 export const NODE_ENV = (process.env.NODE_ENV ?? 'development') as
- | 'development'
- | 'production'
- | 'test';
+  'development' | 'production' | 'test';
 
 export const isDevelopment = NODE_ENV === 'development';
 export const isProduction = NODE_ENV === 'production';
@@ -35,7 +33,7 @@ export const isBrowser = !isServer;
  * `node:` built-ins should assert on this rather than assume.
  */
 export const runtime: 'nodejs' | 'edge' | 'browser' = isServer
- ? ((process.env.NEXT_RUNTIME as 'nodejs' | 'edge' | undefined) ?? 'nodejs')
- : 'browser';
+  ? ((process.env.NEXT_RUNTIME as 'nodejs' | 'edge' | undefined) ?? 'nodejs')
+  : 'browser';
 
 export const isEdgeRuntime = runtime === 'edge';

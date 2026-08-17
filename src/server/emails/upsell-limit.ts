@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Upsell email — sent to free users who have used ≥8 of their 10 free scans (80%).
@@ -17,16 +17,17 @@ export async function sendUpsellLimitEmail(
 ): Promise<void> {
   const firstName = name?.split(' ')[0]?.trim() || 'there';
   const scansLeft = Math.max(0, 10 - scansUsed);
-  const scansLeftLabel = scansLeft === 0
-    ? "You've hit your free limit"
-    : scansLeft === 1
-      ? 'You have 1 free scan left'
-      : `You have ${scansLeft} free scans left`;
+  const scansLeftLabel =
+    scansLeft === 0
+      ? "You've hit your free limit"
+      : scansLeft === 1
+        ? 'You have 1 free scan left'
+        : `You have ${scansLeft} free scans left`;
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
+      from: FROM,
+      to: email,
       subject: `${firstName}, you're almost out of free scans — here's what to do.`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
@@ -79,13 +80,17 @@ export async function sendUpsellLimitEmail(
                   ['AI questions', '20', 'Unlimited'],
                   ['Re-analysis', '✗', '✓'],
                   ['Price', '$0', 'From $4.99/mo'],
-                ].map(([label, free, pro]) => `
+                ]
+                  .map(
+                    ([label, free, pro]) => `
                   <tr>
                     <td style="padding:7px 0;font-size:13px;color:#374151;">${label}</td>
                     <td style="padding:7px 8px;font-size:13px;color:#94a3b8;text-align:center;">${free}</td>
                     <td style="padding:7px 0;font-size:13px;color:#d97706;font-weight:600;text-align:center;">${pro}</td>
                   </tr>
-                `).join('')}
+                `,
+                  )
+                  .join('')}
               </table>
             </div>
 

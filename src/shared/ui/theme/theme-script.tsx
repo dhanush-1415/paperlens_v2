@@ -15,24 +15,24 @@
 import { THEME_BOOTSTRAP_SCRIPT } from './script';
 
 export interface ThemeScriptProps {
- /**
- * CSP nonce for the inline script.
- *
- * Required whenever `Content-Security-Policy` uses `script-src 'nonce-…'`. `proxy.ts`
- * generates the nonce per request and the root layout threads it here. Omitted, the
- * script still runs under the `'compatible'` CSP strategy and is blocked under `'strict'`,
- * which fails visibly — a themed flash — rather than silently.
- */
- nonce?: string;
+  /**
+   * CSP nonce for the inline script.
+   *
+   * Required whenever `Content-Security-Policy` uses `script-src 'nonce-…'`. `proxy.ts`
+   * generates the nonce per request and the root layout threads it here. Omitted, the
+   * script still runs under the `'compatible'` CSP strategy and is blocked under `'strict'`,
+   * which fails visibly — a themed flash — rather than silently.
+   */
+  nonce?: string;
 }
 
 export function ThemeScript({ nonce }: ThemeScriptProps) {
- return (
- <script
- nonce={nonce}
- // Not user input: a constant assembled from this codebase's own constants and passed
- // through `escapeScriptContent`. See the rationale in `./script.ts`.
- dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }}
- />
- );
+  return (
+    <script
+      nonce={nonce}
+      // Not user input: a constant assembled from this codebase's own constants and passed
+      // through `escapeScriptContent`. See the rationale in `./script.ts`.
+      dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }}
+    />
+  );
 }

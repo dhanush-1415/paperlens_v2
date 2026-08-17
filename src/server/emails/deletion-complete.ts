@@ -6,14 +6,14 @@ export async function sendDeletionCompleteEmail(
   email: string,
   name?: string | null,
 ): Promise<void> {
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
   const firstName = name?.split(' ')[0] ?? 'there';
 
   try {
     const { error } = await resend.emails.send({
-      from:    fromEmail,
-      to:      email,
+      from: fromEmail,
+      to: email,
       subject: 'Your PaperLens account has been deleted',
       html: `
 <!DOCTYPE html>

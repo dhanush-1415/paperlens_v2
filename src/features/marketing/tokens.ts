@@ -11,22 +11,22 @@ import { token } from '@/core/container';
 
 import { type ContentRepository } from './domain';
 import {
- type GetDocumentGuide,
- type GetLegalDocument,
- type GetPricing,
- type ListDocumentGuides,
- type ListGuideSlugs,
- type ListGuidesByCategory,
+  type GetDocumentGuide,
+  type GetLegalDocument,
+  type GetPricing,
+  type ListDocumentGuides,
+  type ListGuideSlugs,
+  type ListGuidesByCategory,
 } from './application';
 
 export const CONTENT_REPOSITORY = token<ContentRepository>('feature.marketing.contentRepository');
 
 export const LIST_DOCUMENT_GUIDES = token<ListDocumentGuides>(
- 'feature.marketing.listDocumentGuides',
+  'feature.marketing.listDocumentGuides',
 );
 
 export const LIST_GUIDES_BY_CATEGORY = token<ListGuidesByCategory>(
- 'feature.marketing.listGuidesByCategory',
+  'feature.marketing.listGuidesByCategory',
 );
 
 export const GET_DOCUMENT_GUIDE = token<GetDocumentGuide>('feature.marketing.getDocumentGuide');

@@ -7,17 +7,20 @@ import { requireSession } from '@/server/bootstrap';
 /**
  * Schedules the authenticated user's account for deletion in 48 hours.
  */
-export async function requestAccountDeletionAction(): Promise<{ error?: string; success?: boolean }> {
+export async function requestAccountDeletionAction(): Promise<{
+  error?: string;
+  success?: boolean;
+}> {
   try {
     const session = await requireSession();
-    
+
     // We update the profile record to indicate deletion requested
     const now = new Date();
     await prisma.profile.update({
       where: { id: session.userId },
-      data: { deletionRequestedAt: now }
+      data: { deletionRequestedAt: now },
     });
-    
+
     // Email sending could be implemented here as well in the future
 
     revalidatePath('/settings');
@@ -31,13 +34,16 @@ export async function requestAccountDeletionAction(): Promise<{ error?: string; 
 /**
  * Cancels a pending account deletion request.
  */
-export async function cancelAccountDeletionAction(): Promise<{ error?: string; success?: boolean }> {
+export async function cancelAccountDeletionAction(): Promise<{
+  error?: string;
+  success?: boolean;
+}> {
   try {
     const session = await requireSession();
-    
+
     await prisma.profile.update({
       where: { id: session.userId },
-      data: { deletionRequestedAt: null }
+      data: { deletionRequestedAt: null },
     });
 
     revalidatePath('/settings');
@@ -48,7 +54,10 @@ export async function cancelAccountDeletionAction(): Promise<{ error?: string; s
   }
 }
 
-export const createWebhookAction = async (_previous: unknown, formData: FormData): Promise<void> => {
+export const createWebhookAction = async (
+  _previous: unknown,
+  formData: FormData,
+): Promise<void> => {
   const session = await requireSession();
   const url = formData.get('url') as string;
   const secret = formData.get('secret') as string | null;
@@ -62,18 +71,21 @@ export const createWebhookAction = async (_previous: unknown, formData: FormData
       userId: session.userId,
       url,
       secret: secret || null,
-      events: ['document.analyzed']
-    }
+      events: ['document.analyzed'],
+    },
   });
   revalidatePath('/settings');
 };
 
-export const deleteWebhookAction = async (_previous: unknown, formData: FormData): Promise<void> => {
+export const deleteWebhookAction = async (
+  _previous: unknown,
+  formData: FormData,
+): Promise<void> => {
   const session = await requireSession();
   const id = formData.get('id') as string;
 
   await prisma.webhook.deleteMany({
-    where: { id, userId: session.userId }
+    where: { id, userId: session.userId },
   });
   revalidatePath('/settings');
 };

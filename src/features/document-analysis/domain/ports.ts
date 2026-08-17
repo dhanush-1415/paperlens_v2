@@ -17,22 +17,22 @@ import { type AppError } from '@/core/errors/app-error';
 import { type Result } from '@/core/result/result';
 
 import {
- type AnalysisDraft,
- type DocumentAnalysis,
- type DocumentAnalysisSummary,
- type DocumentType,
- type RiskFlag,
- type KeyEntity,
+  type AnalysisDraft,
+  type DocumentAnalysis,
+  type DocumentAnalysisSummary,
+  type DocumentType,
+  type RiskFlag,
+  type KeyEntity,
 } from './document';
 
 /** What the analyzer is asked to look at. Text only — file parsing happens above it. */
 export interface AnalysisRequest {
- readonly text: string; // The extracted text, or an empty string if it's media-only
- readonly documentType: DocumentType;
- readonly media?: {
-   readonly data: string; // Base64 encoded string
-   readonly mimeType: string;
- };
+  readonly text: string; // The extracted text, or an empty string if it's media-only
+  readonly documentType: DocumentType;
+  readonly media?: {
+    readonly data: string; // Base64 encoded string
+    readonly mimeType: string;
+  };
 }
 
 /**
@@ -48,22 +48,22 @@ export interface AnalysisRequest {
  * one arrives. `Result` puts "the upstream was down" in the type rather than in a stack trace.
  */
 export interface AnalyzerResult {
- readonly flags: readonly RiskFlag[];
- readonly summary: string | null;
- readonly actionPlan: readonly string[];
- readonly urgency: string | null;
- readonly entities: readonly KeyEntity[];
- readonly legitimacy: string | null;
- readonly confidence: string | null;
- readonly suggestedQuestions: readonly string[];
- readonly transcription?: string;
- readonly timeline?: any[];
+  readonly flags: readonly RiskFlag[];
+  readonly summary: string | null;
+  readonly actionPlan: readonly string[];
+  readonly urgency: string | null;
+  readonly entities: readonly KeyEntity[];
+  readonly legitimacy: string | null;
+  readonly confidence: string | null;
+  readonly suggestedQuestions: readonly string[];
+  readonly transcription?: string;
+  readonly timeline?: any[];
 }
 
 export interface DocumentAnalyzer {
- /** Stable identifier for logs and analytics: `heuristic-v1`, `claude-opus-5`. */
- readonly name: string;
- analyze(request: AnalysisRequest): Promise<Result<AnalyzerResult, AppError>>;
+  /** Stable identifier for logs and analytics: `heuristic-v1`, `claude-opus-5`. */
+  readonly name: string;
+  analyze(request: AnalysisRequest): Promise<Result<AnalyzerResult, AppError>>;
 }
 
 /**
@@ -81,12 +81,12 @@ export interface DocumentAnalyzer {
  * and "I could not answer" visible at every call site.
  */
 export interface DocumentAnalysisRepository {
- save(draft: AnalysisDraft): Promise<Result<DocumentAnalysis, AppError>>;
- findById(id: string, ownerId: string): Promise<Result<DocumentAnalysis | null, AppError>>;
- listRecent(
- ownerId: string,
- limit: number,
- ): Promise<Result<readonly DocumentAnalysisSummary[], AppError>>;
- /** Used by the ownership tests and by account deletion. Idempotent. */
- remove(id: string, ownerId: string): Promise<Result<void, AppError>>;
+  save(draft: AnalysisDraft): Promise<Result<DocumentAnalysis, AppError>>;
+  findById(id: string, ownerId: string): Promise<Result<DocumentAnalysis | null, AppError>>;
+  listRecent(
+    ownerId: string,
+    limit: number,
+  ): Promise<Result<readonly DocumentAnalysisSummary[], AppError>>;
+  /** Used by the ownership tests and by account deletion. Idempotent. */
+  remove(id: string, ownerId: string): Promise<Result<void, AppError>>;
 }

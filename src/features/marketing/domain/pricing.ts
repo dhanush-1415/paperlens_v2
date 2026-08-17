@@ -20,59 +20,59 @@ export type BillingPeriod = 'monthly' | 'annual';
 /** What a tier lets you do. `included: false` renders struck through rather than hidden —
  * the absence is information a buyer is actively looking for. */
 export interface TierFeature {
- readonly label: string;
- readonly included: boolean;
- /** Shown as a tooltip. For limits that need a caveat ("fair use, no hard cap"). */
- readonly note?: string;
+  readonly label: string;
+  readonly included: boolean;
+  /** Shown as a tooltip. For limits that need a caveat ("fair use, no hard cap"). */
+  readonly note?: string;
 }
 
 export interface PricingTier {
- readonly id: 'free' | 'pro' | 'business';
- readonly name: string;
- /** One line under the name: who this tier is for, not what it costs. */
- readonly tagline: string;
- /** Integer cents per month when billed monthly. `0` for free. */
- readonly monthlyCents: number;
- /**
- * Integer cents per month when billed annually.
- *
- * Stored as the *monthly-equivalent* rather than the annual total, because that is the
- * number displayed and deriving it by division would reintroduce rounding at render time.
- */
- readonly annualMonthlyCents: number;
- readonly scansPerMonth: number | null;
- readonly features: readonly TierFeature[];
- readonly cta: string;
- /**
- * The anchored middle tier. Exactly one tier may set this — asserted in the data source,
- * because two highlighted tiers is the same as none.
- */
- readonly highlighted: boolean;
+  readonly id: 'free' | 'pro' | 'business';
+  readonly name: string;
+  /** One line under the name: who this tier is for, not what it costs. */
+  readonly tagline: string;
+  /** Integer cents per month when billed monthly. `0` for free. */
+  readonly monthlyCents: number;
+  /**
+   * Integer cents per month when billed annually.
+   *
+   * Stored as the *monthly-equivalent* rather than the annual total, because that is the
+   * number displayed and deriving it by division would reintroduce rounding at render time.
+   */
+  readonly annualMonthlyCents: number;
+  readonly scansPerMonth: number | null;
+  readonly features: readonly TierFeature[];
+  readonly cta: string;
+  /**
+   * The anchored middle tier. Exactly one tier may set this — asserted in the data source,
+   * because two highlighted tiers is the same as none.
+   */
+  readonly highlighted: boolean;
 }
 
 export interface PricingPlan {
- readonly tiers: readonly PricingTier[];
- /**
- * Cents per *thousand* scans once a tier's included volume is exhausted.
- *
- * Per-thousand rather than per-scan because the rate the business actually wants to charge
- * is 2.5¢, and 2.5 is not an integer number of cents. Storing it as `2` under-charges,
- * storing it as `3` over-charges by 20%, and storing it as a float `0.025` reintroduces
- * exactly the drift this module exists to avoid — 40,000 scans × 0.025 is a number ending in
- * `.0000000006`. Moving the unit up by three orders of magnitude makes the real rate exactly
- * representable as `2500`, and it is also the unit the price is quoted in on the page:
- * "$25 per additional 1,000 scans" is a sentence a buyer can hold in their head.
- */
- readonly overageCentsPerThousand: number;
- /** The tier the usage calculator starts from. */
- readonly calculatorBaseTierId: PricingTier['id'];
+  readonly tiers: readonly PricingTier[];
+  /**
+   * Cents per *thousand* scans once a tier's included volume is exhausted.
+   *
+   * Per-thousand rather than per-scan because the rate the business actually wants to charge
+   * is 2.5¢, and 2.5 is not an integer number of cents. Storing it as `2` under-charges,
+   * storing it as `3` over-charges by 20%, and storing it as a float `0.025` reintroduces
+   * exactly the drift this module exists to avoid — 40,000 scans × 0.025 is a number ending in
+   * `.0000000006`. Moving the unit up by three orders of magnitude makes the real rate exactly
+   * representable as `2500`, and it is also the unit the price is quoted in on the page:
+   * "$25 per additional 1,000 scans" is a sentence a buyer can hold in their head.
+   */
+  readonly overageCentsPerThousand: number;
+  /** The tier the usage calculator starts from. */
+  readonly calculatorBaseTierId: PricingTier['id'];
 }
 
 /** Cents → `$29` or `$29.50`. Trailing `.00` is dropped: `$29.00` reads like a form field. */
 export function formatUsd(cents: number): string {
- const whole = Math.trunc(cents / 100);
- const remainder = Math.abs(cents % 100);
- return remainder === 0 ? `$${whole}` : `$${whole}.${String(remainder).padStart(2, '0')}`;
+  const whole = Math.trunc(cents / 100);
+  const remainder = Math.abs(cents % 100);
+  return remainder === 0 ? `$${whole}` : `$${whole}.${String(remainder).padStart(2, '0')}`;
 }
 
 /**
@@ -84,9 +84,9 @@ export function formatUsd(cents: number): string {
  * afford, given it exists to catch exactly that behaviour in other people's contracts.
  */
 export function monthsSavedAnnually(tier: PricingTier): number {
- if (tier.monthlyCents <= 0) return 0;
- const saved = (tier.monthlyCents - tier.annualMonthlyCents) * 12;
- return Math.floor(saved / tier.monthlyCents);
+  if (tier.monthlyCents <= 0) return 0;
+  const saved = (tier.monthlyCents - tier.annualMonthlyCents) * 12;
+  return Math.floor(saved / tier.monthlyCents);
 }
 
 /**
@@ -100,16 +100,16 @@ export function monthsSavedAnnually(tier: PricingTier): number {
  * it the other way round (rate per scan, then multiply) would round 40,000 times.
  */
 export function monthlyCostCents(
- tier: PricingTier,
- scans: number,
- overageCentsPerThousand: number,
- period: BillingPeriod = 'monthly',
+  tier: PricingTier,
+  scans: number,
+  overageCentsPerThousand: number,
+  period: BillingPeriod = 'monthly',
 ): number {
- const base = period === 'annual' ? tier.annualMonthlyCents : tier.monthlyCents;
- if (tier.scansPerMonth === null) return base;
+  const base = period === 'annual' ? tier.annualMonthlyCents : tier.monthlyCents;
+  if (tier.scansPerMonth === null) return base;
 
- // `Math.max(0, …)` guards a negative volume from crediting the bill. The slider cannot
- // produce one, but a URL parameter or a future API caller can.
- const overage = Math.max(0, scans - tier.scansPerMonth);
- return base + Math.round((overage * overageCentsPerThousand) / 1000);
+  // `Math.max(0, …)` guards a negative volume from crediting the bill. The slider cannot
+  // produce one, but a URL parameter or a future API caller can.
+  const overage = Math.max(0, scans - tier.scansPerMonth);
+  return base + Math.round((overage * overageCentsPerThousand) / 1000);
 }

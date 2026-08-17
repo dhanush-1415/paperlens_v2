@@ -10,16 +10,21 @@ export const instant = false;
 
 export default async function ProfileRoute() {
   const session = await requireSession(); // Ensure user is authenticated
-  
+
   // Fetch profile if exists
   const profile = await prisma.profile.findUnique({
-    where: { id: session.userId }
+    where: { id: session.userId },
   });
 
   const { serverEnv } = await import('@/config/env.server');
   const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(serverEnv.SUPABASE_URL as string, serverEnv.SUPABASE_SERVICE_ROLE_KEY as string);
-  const { data: { user } } = await supabase.auth.admin.getUserById(session.userId);
+  const supabase = createClient(
+    serverEnv.SUPABASE_URL as string,
+    serverEnv.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+  const {
+    data: { user },
+  } = await supabase.auth.admin.getUserById(session.userId);
 
   // Supabase audit logs reside in the 'auth' schema.
   // We can query them directly using Prisma raw SQL since we have DB owner privileges.
@@ -34,7 +39,7 @@ export default async function ProfileRoute() {
       LIMIT 10
     `;
   } catch (e) {
-    console.error("Could not fetch auth audit logs:", e);
+    console.error('Could not fetch auth audit logs:', e);
   }
 
   const loginActivity = rawLogs.map((log: any) => ({
@@ -42,13 +47,15 @@ export default async function ProfileRoute() {
     device: log.agent || 'Unknown Device',
     location: log.ip || 'Unknown IP',
     time: new Date(log.created_at).toLocaleString(),
-    status: 'Success'
+    status: 'Success',
   }));
 
-  return <ProfilePage 
-    profile={profile} 
-    userEmail={user?.email || ''} 
-    displayName={user?.user_metadata?.display_name || ''}
-    loginActivity={loginActivity} 
-  />;
+  return (
+    <ProfilePage
+      profile={profile}
+      userEmail={user?.email || ''}
+      displayName={user?.user_metadata?.display_name || ''}
+      loginActivity={loginActivity}
+    />
+  );
 }

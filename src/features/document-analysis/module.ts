@@ -3,21 +3,21 @@ import 'server-only';
 import { CLOCK, type Container } from '@/core/container';
 
 import {
- createAnalyzeDocument,
- createGetDocumentAnalysis,
- createListRecentAnalyses,
+  createAnalyzeDocument,
+  createGetDocumentAnalysis,
+  createListRecentAnalyses,
 } from './application';
 import {
- createDocumentAnalysisRepository,
- createFakeAnalysisDataSource,
- createGeminiAnalyzer,
+  createDocumentAnalysisRepository,
+  createFakeAnalysisDataSource,
+  createGeminiAnalyzer,
 } from './infrastructure';
 import {
- ANALYZE_DOCUMENT,
- DOCUMENT_ANALYSIS_REPOSITORY,
- DOCUMENT_ANALYZER,
- GET_DOCUMENT_ANALYSIS,
- LIST_RECENT_ANALYSES,
+  ANALYZE_DOCUMENT,
+  DOCUMENT_ANALYSIS_REPOSITORY,
+  DOCUMENT_ANALYZER,
+  GET_DOCUMENT_ANALYSIS,
+  LIST_RECENT_ANALYSES,
 } from './tokens';
 
 /**
@@ -50,44 +50,44 @@ import {
  * resolved through `getRequestScope()` rather than smuggled into a singleton's closure.
  */
 export function registerDocumentAnalysis(container: Container): void {
- container.register(DOCUMENT_ANALYZER, () => createGeminiAnalyzer(), 'singleton');
+  container.register(DOCUMENT_ANALYZER, () => createGeminiAnalyzer(), 'singleton');
 
- container.register(
- DOCUMENT_ANALYSIS_REPOSITORY,
- (c) =>
- createDocumentAnalysisRepository({
- /**
- * Constructed inline rather than given its own token. The data source is an
- * implementation detail *of the repository* — no other consumer exists, and a token
- * would advertise it as a seam the architecture does not want anyone using. When a
- * real store arrives with a connection pool worth sharing, that is the moment it
- * earns a token.
- */
- dataSource: createFakeAnalysisDataSource({ now: c.resolve(CLOCK) }),
- }),
- 'singleton',
- );
+  container.register(
+    DOCUMENT_ANALYSIS_REPOSITORY,
+    (c) =>
+      createDocumentAnalysisRepository({
+        /**
+         * Constructed inline rather than given its own token. The data source is an
+         * implementation detail *of the repository* — no other consumer exists, and a token
+         * would advertise it as a seam the architecture does not want anyone using. When a
+         * real store arrives with a connection pool worth sharing, that is the moment it
+         * earns a token.
+         */
+        dataSource: createFakeAnalysisDataSource({ now: c.resolve(CLOCK) }),
+      }),
+    'singleton',
+  );
 
- container.register(
- ANALYZE_DOCUMENT,
- (c) =>
- createAnalyzeDocument({
- analyzer: c.resolve(DOCUMENT_ANALYZER),
- repository: c.resolve(DOCUMENT_ANALYSIS_REPOSITORY),
- now: c.resolve(CLOCK),
- }),
- 'singleton',
- );
+  container.register(
+    ANALYZE_DOCUMENT,
+    (c) =>
+      createAnalyzeDocument({
+        analyzer: c.resolve(DOCUMENT_ANALYZER),
+        repository: c.resolve(DOCUMENT_ANALYSIS_REPOSITORY),
+        now: c.resolve(CLOCK),
+      }),
+    'singleton',
+  );
 
- container.register(
- GET_DOCUMENT_ANALYSIS,
- (c) => createGetDocumentAnalysis({ repository: c.resolve(DOCUMENT_ANALYSIS_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    GET_DOCUMENT_ANALYSIS,
+    (c) => createGetDocumentAnalysis({ repository: c.resolve(DOCUMENT_ANALYSIS_REPOSITORY) }),
+    'singleton',
+  );
 
- container.register(
- LIST_RECENT_ANALYSES,
- (c) => createListRecentAnalyses({ repository: c.resolve(DOCUMENT_ANALYSIS_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    LIST_RECENT_ANALYSES,
+    (c) => createListRecentAnalyses({ repository: c.resolve(DOCUMENT_ANALYSIS_REPOSITORY) }),
+    'singleton',
+  );
 }

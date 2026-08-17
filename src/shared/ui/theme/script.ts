@@ -78,18 +78,18 @@ export const SYSTEM_LIGHT_QUERY = '(prefers-color-scheme: light)';
  * the distinction `script.test.ts` executes this string to check.
  */
 function buildThemeScript(): string {
- const key = JSON.stringify(STORAGE_KEYS.theme);
- const version = String(THEME_STORAGE_VERSION);
- const valid = JSON.stringify(THEME_PREFERENCES);
- const fallback = JSON.stringify(DEFAULT_THEME_PREFERENCE);
- const lightQuery = JSON.stringify(SYSTEM_LIGHT_QUERY);
+  const key = JSON.stringify(STORAGE_KEYS.theme);
+  const version = String(THEME_STORAGE_VERSION);
+  const valid = JSON.stringify(THEME_PREFERENCES);
+  const fallback = JSON.stringify(DEFAULT_THEME_PREFERENCE);
+  const lightQuery = JSON.stringify(SYSTEM_LIGHT_QUERY);
 
- // Minified by hand rather than by a build step: this string ships in the HTML of every
- // page, so its byte count is paid on every request, and a build step that rewrote it
- // would put a transform between this file and what actually runs.
- const source = `(function(){var p=${fallback};try{var r=localStorage.getItem(${key});if(r){var e=JSON.parse(r);if(e&&e.v===${version}&&${valid}.indexOf(e.d)>-1)p=e.d}}catch(_){}var t=p;if(p==="system"){t="dark";try{if(window.matchMedia(${lightQuery}).matches)t="light"}catch(_){}}try{document.documentElement.dataset.theme=t}catch(_){}})()`;
+  // Minified by hand rather than by a build step: this string ships in the HTML of every
+  // page, so its byte count is paid on every request, and a build step that rewrote it
+  // would put a transform between this file and what actually runs.
+  const source = `(function(){var p=${fallback};try{var r=localStorage.getItem(${key});if(r){var e=JSON.parse(r);if(e&&e.v===${version}&&${valid}.indexOf(e.d)>-1)p=e.d}}catch(_){}var t=p;if(p==="system"){t="dark";try{if(window.matchMedia(${lightQuery}).matches)t="light"}catch(_){}}try{document.documentElement.dataset.theme=t}catch(_){}})()`;
 
- return escapeScriptContent(source);
+  return escapeScriptContent(source);
 }
 
 /**

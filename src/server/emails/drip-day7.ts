@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Day 7 drip — sent to all users who signed up 7 days ago.
@@ -20,7 +20,7 @@ export async function sendDripDay7(email: string, name?: string | null): Promise
     {
       icon: '📅',
       title: 'Deadline Extraction',
-      body: 'PaperLens automatically pulls out every date and deadline. You\'ll never miss a payment due date or response window again.',
+      body: "PaperLens automatically pulls out every date and deadline. You'll never miss a payment due date or response window again.",
     },
     {
       icon: '🌍',
@@ -36,8 +36,8 @@ export async function sendDripDay7(email: string, name?: string | null): Promise
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
+      from: FROM,
+      to: email,
       subject: `${firstName}, here's everything PaperLens can do for you.`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
@@ -62,7 +62,9 @@ export async function sendDripDay7(email: string, name?: string | null): Promise
             </p>
 
             <!-- Feature cards -->
-            ${features.map(f => `
+            ${features
+              .map(
+                (f) => `
               <div style="border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:14px;background:#fafafa;">
                 <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 6px;">
                   ${f.icon}&nbsp; ${f.title}
@@ -71,7 +73,9 @@ export async function sendDripDay7(email: string, name?: string | null): Promise
                   ${f.body}
                 </p>
               </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
 
             <!-- CTA -->
             <div style="text-align:center;margin:28px 0 20px;">

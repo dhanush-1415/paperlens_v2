@@ -17,26 +17,26 @@ import { AsyncLocalStorage } from 'node:async_hooks';
  * available across the whole server request path.
  */
 export interface RequestContext {
- /** Propagated from the `x-correlation-id` request header, or minted by the proxy. */
- readonly correlationId: string;
- readonly requestId?: string;
- readonly userId?: string;
- readonly sessionId?: string;
- readonly route?: string;
- readonly locale?: string;
- readonly tenantId?: string;
+  /** Propagated from the `x-correlation-id` request header, or minted by the proxy. */
+  readonly correlationId: string;
+  readonly requestId?: string;
+  readonly userId?: string;
+  readonly sessionId?: string;
+  readonly route?: string;
+  readonly locale?: string;
+  readonly tenantId?: string;
 }
 
 const storage = new AsyncLocalStorage<RequestContext>();
 
 /** Run `fn` with `context` visible to everything it awaits, however deep. */
 export function runWithRequestContext<T>(context: RequestContext, fn: () => T): T {
- return storage.run(context, fn);
+  return storage.run(context, fn);
 }
 
 /** The active context, or `undefined` outside a request (build, instrumentation, scripts). */
 export function getRequestContext(): RequestContext | undefined {
- return storage.getStore();
+  return storage.getStore();
 }
 
 /**
@@ -47,14 +47,14 @@ export function getRequestContext(): RequestContext | undefined {
  * a log is never worth failing a request over.
  */
 export function enrichRequestContext(fields: Partial<RequestContext>): void {
- const current = storage.getStore();
- if (!current) return;
- Object.assign(current, fields);
+  const current = storage.getStore();
+  if (!current) return;
+  Object.assign(current, fields);
 }
 
 /** The shape `LoggerOptions.context` expects. Bound in the server composition root. */
 export function requestContextResolver(): Record<string, unknown> {
- const current = storage.getStore();
- if (!current) return {};
- return { ...current };
+  const current = storage.getStore();
+  if (!current) return {};
+  return { ...current };
 }

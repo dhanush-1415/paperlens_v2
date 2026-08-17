@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 
 import { unwrapOrThrow } from '@/core/result/result';
 import {
- GET_PRICING,
- MarketingPageIntro,
- PricingFaq,
- PricingTierGrid,
- UsageCalculator,
+  GET_PRICING,
+  MarketingPageIntro,
+  PricingFaq,
+  PricingTierGrid,
+  UsageCalculator,
 } from '@/features/marketing';
 import { getRequestScope } from '@/server/bootstrap';
 import { Container, Section } from '@/shared/ui';
@@ -39,48 +39,48 @@ import { Container, Section } from '@/shared/ui';
  * that?*
  */
 export const metadata: Metadata = {
- title: 'Pricing',
- description:
- 'Five documents a month, free, with the full report. Paid plans add saved history, comparison and volume. No card to start, and nothing renews without an email first.',
- alternates: { canonical: '/pricing' },
+  title: 'Pricing',
+  description:
+    'Five documents a month, free, with the full report. Paid plans add saved history, comparison and volume. No card to start, and nothing renews without an email first.',
+  alternates: { canonical: '/pricing' },
 };
 
 export default async function PricingPage() {
- const getPricing = getRequestScope().resolve(GET_PRICING);
- const plan = unwrapOrThrow(await getPricing());
+  const getPricing = getRequestScope().resolve(GET_PRICING);
+  const plan = unwrapOrThrow(await getPricing());
 
- /**
- * The tier the calculator prices from, resolved here rather than in the component.
- *
- * `calculatorBaseTierId` is a foreign key into the tier list, and resolving it is exactly the
- * sort of lookup that has no business happening inside a Client Component — the island
- * receives one tier object and a rate, which is also the smallest payload that can cross the
- * server/client boundary for it.
- */
- const calculatorTier = plan.tiers.find((tier) => tier.id === plan.calculatorBaseTierId);
+  /**
+   * The tier the calculator prices from, resolved here rather than in the component.
+   *
+   * `calculatorBaseTierId` is a foreign key into the tier list, and resolving it is exactly the
+   * sort of lookup that has no business happening inside a Client Component — the island
+   * receives one tier object and a rate, which is also the smallest payload that can cross the
+   * server/client boundary for it.
+   */
+  const calculatorTier = plan.tiers.find((tier) => tier.id === plan.calculatorBaseTierId);
 
- return (
- <>
- <MarketingPageIntro
- eyebrow="Pricing"
- heading="Read five documents a month for nothing."
- lede="The free tier is the whole product, not a preview with the answers hidden — every clause, every flag, every deadline. Paid plans exist for people whose paperwork does not arrive one envelope at a time."
- />
+  return (
+    <>
+      <MarketingPageIntro
+        eyebrow="Pricing"
+        heading="Read five documents a month for nothing."
+        lede="The free tier is the whole product, not a preview with the answers hidden — every clause, every flag, every deadline. Paid plans exist for people whose paperwork does not arrive one envelope at a time."
+      />
 
- <PricingTierGrid tiers={plan.tiers} />
+      <PricingTierGrid tiers={plan.tiers} />
 
- {calculatorTier ? (
- <Section spacing="md">
- <Container width="content">
- <UsageCalculator
- tier={calculatorTier}
- overageCentsPerThousand={plan.overageCentsPerThousand}
- />
- </Container>
- </Section>
- ) : null}
+      {calculatorTier ? (
+        <Section spacing="md">
+          <Container width="content">
+            <UsageCalculator
+              tier={calculatorTier}
+              overageCentsPerThousand={plan.overageCentsPerThousand}
+            />
+          </Container>
+        </Section>
+      ) : null}
 
- <PricingFaq />
- </>
- );
+      <PricingFaq />
+    </>
+  );
 }

@@ -93,6 +93,7 @@ model DocumentAnalysis {
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
 
   contentChunks   DocumentContent[]
+  shares          DocumentShare[]
 
   @@map("document_analyses")
 }
@@ -215,4 +216,20 @@ model Webhook {
 
   @@index([userId])
   @@map("webhooks")
+}
+
+model DocumentShare {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token        String   @unique
+  analysisId   String   @map("analysis_id") @db.Uuid
+  includeFile  Boolean  @default(false) @map("include_file")
+  expiresAt    DateTime? @map("expires_at") @db.Timestamptz()
+  revoked      Boolean  @default(false)
+  
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  analysis     DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@map("document_shares")
 }

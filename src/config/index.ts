@@ -11,18 +11,13 @@
 export { appConfig, devConfig, type AppConfig, type AppEnvironment } from './app.config';
 export { clientEnv, type ClientEnv } from './env.client';
 export {
- NODE_ENV,
- isBrowser,
- isDevelopment,
- isEdgeRuntime,
- isProduction,
- isServer,
- isTest,
- runtime,
+  NODE_ENV,
+  isBrowser,
+  isDevelopment,
+  isEdgeRuntime,
+  isProduction,
+  isServer,
+  isTest,
+  runtime,
 } from './runtime';
-export {
- DEFAULT_TENANT_ID,
- isKnownTenant,
- resolveTenant,
- type TenantConfig,
-} from './tenant';
+export { DEFAULT_TENANT_ID, isKnownTenant, resolveTenant, type TenantConfig } from './tenant';

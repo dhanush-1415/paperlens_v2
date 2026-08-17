@@ -19,16 +19,16 @@ export { createKeyTranslator, createTranslator, type TranslatorOptions } from '.
 export { en } from './dictionaries/en';
 
 export {
- DEFAULT_LOCALE,
- LOCALES,
- SUPPORTED_LOCALES,
- isSupportedLocale,
- localeMeta,
- negotiateLocale,
- resolveLocale,
- type Locale,
- type LocaleMeta,
- type LocaleResolutionInput,
+  DEFAULT_LOCALE,
+  LOCALES,
+  SUPPORTED_LOCALES,
+  isSupportedLocale,
+  localeMeta,
+  negotiateLocale,
+  resolveLocale,
+  type Locale,
+  type LocaleMeta,
+  type LocaleResolutionInput,
 } from './locales';
 
 export type { Dictionary, DictionaryLoader, MessageKey, MessageParams, Translator } from './types';

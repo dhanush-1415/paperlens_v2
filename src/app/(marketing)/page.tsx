@@ -16,7 +16,9 @@ import {
 } from '@/features/marketing';
 import dynamic from 'next/dynamic';
 
-const LandingSpecimen = dynamic(() => import('@/features/marketing').then((mod) => mod.LandingSpecimen));
+const LandingSpecimen = dynamic(() =>
+  import('@/features/marketing').then((mod) => mod.LandingSpecimen),
+);
 import { getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
 
@@ -44,11 +46,14 @@ export default async function HomePage() {
       <LandingBenefits />
       <LandingBentoGrid />
       <LandingHowItWorks />
-      
+
       {/* Additional Sections */}
       <LandingCoverage groups={groups} />
       <LandingAssurances />
-      <LandingClosingCta ctaLabel={ctaLabel} reassurance="No credit card required. Secure processing." />
+      <LandingClosingCta
+        ctaLabel={ctaLabel}
+        reassurance="No credit card required. Secure processing."
+      />
       <LandingSpecimen id="sample-analysis" />
     </>
   );

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/server/bootstrap';
 import { prisma } from '@/server/db/prisma';
 import { streamText, embed } from 'ai';
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const lastMessage = messages[messages.length - 1];
-    
+
     // 1. Convert the user's query into an embedding
     const { embedding } = await embed({
       model: google.textEmbeddingModel('embedding-001'),
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const vectorLiteral = `[${embedding.join(',')}]`;
 
     // 2. Query pgvector for the most semantically relevant chunks across the user's vault
-    const chunks = await prisma.$queryRaw<Array<{ text_content: string, title: string }>>`
+    const chunks = await prisma.$queryRaw<Array<{ text_content: string; title: string }>>`
       SELECT c.text_content, a.title 
       FROM document_content c
       JOIN document_analyses a ON c.analysis_id = a.id
@@ -33,8 +33,10 @@ export async function POST(req: NextRequest) {
     `;
 
     // 3. Inject context into the system prompt
-    const contextStr = chunks.map((c, i) => `[Source: ${c.title || 'Untitled'}]\n${c.text_content}`).join('\n\n');
-    
+    const contextStr = chunks
+      .map((c, i) => `[Source: ${c.title || 'Untitled'}]\n${c.text_content}`)
+      .join('\n\n');
+
     const systemPrompt = `You are PaperLens Vault AI, a highly intelligent legal and corporate document assistant.
 You have access to the user's entire document vault through Semantic Search.
 Use the retrieved context below to answer the user's query accurately.
@@ -48,10 +50,7 @@ ${contextStr ? contextStr : 'No relevant documents found.'}
     // 4. Stream response
     const result = streamText({
       model: google('gemini-1.5-pro'),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
       temperature: 0.2,
     });
 

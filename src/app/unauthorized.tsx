@@ -31,30 +31,26 @@ import { ClearSessionButton } from '@/shared/ui';
  * no request to inspect.
  */
 export const metadata: Metadata = {
- title: 'Sign in required',
- robots: { index: false, follow: false },
+  title: 'Sign in required',
+  robots: { index: false, follow: false },
 };
 
 export default function Unauthorized() {
- return (
- <Container as="main" className="flex flex-1 flex-col justify-center py-24">
- {/*
- * `neutral`, not a risk tone. `critical`/`caution`/`safe` are reserved by the design
- * system for risk found in the *user's document* — borrowing the red for an expired
- * session would make "this contract has a critical clause" and "please sign in" look
- * like the same severity. The icon carries the meaning instead.
- */}
- <StatusBlock
- tone="neutral"
- icon={<ShieldIcon className="size-5" />}
- title="Please sign in to continue"
- description="Your session has ended, or this page needs an account. Signing in again takes a moment and brings you straight back."
- actions={
- <ClearSessionButton>
- Go to homepage
- </ClearSessionButton>
- }
- />
- </Container>
- );
+  return (
+    <Container as="main" className="flex flex-1 flex-col justify-center py-24">
+      {/*
+       * `neutral`, not a risk tone. `critical`/`caution`/`safe` are reserved by the design
+       * system for risk found in the *user's document* — borrowing the red for an expired
+       * session would make "this contract has a critical clause" and "please sign in" look
+       * like the same severity. The icon carries the meaning instead.
+       */}
+      <StatusBlock
+        tone="neutral"
+        icon={<ShieldIcon className="size-5" />}
+        title="Please sign in to continue"
+        description="Your session has ended, or this page needs an account. Signing in again takes a moment and brings you straight back."
+        actions={<ClearSessionButton>Go to homepage</ClearSessionButton>}
+      />
+    </Container>
+  );
 }

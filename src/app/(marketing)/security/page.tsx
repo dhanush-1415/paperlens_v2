@@ -3,10 +3,10 @@ import type { Metadata } from 'next';
 import { serverEnv } from '@/config/env.server';
 import { resolveTenant } from '@/config/tenant';
 import {
- MarketingPageIntro,
- SecurityCommitments,
- SecurityLifecycle,
- SecurityPosture,
+  MarketingPageIntro,
+  SecurityCommitments,
+  SecurityLifecycle,
+  SecurityPosture,
 } from '@/features/marketing';
 
 /**
@@ -35,26 +35,26 @@ import {
  * No container resolution, no request APIs, no client components. This route is HTML.
  */
 export const metadata: Metadata = {
- title: 'Security and privacy',
- description:
- 'Where your document is at every moment, what we promise about it, and what we can and cannot prove yet — including the audits we do not have.',
- alternates: { canonical: '/security' },
+  title: 'Security and privacy',
+  description:
+    'Where your document is at every moment, what we promise about it, and what we can and cannot prove yet — including the audits we do not have.',
+  alternates: { canonical: '/security' },
 };
 
 export default function SecurityPage() {
- const tenant = resolveTenant(serverEnv.TENANT_ID);
+  const tenant = resolveTenant(serverEnv.TENANT_ID);
 
- return (
- <>
- <MarketingPageIntro
- eyebrow="Security and privacy"
- heading="Your document is yours. Here is exactly what happens to it."
- lede="No charter, no badges, no sentence about how seriously we take your privacy. Just where the file goes, who can read it, and the things we have not done yet."
- />
+  return (
+    <>
+      <MarketingPageIntro
+        eyebrow="Security and privacy"
+        heading="Your document is yours. Here is exactly what happens to it."
+        lede="No charter, no badges, no sentence about how seriously we take your privacy. Just where the file goes, who can read it, and the things we have not done yet."
+      />
 
- <SecurityLifecycle />
- <SecurityCommitments />
- <SecurityPosture contactEmail={tenant.legal.supportEmail} />
- </>
- );
+      <SecurityLifecycle />
+      <SecurityCommitments />
+      <SecurityPosture contactEmail={tenant.legal.supportEmail} />
+    </>
+  );
 }

@@ -22,9 +22,9 @@ import { Container, LoadingState } from '@/shared/ui';
  * user is told the page is finished when it is not.
  */
 export default function Loading() {
- return (
- <Container as="main" className="flex flex-1 flex-col justify-center py-24">
- <LoadingState label="Loading" />
- </Container>
- );
+  return (
+    <Container as="main" className="flex flex-1 flex-col justify-center py-24">
+      <LoadingState label="Loading" />
+    </Container>
+  );
 }

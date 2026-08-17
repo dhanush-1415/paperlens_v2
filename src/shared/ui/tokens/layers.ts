@@ -22,19 +22,19 @@
  */
 
 export const LAYERS = {
- base: 0,
- /** Cards and panels that lift on hover. */
- raised: 100,
- /** The app header and any sticky table header. */
- sticky: 200,
- drawer: 300,
- /** The scrim behind a modal or drawer. */
- overlay: 400,
- modal: 500,
- /** Selects, dropdowns, command palette results — anything anchored to a trigger. */
- popover: 600,
- toast: 700,
- tooltip: 800,
+  base: 0,
+  /** Cards and panels that lift on hover. */
+  raised: 100,
+  /** The app header and any sticky table header. */
+  sticky: 200,
+  drawer: 300,
+  /** The scrim behind a modal or drawer. */
+  overlay: 400,
+  modal: 500,
+  /** Selects, dropdowns, command palette results — anything anchored to a trigger. */
+  popover: 600,
+  toast: 700,
+  tooltip: 800,
 } as const;
 
 export type LayerName = keyof typeof LAYERS;
@@ -46,5 +46,5 @@ export type LayerName = keyof typeof LAYERS;
  * or the `var(--z-modal)` custom property) so the value stays traceable to this file.
  */
 export function layer(name: LayerName): number {
- return LAYERS[name];
+  return LAYERS[name];
 }
