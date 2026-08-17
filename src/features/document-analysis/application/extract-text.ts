@@ -38,7 +38,7 @@ export async function extractTextFromFile(file: FileInput): Promise<string> {
   // PDF
   if (type === 'application/pdf' || name.endsWith('.pdf')) {
     const buffer = Buffer.from(await file.arrayBuffer());
-    
+
     const { PDFParse } = await import('pdf-parse');
     const parser = new PDFParse({ data: buffer });
     try {

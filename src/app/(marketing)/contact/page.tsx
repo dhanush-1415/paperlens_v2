@@ -16,10 +16,30 @@ const CONTACT_CATEGORIES = [
 ];
 
 const SEVERITY_OPTIONS = [
-  { value: 'low', label: 'Low', color: 'text-brand-primary', activeBg: 'bg-brand-primary/10 border-brand-primary/30' },
-  { value: 'medium', label: 'Medium', color: 'text-amber-500', activeBg: 'bg-amber-500/10 border-amber-500/30' },
-  { value: 'high', label: 'High', color: 'text-orange-500', activeBg: 'bg-orange-500/10 border-orange-500/30' },
-  { value: 'critical', label: 'Critical', color: 'text-risk-critical', activeBg: 'bg-risk-critical/10 border-risk-critical/30' },
+  {
+    value: 'low',
+    label: 'Low',
+    color: 'text-brand-primary',
+    activeBg: 'bg-brand-primary/10 border-brand-primary/30',
+  },
+  {
+    value: 'medium',
+    label: 'Medium',
+    color: 'text-amber-500',
+    activeBg: 'bg-amber-500/10 border-amber-500/30',
+  },
+  {
+    value: 'high',
+    label: 'High',
+    color: 'text-orange-500',
+    activeBg: 'bg-orange-500/10 border-orange-500/30',
+  },
+  {
+    value: 'critical',
+    label: 'Critical',
+    color: 'text-risk-critical',
+    activeBg: 'bg-risk-critical/10 border-risk-critical/30',
+  },
 ];
 
 const FEATURE_AREAS = [
@@ -32,9 +52,24 @@ const FEATURE_AREAS = [
 ];
 
 const FEEDBACK_TYPES = [
-  { value: 'feature_request', label: 'Feature Request', activeBg: 'bg-indigo-500/10 border-indigo-500/30', activeText: 'text-indigo-400' },
-  { value: 'improvement', label: 'Improvement', activeBg: 'bg-amber-500/10 border-amber-500/30', activeText: 'text-amber-500' },
-  { value: 'general', label: 'General', activeBg: 'bg-brand-primary/10 border-brand-primary/30', activeText: 'text-brand-primary' },
+  {
+    value: 'feature_request',
+    label: 'Feature Request',
+    activeBg: 'bg-indigo-500/10 border-indigo-500/30',
+    activeText: 'text-indigo-400',
+  },
+  {
+    value: 'improvement',
+    label: 'Improvement',
+    activeBg: 'bg-amber-500/10 border-amber-500/30',
+    activeText: 'text-amber-500',
+  },
+  {
+    value: 'general',
+    label: 'General',
+    activeBg: 'bg-brand-primary/10 border-brand-primary/30',
+    activeText: 'text-brand-primary',
+  },
 ];
 
 function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -52,23 +87,34 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
             onClick={() => onChange(s)}
             onMouseEnter={() => setHovered(s)}
             onMouseLeave={() => setHovered(0)}
-            className="p-1 transition-transform duration-100 hover:scale-110 active:scale-95 outline-none cursor-pointer"
+            className="cursor-pointer p-1 transition-transform duration-100 outline-none hover:scale-110 active:scale-95"
           >
             <svg
               className={cn(
                 'h-11 w-11 transition-all duration-200',
-                filled >= s ? 'fill-amber-500 text-amber-500' : 'text-text-tertiary/30 hover:text-amber-500/50'
+                filled >= s
+                  ? 'fill-amber-500 text-amber-500'
+                  : 'text-text-tertiary/30 hover:text-amber-500/50',
               )}
               viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
             </svg>
           </button>
         ))}
       </div>
-      <span className={cn('text-sm font-bold transition-all duration-300', filled > 0 ? 'text-amber-500 opacity-100 translate-x-0' : 'opacity-0 -translate-x-2')}>
+      <span
+        className={cn(
+          'text-sm font-bold transition-all duration-300',
+          filled > 0 ? 'translate-x-0 text-amber-500 opacity-100' : '-translate-x-2 opacity-0',
+        )}
+      >
         {STAR_LABELS[filled]}
       </span>
     </div>
@@ -79,11 +125,11 @@ export default function ContactPage() {
   const [tab, setTab] = useState<'contact' | 'feedback'>('contact');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   // Contact State
   const [category, setCategory] = useState('bug');
   const [severity, setSeverity] = useState('medium');
-  
+
   // Feedback State
   const [featureArea, setFeatureArea] = useState('scanner');
   const [feedbackType, setFeedbackType] = useState('improvement');
@@ -100,23 +146,41 @@ export default function ContactPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center py-24 px-4 bg-canvas text-center">
-        <ScrollReveal variant="fade-up" className="flex flex-col items-center max-w-md w-full gap-8">
+      <div className="flex min-h-[80vh] flex-col items-center justify-center bg-canvas px-4 py-24 text-center">
+        <ScrollReveal
+          variant="fade-up"
+          className="flex w-full max-w-md flex-col items-center gap-8"
+        >
           <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-brand-primary/20 blur-[40px] scale-[1.5]" />
-            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-brand-primary/10 border border-brand-primary/30 shadow-[0_0_30px_rgba(var(--brand-primary-rgb),0.3)] text-brand-primary">
-              <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+            <div className="absolute inset-0 scale-[1.5] rounded-full bg-brand-primary/20 blur-[40px]" />
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-brand-primary/30 bg-brand-primary/10 text-brand-primary shadow-[0_0_30px_rgba(var(--brand-primary-rgb),0.3)]">
+              <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
             </div>
           </div>
           <div className="flex flex-col gap-3">
-            <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">{tab === 'contact' ? 'Ticket Submitted' : 'Feedback Received'}</h1>
-            <p className="text-text-secondary leading-relaxed">
-              {tab === 'contact' 
-                ? "We've received your report. Our engineering team will investigate and get back to you shortly." 
-                : "Thank you! Your feedback genuinely helps us shape the future of PaperLens."}
+            <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">
+              {tab === 'contact' ? 'Ticket Submitted' : 'Feedback Received'}
+            </h1>
+            <p className="leading-relaxed text-text-secondary">
+              {tab === 'contact'
+                ? "We've received your report. Our engineering team will investigate and get back to you shortly."
+                : 'Thank you! Your feedback genuinely helps us shape the future of PaperLens.'}
             </p>
           </div>
-          <Button variant="premium" onClick={() => setIsSubmitted(false)} className="mt-4 font-bold shadow-xl shadow-brand-primary/25">Submit Another</Button>
+          <Button
+            variant="premium"
+            onClick={() => setIsSubmitted(false)}
+            className="mt-4 font-bold shadow-xl shadow-brand-primary/25"
+          >
+            Submit Another
+          </Button>
         </ScrollReveal>
       </div>
     );
@@ -130,49 +194,80 @@ export default function ContactPage() {
         lede="We're here to help you get the most out of PaperLens. Whether you have a technical issue or just want to share some feedback, our team is ready to listen."
       />
 
-      <section className="w-full pb-32 relative overflow-hidden bg-canvas">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--brand-primary-rgb),0.05),transparent_80%)] pointer-events-none" />
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-primary/5 rounded-full blur-[140px] pointer-events-none" />
+      <section className="relative w-full overflow-hidden bg-canvas pb-32">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--brand-primary-rgb),0.05),transparent_80%)]" />
+        <div className="pointer-events-none absolute top-0 left-0 h-[500px] w-[500px] rounded-full bg-brand-primary/5 blur-[140px]" />
 
-        <div className="w-[95%] md:w-[90%] lg:w-[80%] max-w-6xl mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-16 items-start mt-8">
-          
+        <div className="relative z-10 mx-auto mt-8 flex w-[95%] max-w-6xl flex-col items-start gap-12 md:w-[90%] lg:w-[80%] lg:flex-row lg:gap-16">
           {/* Left Column: Direct Email */}
-          <ScrollReveal variant="fade-up" className="w-full lg:w-[320px] shrink-0 flex flex-col gap-8 sticky top-32">
-            <div className="bg-surface-1/60 backdrop-blur-xl border border-border-strong rounded-3xl p-8 shadow-sm flex flex-col gap-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/10 rounded-full blur-[40px] pointer-events-none" />
-              
-              <div className="flex flex-col gap-2 relative z-10">
+          <ScrollReveal
+            variant="fade-up"
+            className="sticky top-32 flex w-full shrink-0 flex-col gap-8 lg:w-[320px]"
+          >
+            <div className="relative flex flex-col gap-8 overflow-hidden rounded-3xl border border-border-strong bg-surface-1/60 p-8 shadow-sm backdrop-blur-xl">
+              <div className="pointer-events-none absolute top-0 right-0 h-32 w-32 rounded-full bg-brand-primary/10 blur-[40px]" />
+
+              <div className="relative z-10 flex flex-col gap-2">
                 <h3 className="text-lg font-bold text-text-primary">Direct Contact</h3>
-                <p className="text-sm text-text-secondary leading-relaxed">Prefer to use your own email client? Reach out directly below.</p>
+                <p className="text-sm leading-relaxed text-text-secondary">
+                  Prefer to use your own email client? Reach out directly below.
+                </p>
               </div>
-              
-              <div className="flex flex-col gap-6 relative z-10">
-                <a href="mailto:support@paperlens.co" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shrink-0 group-hover:bg-brand-primary group-hover:text-white transition-all duration-300">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+
+              <div className="relative z-10 flex flex-col gap-6">
+                <a href="mailto:support@paperlens.co" className="group flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-primary/20 bg-brand-primary/10 text-brand-primary transition-all duration-300 group-hover:bg-brand-primary group-hover:text-white">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-bold text-text-primary group-hover:text-brand-primary transition-colors">General Support</span>
+                    <span className="text-sm font-bold text-text-primary transition-colors group-hover:text-brand-primary">
+                      General Support
+                    </span>
                     <span className="text-sm text-text-secondary">support@paperlens.co</span>
                   </div>
                 </a>
 
-                <a href="mailto:hello@paperlens.co" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                <a href="mailto:hello@paperlens.co" className="group flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-500 transition-all duration-300 group-hover:bg-amber-500 group-hover:text-white">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                      />
+                    </svg>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-bold text-text-primary group-hover:text-amber-500 transition-colors">Feedback & Ideas</span>
+                    <span className="text-sm font-bold text-text-primary transition-colors group-hover:text-amber-500">
+                      Feedback & Ideas
+                    </span>
                     <span className="text-sm text-text-secondary">hello@paperlens.co</span>
                   </div>
                 </a>
 
-                <a href="mailto:legal@paperlens.co" className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-risk-critical/10 border border-risk-critical/20 flex items-center justify-center text-risk-critical shrink-0 group-hover:bg-risk-critical group-hover:text-white transition-all duration-300">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <a href="mailto:legal@paperlens.co" className="group flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-risk-critical/20 bg-risk-critical/10 text-risk-critical transition-all duration-300 group-hover:bg-risk-critical group-hover:text-white">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-bold text-text-primary group-hover:text-risk-critical transition-colors">Legal Inquiries</span>
+                    <span className="text-sm font-bold text-text-primary transition-colors group-hover:text-risk-critical">
+                      Legal Inquiries
+                    </span>
                     <span className="text-sm text-text-secondary">legal@paperlens.co</span>
                   </div>
                 </a>
@@ -181,19 +276,19 @@ export default function ContactPage() {
           </ScrollReveal>
 
           {/* Right Column: Form Content */}
-          <ScrollReveal variant="fade-up" className="flex-1 w-full min-w-0">
-            <div className="bg-surface-1/60 backdrop-blur-xl border border-border-strong rounded-[2.5rem] p-8 md:p-12 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-brand-primary/[0.03] to-transparent pointer-events-none" />
-              
-              <div className="flex bg-surface-2 p-1.5 rounded-2xl border border-border-strong shadow-inner mb-10 relative z-10 w-full">
+          <ScrollReveal variant="fade-up" className="w-full min-w-0 flex-1">
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-border-strong bg-surface-1/60 p-8 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] backdrop-blur-xl md:p-12">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-primary/[0.03] to-transparent" />
+
+              <div className="relative z-10 mb-10 flex w-full rounded-2xl border border-border-strong bg-surface-2 p-1.5 shadow-inner">
                 <button
                   type="button"
                   onClick={() => setTab('contact')}
                   className={cn(
-                    'flex-1 flex justify-center items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-bold transition-all duration-500 cursor-pointer',
-                    tab === 'contact' 
-                      ? 'bg-[length:200%_auto] bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-tertiary text-white shadow-md' 
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-transparent'
+                    'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold transition-all duration-500',
+                    tab === 'contact'
+                      ? 'bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-tertiary bg-[length:200%_auto] text-white shadow-md'
+                      : 'border border-transparent text-text-secondary hover:bg-surface-raised hover:text-text-primary',
                   )}
                 >
                   Report Issue
@@ -202,42 +297,69 @@ export default function ContactPage() {
                   type="button"
                   onClick={() => setTab('feedback')}
                   className={cn(
-                    'flex-1 flex justify-center items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-bold transition-all duration-500 cursor-pointer',
-                    tab === 'feedback' 
-                      ? 'bg-[length:200%_auto] bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-tertiary text-white shadow-md' 
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised border border-transparent'
+                    'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold transition-all duration-500',
+                    tab === 'feedback'
+                      ? 'bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-tertiary bg-[length:200%_auto] text-white shadow-md'
+                      : 'border border-transparent text-text-secondary hover:bg-surface-raised hover:text-text-primary',
                   )}
                 >
                   Give Feedback
                 </button>
               </div>
-              
-              <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10">
+
+              <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-6">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-text-primary">Full Name</label>
-                    <input required placeholder="Jane Doe" className="h-11 rounded-xl bg-surface-2/80 border border-border-strong px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all placeholder:text-text-tertiary" />
+                    <input
+                      required
+                      placeholder="Jane Doe"
+                      className="h-11 rounded-xl border border-border-strong bg-surface-2/80 px-4 text-sm text-text-primary transition-all placeholder:text-text-tertiary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/50 focus:outline-none"
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-text-primary">Email Address</label>
-                    <input type="email" required placeholder="jane@example.com" className="h-11 rounded-xl bg-surface-2/80 border border-border-strong px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all placeholder:text-text-tertiary" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="jane@example.com"
+                      className="h-11 rounded-xl border border-border-strong bg-surface-2/80 px-4 text-sm text-text-primary transition-all placeholder:text-text-tertiary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/50 focus:outline-none"
+                    />
                   </div>
                 </div>
 
                 {tab === 'contact' ? (
                   <>
-                    <div className="grid gap-6 sm:grid-cols-2 animate-in fade-in duration-300">
+                    <div className="animate-in fade-in grid gap-6 duration-300 sm:grid-cols-2">
                       <div className="flex flex-col gap-2">
                         <label className="text-sm font-bold text-text-primary">Category</label>
-                        <select value={category} onChange={(e) => setCategory(e.target.value)} className="h-11 rounded-xl bg-surface-2/80 border border-border-strong px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all cursor-pointer appearance-none relative">
-                          {CONTACT_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="relative h-11 cursor-pointer appearance-none rounded-xl border border-border-strong bg-surface-2/80 px-4 text-sm text-text-primary transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/50 focus:outline-none"
+                        >
+                          {CONTACT_CATEGORIES.map((c) => (
+                            <option key={c.value} value={c.value}>
+                              {c.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div className="flex flex-col gap-3">
                         <label className="text-sm font-bold text-text-primary">Severity</label>
                         <div className="flex flex-wrap gap-2 pt-0.5">
                           {SEVERITY_OPTIONS.map(({ value, label, color, activeBg }) => (
-                            <button key={value} type="button" onClick={() => setSeverity(value)} className={cn('rounded-full border px-3 py-1.5 text-xs font-bold transition-all duration-300 cursor-pointer', severity === value ? cn(activeBg, color, 'shadow-sm') : 'border-border-strong bg-surface-2/80 text-text-secondary hover:border-border-strong hover:bg-surface-raised')}>
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => setSeverity(value)}
+                              className={cn(
+                                'cursor-pointer rounded-full border px-3 py-1.5 text-xs font-bold transition-all duration-300',
+                                severity === value
+                                  ? cn(activeBg, color, 'shadow-sm')
+                                  : 'border-border-strong bg-surface-2/80 text-text-secondary hover:border-border-strong hover:bg-surface-raised',
+                              )}
+                            >
                               {label}
                             </button>
                           ))}
@@ -247,19 +369,39 @@ export default function ContactPage() {
                   </>
                 ) : (
                   <>
-                    <div className="grid gap-6 sm:grid-cols-2 animate-in fade-in duration-300">
+                    <div className="animate-in fade-in grid gap-6 duration-300 sm:grid-cols-2">
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-text-primary">Which area does this relate to?</label>
-                        <select value={featureArea} onChange={(e) => setFeatureArea(e.target.value)} className="h-11 rounded-xl bg-surface-2/80 border border-border-strong px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all cursor-pointer appearance-none">
-                          {FEATURE_AREAS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                        <label className="text-sm font-bold text-text-primary">
+                          Which area does this relate to?
+                        </label>
+                        <select
+                          value={featureArea}
+                          onChange={(e) => setFeatureArea(e.target.value)}
+                          className="h-11 cursor-pointer appearance-none rounded-xl border border-border-strong bg-surface-2/80 px-4 text-sm text-text-primary transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/50 focus:outline-none"
+                        >
+                          {FEATURE_AREAS.map((c) => (
+                            <option key={c.value} value={c.value}>
+                              {c.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
-                      
+
                       <div className="flex flex-col gap-3">
                         <label className="text-sm font-bold text-text-primary">Feedback Type</label>
                         <div className="flex flex-wrap gap-2 pt-0.5">
                           {FEEDBACK_TYPES.map(({ value, label, activeBg, activeText }) => (
-                            <button key={value} type="button" onClick={() => setFeedbackType(value)} className={cn('rounded-full border px-3 py-1.5 text-xs font-bold transition-all duration-300 cursor-pointer', feedbackType === value ? cn(activeBg, activeText, 'shadow-sm') : 'border-border-strong bg-surface-2/80 text-text-secondary hover:border-border-strong hover:bg-surface-raised')}>
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => setFeedbackType(value)}
+                              className={cn(
+                                'cursor-pointer rounded-full border px-3 py-1.5 text-xs font-bold transition-all duration-300',
+                                feedbackType === value
+                                  ? cn(activeBg, activeText, 'shadow-sm')
+                                  : 'border-border-strong bg-surface-2/80 text-text-secondary hover:border-border-strong hover:bg-surface-raised',
+                              )}
+                            >
                               {label}
                             </button>
                           ))}
@@ -267,33 +409,67 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 animate-in fade-in duration-300 mt-2">
-                      <label className="text-sm font-bold text-text-primary">Overall Experience</label>
+                    <div className="animate-in fade-in mt-2 flex flex-col gap-3 duration-300">
+                      <label className="text-sm font-bold text-text-primary">
+                        Overall Experience
+                      </label>
                       <StarRating value={rating} onChange={setRating} />
                     </div>
                   </>
                 )}
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-bold text-text-primary">{tab === 'contact' ? 'Subject' : 'Title'}</label>
-                  <input required placeholder={tab === 'contact' ? "Brief summary of the issue" : "Give your feedback a short title"} className="h-11 rounded-xl bg-surface-2/80 border border-border-strong px-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all placeholder:text-text-tertiary" />
+                  <label className="text-sm font-bold text-text-primary">
+                    {tab === 'contact' ? 'Subject' : 'Title'}
+                  </label>
+                  <input
+                    required
+                    placeholder={
+                      tab === 'contact'
+                        ? 'Brief summary of the issue'
+                        : 'Give your feedback a short title'
+                    }
+                    className="h-11 rounded-xl border border-border-strong bg-surface-2/80 px-4 text-sm text-text-primary transition-all placeholder:text-text-tertiary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/50 focus:outline-none"
+                  />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-bold text-text-primary">{tab === 'contact' ? 'Description' : 'Message'}</label>
-                  <textarea required rows={5} placeholder={tab === 'contact' ? "Describe what happened — steps to reproduce, what you expected..." : "Share your thoughts in detail — the more context, the better..."} className="rounded-xl bg-surface-2/80 border border-border-strong p-4 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all placeholder:text-text-tertiary resize-y min-h-[140px]" />
+                  <label className="text-sm font-bold text-text-primary">
+                    {tab === 'contact' ? 'Description' : 'Message'}
+                  </label>
+                  <textarea
+                    required
+                    rows={5}
+                    placeholder={
+                      tab === 'contact'
+                        ? 'Describe what happened — steps to reproduce, what you expected...'
+                        : 'Share your thoughts in detail — the more context, the better...'
+                    }
+                    className="min-h-[140px] resize-y rounded-xl border border-border-strong bg-surface-2/80 p-4 text-sm text-text-primary transition-all placeholder:text-text-tertiary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/50 focus:outline-none"
+                  />
                 </div>
 
-                <Button type="submit" variant="premium" className="w-full h-12 mt-4 font-bold shadow-xl shadow-brand-primary/20 text-[15px]" disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : tab === 'contact' ? 'Submit Support Ticket' : 'Send Feedback'}
+                <Button
+                  type="submit"
+                  variant="premium"
+                  className="mt-4 h-12 w-full text-[15px] font-bold shadow-xl shadow-brand-primary/20"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? 'Submitting...'
+                    : tab === 'contact'
+                      ? 'Submit Support Ticket'
+                      : 'Send Feedback'}
                 </Button>
               </form>
             </div>
           </ScrollReveal>
-
         </div>
       </section>
-      <LandingClosingCta ctaLabel="Analyze a document" reassurance="No card required · Deleted after analysis · Never used for training" />
+      <LandingClosingCta
+        ctaLabel="Analyze a document"
+        reassurance="No card required · Deleted after analysis · Never used for training"
+      />
     </>
   );
 }

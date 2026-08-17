@@ -18,86 +18,86 @@
 import type { StorageDriver, StorageEntry, StorageEntryOptions, StoredEnvelope } from './types';
 
 export interface EntryDeps {
- driver: StorageDriver;
- /** Injected so TTL is testable without touching the system clock. */
- now?: () => number;
+  driver: StorageDriver;
+  /** Injected so TTL is testable without touching the system clock. */
+  now?: () => number;
 }
 
 export function createStorageEntry<T>(
- options: StorageEntryOptions<T>,
- deps: EntryDeps,
+  options: StorageEntryOptions<T>,
+  deps: EntryDeps,
 ): StorageEntry<T> {
- const { key, version, fallback, ttlMs, validate } = options;
- const { driver, now = () => Date.now() } = deps;
+  const { key, version, fallback, ttlMs, validate } = options;
+  const { driver, now = () => Date.now() } = deps;
 
- function read(): T {
- const raw = driver.getItem(key);
- if (raw === null) return fallback;
+  function read(): T {
+    const raw = driver.getItem(key);
+    if (raw === null) return fallback;
 
- let envelope: unknown;
- try {
- envelope = JSON.parse(raw);
- } catch {
- // Not JSON at all — someone else's key collision, or a truncated write. Drop it so
- // the next write starts clean instead of failing forever.
- driver.removeItem(key);
- return fallback;
- }
+    let envelope: unknown;
+    try {
+      envelope = JSON.parse(raw);
+    } catch {
+      // Not JSON at all — someone else's key collision, or a truncated write. Drop it so
+      // the next write starts clean instead of failing forever.
+      driver.removeItem(key);
+      return fallback;
+    }
 
- if (!isEnvelope(envelope)) {
- driver.removeItem(key);
- return fallback;
- }
+    if (!isEnvelope(envelope)) {
+      driver.removeItem(key);
+      return fallback;
+    }
 
- // Version mismatch is a *discard*, not a migration. Migrations belong in an explicit
- // upgrade step; silently reshaping data on read is how two versions of a bug ship at once.
- if (envelope.v !== version) {
- driver.removeItem(key);
- return fallback;
- }
+    // Version mismatch is a *discard*, not a migration. Migrations belong in an explicit
+    // upgrade step; silently reshaping data on read is how two versions of a bug ship at once.
+    if (envelope.v !== version) {
+      driver.removeItem(key);
+      return fallback;
+    }
 
- if (envelope.e !== undefined && envelope.e <= now()) {
- driver.removeItem(key);
- return fallback;
- }
+    if (envelope.e !== undefined && envelope.e <= now()) {
+      driver.removeItem(key);
+      return fallback;
+    }
 
- if (validate && !validate(envelope.d)) {
- driver.removeItem(key);
- return fallback;
- }
+    if (validate && !validate(envelope.d)) {
+      driver.removeItem(key);
+      return fallback;
+    }
 
- return envelope.d as T;
- }
+    return envelope.d as T;
+  }
 
- function write(value: T): boolean {
- const envelope: StoredEnvelope<T> = {
- v: version,
- d: value,
- ...(ttlMs === undefined ? {} : { e: now() + ttlMs }),
- };
+  function write(value: T): boolean {
+    const envelope: StoredEnvelope<T> = {
+      v: version,
+      d: value,
+      ...(ttlMs === undefined ? {} : { e: now() + ttlMs }),
+    };
 
- try {
- return driver.setItem(key, JSON.stringify(envelope));
- } catch {
- // `JSON.stringify` throws on cycles and on BigInt. Both are programmer errors that
- // should not take down a render.
- return false;
- }
- }
+    try {
+      return driver.setItem(key, JSON.stringify(envelope));
+    } catch {
+      // `JSON.stringify` throws on cycles and on BigInt. Both are programmer errors that
+      // should not take down a render.
+      return false;
+    }
+  }
 
- return {
- get: read,
- set: write,
- remove: () => driver.removeItem(key),
- reset: () => write(fallback),
- };
+  return {
+    get: read,
+    set: write,
+    remove: () => driver.removeItem(key),
+    reset: () => write(fallback),
+  };
 }
 
 function isEnvelope(value: unknown): value is StoredEnvelope<unknown> {
- if (typeof value !== 'object' || value === null) return false;
- const candidate = value as Record<string, unknown>;
- if (typeof candidate.v !== 'number') return false;
- if (!('d' in candidate)) return false;
- if (candidate.e !== undefined && typeof candidate.e !== 'number') return false;
- return true;
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.v !== 'number') return false;
+  if (!('d' in candidate)) return false;
+  if (candidate.e !== undefined && typeof candidate.e !== 'number') return false;
+  return true;
 }

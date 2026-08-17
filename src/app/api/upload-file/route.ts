@@ -7,10 +7,10 @@ import { prisma } from '@/server/db/prisma';
 export async function POST(req: Request) {
   try {
     const session = await requireSession();
-    
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
@@ -27,14 +27,14 @@ export async function POST(req: Request) {
           setAll(cookiesToSet) {
             try {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
+                cookieStore.set(name, value, options),
               );
             } catch {
               // Ignore in server routes
             }
           },
         },
-      }
+      },
     );
 
     // Sanitize filename and create unique path
@@ -48,7 +48,10 @@ export async function POST(req: Request) {
 
     if (uploadError) {
       console.error('Supabase Storage Error:', uploadError);
-      return NextResponse.json({ error: 'Failed to upload to storage. Check bucket permissions.' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Failed to upload to storage. Check bucket permissions.' },
+        { status: 500 },
+      );
     }
 
     // Create record in Prisma `documents` table
@@ -60,11 +63,10 @@ export async function POST(req: Request) {
         byteSize: file.size,
         storagePath: uploadData.path,
         status: 'scanned', // Temporary, would be 'processing' if we had a background worker
-      }
+      },
     });
 
     return NextResponse.json({ success: true, document });
-    
   } catch (error: any) {
     console.error('Upload API Error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });

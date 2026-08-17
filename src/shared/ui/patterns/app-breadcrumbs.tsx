@@ -22,9 +22,9 @@ const ROUTE_NAMES: Record<string, string> = {
 
 export function AppBreadcrumbs() {
   const pathname = usePathname();
-  
+
   if (!pathname || pathname === '/') return null;
-  
+
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length === 0 || (segments.length === 1 && segments[0] === 'welcome')) {
     // Hide breadcrumbs on the dashboard home to save space, or keep it based on preference
@@ -43,7 +43,7 @@ export function AppBreadcrumbs() {
         <li className="flex items-center">
           <Link
             href="/welcome"
-            className="font-medium text-text-secondary hover:text-text-primary transition-colors"
+            className="font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
             Dashboard
           </Link>
@@ -55,7 +55,7 @@ export function AppBreadcrumbs() {
           const isLast = index === segments.length - 1;
           const href = '/' + segments.slice(0, index + 1).join('/');
           const name = ROUTE_NAMES[segment] || decodeURIComponent(segment);
-          
+
           return (
             <li key={href} className="flex items-center gap-2">
               <ChevronRightIcon className="size-4 text-text-tertiary" />
@@ -66,7 +66,7 @@ export function AppBreadcrumbs() {
               ) : (
                 <Link
                   href={href}
-                  className="font-medium text-text-secondary hover:text-text-primary transition-colors"
+                  className="font-medium text-text-secondary transition-colors hover:text-text-primary"
                 >
                   {name}
                 </Link>

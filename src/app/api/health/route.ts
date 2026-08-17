@@ -37,25 +37,25 @@ import { getServerContainer, route } from '@/server/bootstrap';
  * actually matters, and it survives whatever the framework decides about prerendering.
  */
 export const GET = route('health.get', async () => {
- const clock = getServerContainer().resolve(CLOCK);
+  const clock = getServerContainer().resolve(CLOCK);
 
- return Response.json(
- {
- status: 'ok',
- environment: appConfig.environment,
- commit: appConfig.commitSha,
- time: clock().toISOString(),
- },
- {
- headers: {
- [HTTP_HEADERS.contentType]: CONTENT_TYPES.json,
- /**
- * Never cached, anywhere. A cached health check is a lie told at line rate: the
- * probe would keep reporting `ok` from a CDN long after the instance behind it
- * stopped answering.
- */
- [HTTP_HEADERS.cacheControl]: 'no-store, max-age=0',
- },
- },
- );
+  return Response.json(
+    {
+      status: 'ok',
+      environment: appConfig.environment,
+      commit: appConfig.commitSha,
+      time: clock().toISOString(),
+    },
+    {
+      headers: {
+        [HTTP_HEADERS.contentType]: CONTENT_TYPES.json,
+        /**
+         * Never cached, anywhere. A cached health check is a lie told at line rate: the
+         * probe would keep reporting `ok` from a CDN long after the instance behind it
+         * stopped answering.
+         */
+        [HTTP_HEADERS.cacheControl]: 'no-store, max-age=0',
+      },
+    },
+  );
 });

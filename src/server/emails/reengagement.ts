@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Re-engagement email — sent to ANY user (free or Pro) who has not uploaded
@@ -19,8 +19,8 @@ export async function sendReengagementEmail(email: string, name?: string | null)
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
+      from: FROM,
+      to: email,
       subject: `${firstName}, the paperwork isn't going to read itself.`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
@@ -59,12 +59,16 @@ export async function sendReengagementEmail(email: string, name?: string | null)
                   ['🏠', 'A notice from your landlord or HOA'],
                   ['⚖️', 'Anything legal — summons, contract, demand letter'],
                   ['💳', 'A debt collection notice or bank letter'],
-                ].map(([icon, text]) => `
+                ]
+                  .map(
+                    ([icon, text]) => `
                   <tr>
                     <td style="padding:4px 8px 4px 0;vertical-align:top;width:24px;font-size:15px;">${icon}</td>
                     <td style="padding:4px 0;font-size:13px;color:#475569;line-height:1.5;">${text}</td>
                   </tr>
-                `).join('')}
+                `,
+                  )
+                  .join('')}
               </table>
             </div>
 

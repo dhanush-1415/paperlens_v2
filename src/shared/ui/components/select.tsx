@@ -21,25 +21,24 @@ import { ChevronDownIcon } from '../icons';
 import { controlVariants, type ControlVariantProps } from './control';
 
 export interface SelectProps
- extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'>,
- ControlVariantProps {}
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'>, ControlVariantProps {}
 
 export function Select({ className, size, children, ...props }: SelectProps) {
- return (
- <span className="relative flex w-full items-center">
- <select
- className={cn(
- controlVariants({ size }),
- // `appearance-none` removes the platform chevron so ours can take its place; the
- // trailing padding reserves the space it occupies.
- 'cursor-pointer appearance-none pe-9',
- className,
- )}
- {...props}
- >
- {children}
- </select>
- <ChevronDownIcon className="pointer-events-none absolute end-3 text-text-tertiary" />
- </span>
- );
+  return (
+    <span className="relative flex w-full items-center">
+      <select
+        className={cn(
+          controlVariants({ size }),
+          // `appearance-none` removes the platform chevron so ours can take its place; the
+          // trailing padding reserves the space it occupies.
+          'cursor-pointer appearance-none pe-9',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDownIcon className="pointer-events-none absolute end-3 text-text-tertiary" />
+    </span>
+  );
 }

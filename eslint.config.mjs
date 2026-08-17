@@ -89,7 +89,7 @@ const eslintConfig = defineConfig([
       'react/no-unescaped-entities': 'warn',
       'react-hooks/rules-of-hooks': 'warn',
       '@typescript-eslint/no-require-imports': 'warn',
-      '@typescript-eslint/no-this-alias': 'warn'
+      '@typescript-eslint/no-this-alias': 'warn',
     },
   },
 
@@ -307,7 +307,7 @@ const eslintConfig = defineConfig([
             {
               group: ['@/features/*/*', '@/features/*/**', '!@/features/*/module'],
               message:
-                'The composition root imports a feature\'s wiring — `@/features/<name>/module` ' +
+                "The composition root imports a feature's wiring — `@/features/<name>/module` " +
                 '— and nothing else from inside it. Anything the server needs at runtime it ' +
                 'resolves from the container by token.',
             },
@@ -330,8 +330,8 @@ const eslintConfig = defineConfig([
             {
               group: ['@/features/*/*', '@/features/*/**'],
               message:
-                "Import a feature through its public API only: `@/features/<name>`. Reaching " +
-                'into its internals couples the route to the feature\'s private structure.',
+                'Import a feature through its public API only: `@/features/<name>`. Reaching ' +
+                "into its internals couples the route to the feature's private structure.",
             },
           ],
         },
@@ -371,8 +371,7 @@ const eslintConfig = defineConfig([
         },
         {
           selector: 'NewExpression[callee.name="Date"][arguments.length=0]',
-          message:
-            'Resolve the CLOCK token instead of calling new Date() with no arguments.',
+          message: 'Resolve the CLOCK token instead of calling new Date() with no arguments.',
         },
       ],
     },

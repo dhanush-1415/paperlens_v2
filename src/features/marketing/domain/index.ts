@@ -6,34 +6,34 @@
  */
 
 export {
- GUIDE_CATEGORIES,
- toGuideSummary,
- type DocumentGuide,
- type GuideCategory,
- type GuideFaq,
- type GuideSummary,
+  GUIDE_CATEGORIES,
+  toGuideSummary,
+  type DocumentGuide,
+  type GuideCategory,
+  type GuideFaq,
+  type GuideSummary,
 } from './guide';
 
 export {
- isLegalDocumentSlug,
- legalTableOfContents,
- LEGAL_DOCUMENT_SLUGS,
- type LegalBlock,
- type LegalDocument,
- type LegalDocumentSlug,
- type LegalListItem,
- type LegalSection,
- type LegalSubsection,
+  isLegalDocumentSlug,
+  legalTableOfContents,
+  LEGAL_DOCUMENT_SLUGS,
+  type LegalBlock,
+  type LegalDocument,
+  type LegalDocumentSlug,
+  type LegalListItem,
+  type LegalSection,
+  type LegalSubsection,
 } from './legal';
 
 export {
- formatUsd,
- monthlyCostCents,
- monthsSavedAnnually,
- type BillingPeriod,
- type PricingPlan,
- type PricingTier,
- type TierFeature,
+  formatUsd,
+  monthlyCostCents,
+  monthsSavedAnnually,
+  type BillingPeriod,
+  type PricingPlan,
+  type PricingTier,
+  type TierFeature,
 } from './pricing';
 
 export type { ContentRepository } from './ports';

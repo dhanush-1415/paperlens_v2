@@ -3,11 +3,11 @@ import Link from 'next/link';
 
 import { TRANSLATOR } from '@/core/container';
 import {
- HowItWorksAnatomy,
- HowItWorksLimits,
- HowItWorksPipeline,
- LandingClosingCta,
- MarketingPageIntro,
+  HowItWorksAnatomy,
+  HowItWorksLimits,
+  HowItWorksPipeline,
+  LandingClosingCta,
+  MarketingPageIntro,
 } from '@/features/marketing';
 import { getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants';
@@ -37,44 +37,44 @@ import { ArrowRightIcon, Button, Text } from '@/shared/ui';
  * Server Components, so the route prerenders and ships no JavaScript.
  */
 export const metadata: Metadata = {
- title: 'How it works',
- description:
- 'What happens between handing PaperLens a document and getting an answer back: what it reads, what a finding contains, and precisely where it stops being reliable.',
- alternates: { canonical: '/how-it-works' },
+  title: 'How it works',
+  description:
+    'What happens between handing PaperLens a document and getting an answer back: what it reads, what a finding contains, and precisely where it stops being reliable.',
+  alternates: { canonical: '/how-it-works' },
 };
 
 export default async function HowItWorksPage() {
- const t = getRequestScope().resolve(TRANSLATOR);
- const ctaLabel = t.t('cta.analyze');
- const reassurance = t.t('cta.reassurance');
+  const t = getRequestScope().resolve(TRANSLATOR);
+  const ctaLabel = t.t('cta.analyze');
+  const reassurance = t.t('cta.reassurance');
 
- return (
- <>
- <MarketingPageIntro
- eyebrow="How it works"
- heading="From an envelope you dreaded opening to a decision you can make."
- lede="You hand it the document. It reads every clause, and hands back the ones that cost money — each with the passage it came from, so you never have to take our word for anything."
- >
- {/* The CTA sits inside the intro rather than in its own band: a reader who is already
+  return (
+    <>
+      <MarketingPageIntro
+        eyebrow="How it works"
+        heading="From an envelope you dreaded opening to a decision you can make."
+        lede="You hand it the document. It reads every clause, and hands back the ones that cost money — each with the passage it came from, so you never have to take our word for anything."
+      >
+        {/* The CTA sits inside the intro rather than in its own band: a reader who is already
  convinced should not have to scroll past the explanation to act on it. */}
- <div className="flex flex-col gap-2">
- <Button asChild size="lg" variant="premium" className="shadow-xl shadow-brand-primary/30">
- <Link href={ROUTES.scan}>
- {ctaLabel}
- <ArrowRightIcon aria-hidden className="size-4 ml-2" />
- </Link>
- </Button>
- <Text size="xs" tone="tertiary">
- {reassurance}
- </Text>
- </div>
- </MarketingPageIntro>
+        <div className="flex flex-col gap-2">
+          <Button asChild size="lg" variant="premium" className="shadow-xl shadow-brand-primary/30">
+            <Link href={ROUTES.scan}>
+              {ctaLabel}
+              <ArrowRightIcon aria-hidden className="ml-2 size-4" />
+            </Link>
+          </Button>
+          <Text size="xs" tone="tertiary">
+            {reassurance}
+          </Text>
+        </div>
+      </MarketingPageIntro>
 
- <HowItWorksPipeline />
- <HowItWorksAnatomy />
- <HowItWorksLimits />
+      <HowItWorksPipeline />
+      <HowItWorksAnatomy />
+      <HowItWorksLimits />
 
- <LandingClosingCta ctaLabel={ctaLabel} reassurance={reassurance} />
- </>
- );
+      <LandingClosingCta ctaLabel={ctaLabel} reassurance={reassurance} />
+    </>
+  );
 }

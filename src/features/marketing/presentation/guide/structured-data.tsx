@@ -31,54 +31,54 @@
 import type { DocumentGuide } from '../../domain';
 
 export interface GuideStructuredDataProps {
- guide: DocumentGuide;
- /** Absolute origin, no trailing slash — `appConfig.url`, read by the route. */
- siteUrl: string;
+  guide: DocumentGuide;
+  /** Absolute origin, no trailing slash — `appConfig.url`, read by the route. */
+  siteUrl: string;
 }
 
 /** Trailing slashes on the origin would produce `https://x//use-cases`, which is a distinct URL. */
 function absolute(siteUrl: string, path: string): string {
- return `${siteUrl.replace(/\/+$/, '')}${path}`;
+  return `${siteUrl.replace(/\/+$/, '')}${path}`;
 }
 
 export function GuideStructuredData({ guide, siteUrl }: GuideStructuredDataProps) {
- const graph: unknown[] = [
- {
- '@type': 'BreadcrumbList',
- itemListElement: [
- { '@type': 'ListItem', position: 1, name: 'Home', item: absolute(siteUrl, '/') },
- {
- '@type': 'ListItem',
- position: 2,
- name: 'Document guides',
- item: absolute(siteUrl, '/use-cases'),
- },
- {
- '@type': 'ListItem',
- position: 3,
- name: guide.heading,
- item: absolute(siteUrl, `/for/${guide.slug}`),
- },
- ],
- },
- ];
+  const graph: unknown[] = [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: absolute(siteUrl, '/') },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Document guides',
+          item: absolute(siteUrl, '/use-cases'),
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: guide.heading,
+          item: absolute(siteUrl, `/for/${guide.slug}`),
+        },
+      ],
+    },
+  ];
 
- // A `FAQPage` with no questions is invalid markup rather than an empty one; omit the block.
- if (guide.faqs.length > 0) {
- graph.push({
- '@type': 'FAQPage',
- mainEntity: guide.faqs.map((faq) => ({
- '@type': 'Question',
- name: faq.question,
- acceptedAnswer: { '@type': 'Answer', text: faq.answer },
- })),
- });
- }
+  // A `FAQPage` with no questions is invalid markup rather than an empty one; omit the block.
+  if (guide.faqs.length > 0) {
+    graph.push({
+      '@type': 'FAQPage',
+      mainEntity: guide.faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+      })),
+    });
+  }
 
- const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(
- /</g,
- '\\u003c',
- );
+  const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(
+    /</g,
+    '\\u003c',
+  );
 
- return <script type="application/ld+json">{json}</script>;
+  return <script type="application/ld+json">{json}</script>;
 }

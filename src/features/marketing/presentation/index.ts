@@ -39,21 +39,21 @@ export { GuideHub } from './guide-hub';
 export type { GuideHubProps } from './guide-hub';
 
 export {
- GUIDE_SECTION_IDS,
- GuideChecklist,
- GuideFaqSection,
- GuideHero,
- GuideRelated,
- GuideRisks,
- GuideStructuredData,
+  GUIDE_SECTION_IDS,
+  GuideChecklist,
+  GuideFaqSection,
+  GuideHero,
+  GuideRelated,
+  GuideRisks,
+  GuideStructuredData,
 } from './guide';
 export type {
- GuideChecklistProps,
- GuideFaqSectionProps,
- GuideHeroProps,
- GuideRelatedProps,
- GuideRisksProps,
- GuideStructuredDataProps,
+  GuideChecklistProps,
+  GuideFaqSectionProps,
+  GuideHeroProps,
+  GuideRelatedProps,
+  GuideRisksProps,
+  GuideStructuredDataProps,
 } from './guide';
 
 export { MarketingPageIntro } from './page-intro';

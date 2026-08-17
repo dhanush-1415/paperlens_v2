@@ -8,8 +8,8 @@
  */
 
 export {
- createStaticContentRepository,
- type StaticContentRepositoryDeps,
+  createStaticContentRepository,
+  type StaticContentRepositoryDeps,
 } from './static-content-repository';
 
 export { DOCUMENT_GUIDES } from './guides.data';

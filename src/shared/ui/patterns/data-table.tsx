@@ -34,12 +34,20 @@ export function DataTable<T>({
   onRowClick,
 }: DataTableProps<T>) {
   return (
-    <div className={cn('w-full overflow-auto rounded-card border border-border-subtle bg-surface-1 shadow-sm', className)}>
+    <div
+      className={cn(
+        'w-full overflow-auto rounded-card border border-border-subtle bg-surface-1 shadow-sm',
+        className,
+      )}
+    >
       <table className="w-full text-left text-sm text-text-secondary">
-        <thead className="bg-surface-2 border-b border-border-subtle text-xs uppercase tracking-wider text-text-tertiary">
+        <thead className="border-b border-border-subtle bg-surface-2 text-xs tracking-wider text-text-tertiary uppercase">
           <tr>
             {columns.map((col) => (
-              <th key={col.id} className={cn('px-4 py-3 font-medium whitespace-nowrap', col.className)}>
+              <th
+                key={col.id}
+                className={cn('px-4 py-3 font-medium whitespace-nowrap', col.className)}
+              >
                 {col.header}
               </th>
             ))}
@@ -54,9 +62,12 @@ export function DataTable<T>({
             </tr>
           ) : (
             data.map((item) => (
-              <tr 
+              <tr
                 key={keyExtractor(item)}
-                className={cn('group transition-colors duration-200 hover:bg-surface-2 hover:shadow-[inset_2px_0_0_0_var(--brand-primary)]', onRowClick && 'cursor-pointer')}
+                className={cn(
+                  'group transition-colors duration-200 hover:bg-surface-2 hover:shadow-[inset_2px_0_0_0_var(--brand-primary)]',
+                  onRowClick && 'cursor-pointer',
+                )}
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map((col) => (

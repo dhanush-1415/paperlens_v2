@@ -3,22 +3,22 @@ import 'server-only';
 import { type Container } from '@/core/container';
 
 import {
- createGetDocumentGuide,
- createGetLegalDocument,
- createGetPricing,
- createListDocumentGuides,
- createListGuideSlugs,
- createListGuidesByCategory,
+  createGetDocumentGuide,
+  createGetLegalDocument,
+  createGetPricing,
+  createListDocumentGuides,
+  createListGuideSlugs,
+  createListGuidesByCategory,
 } from './application';
 import { createStaticContentRepository } from './infrastructure';
 import {
- CONTENT_REPOSITORY,
- GET_DOCUMENT_GUIDE,
- GET_LEGAL_DOCUMENT,
- GET_PRICING,
- LIST_DOCUMENT_GUIDES,
- LIST_GUIDE_SLUGS,
- LIST_GUIDES_BY_CATEGORY,
+  CONTENT_REPOSITORY,
+  GET_DOCUMENT_GUIDE,
+  GET_LEGAL_DOCUMENT,
+  GET_PRICING,
+  LIST_DOCUMENT_GUIDES,
+  LIST_GUIDE_SLUGS,
+  LIST_GUIDES_BY_CATEGORY,
 } from './tokens';
 
 /**
@@ -44,41 +44,41 @@ import {
  * is immutable and process-wide; one instance is the correct number.
  */
 export function registerMarketing(container: Container): void {
- container.register(CONTENT_REPOSITORY, () => createStaticContentRepository(), 'singleton');
+  container.register(CONTENT_REPOSITORY, () => createStaticContentRepository(), 'singleton');
 
- container.register(
- LIST_DOCUMENT_GUIDES,
- (c) => createListDocumentGuides({ repository: c.resolve(CONTENT_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    LIST_DOCUMENT_GUIDES,
+    (c) => createListDocumentGuides({ repository: c.resolve(CONTENT_REPOSITORY) }),
+    'singleton',
+  );
 
- container.register(
- LIST_GUIDES_BY_CATEGORY,
- (c) => createListGuidesByCategory({ repository: c.resolve(CONTENT_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    LIST_GUIDES_BY_CATEGORY,
+    (c) => createListGuidesByCategory({ repository: c.resolve(CONTENT_REPOSITORY) }),
+    'singleton',
+  );
 
- container.register(
- GET_DOCUMENT_GUIDE,
- (c) => createGetDocumentGuide({ repository: c.resolve(CONTENT_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    GET_DOCUMENT_GUIDE,
+    (c) => createGetDocumentGuide({ repository: c.resolve(CONTENT_REPOSITORY) }),
+    'singleton',
+  );
 
- container.register(
- LIST_GUIDE_SLUGS,
- (c) => createListGuideSlugs({ repository: c.resolve(CONTENT_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    LIST_GUIDE_SLUGS,
+    (c) => createListGuideSlugs({ repository: c.resolve(CONTENT_REPOSITORY) }),
+    'singleton',
+  );
 
- container.register(
- GET_PRICING,
- (c) => createGetPricing({ repository: c.resolve(CONTENT_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    GET_PRICING,
+    (c) => createGetPricing({ repository: c.resolve(CONTENT_REPOSITORY) }),
+    'singleton',
+  );
 
- container.register(
- GET_LEGAL_DOCUMENT,
- (c) => createGetLegalDocument({ repository: c.resolve(CONTENT_REPOSITORY) }),
- 'singleton',
- );
+  container.register(
+    GET_LEGAL_DOCUMENT,
+    (c) => createGetLegalDocument({ repository: c.resolve(CONTENT_REPOSITORY) }),
+    'singleton',
+  );
 }

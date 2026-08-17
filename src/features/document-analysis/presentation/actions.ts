@@ -51,174 +51,196 @@ import { vectorizeDocument } from '../application/vectorize-document';
  * boundary.
  */
 export const analyzeDocumentAction = action(
- 'document.analyze',
- async (_previous: unknown, formData: FormData): Promise<never> => {
- const container = getServerContainer();
+  'document.analyze',
+  async (_previous: unknown, formData: FormData): Promise<never> => {
+    const container = getServerContainer();
 
- // 1 ─ Authorization. Before anything is parsed, and certainly before anything is stored.
- const session = unwrapOrThrow(await checkPermissionResult('document.create'));
+    // 1 ─ Authorization. Before anything is parsed, and certainly before anything is stored.
+    const session = unwrapOrThrow(await checkPermissionResult('document.create'));
 
- // 1.5 ─ Subscription Quota Check
- const planData = await getUserPlan();
- if (!planData.entitlements.canScan) {
-   throw forbiddenError('Scan quota exceeded. Please upgrade your plan in the Billing dashboard.');
- }
+    // 1.5 ─ Subscription Quota Check
+    const planData = await getUserPlan();
+    if (!planData.entitlements.canScan) {
+      throw forbiddenError(
+        'Scan quota exceeded. Please upgrade your plan in the Billing dashboard.',
+      );
+    }
 
- /**
- * 2 ─ Rate limiting.
- *
- * Keyed on the user id, not the IP: an IP key punishes everyone behind one office NAT and
- * is trivially evaded from a phone. The window is declared in `shared/constants/limits`
- * so support can answer "how many scans an hour" without reading this file.
- *
- * Deliberately *after* the auth check and *before* the parse, because parsing a
- * 200,000-character document is the expensive part and a limiter that runs after it has
- * already paid the cost it exists to avoid.
- */
- const decision = await container.resolve(RATE_LIMITER).consume(ANALYZE_RATE_SCOPE, session.userId);
+    /**
+     * 2 ─ Rate limiting.
+     *
+     * Keyed on the user id, not the IP: an IP key punishes everyone behind one office NAT and
+     * is trivially evaded from a phone. The window is declared in `shared/constants/limits`
+     * so support can answer "how many scans an hour" without reading this file.
+     *
+     * Deliberately *after* the auth check and *before* the parse, because parsing a
+     * 200,000-character document is the expensive part and a limiter that runs after it has
+     * already paid the cost it exists to avoid.
+     */
+    const decision = await container
+      .resolve(RATE_LIMITER)
+      .consume(ANALYZE_RATE_SCOPE, session.userId);
 
- if (!decision.allowed) {
- const nowMs = container.resolve(CLOCK)().getTime();
- const retryAfter = Math.max(1, Math.ceil((decision.resetAt - nowMs) / 1_000));
- container.resolve(ANALYTICS).track('quota.exceeded', { quota: 'scans', plan: session.plan });
- throw rateLimitError(retryAfter, ANALYZE_RATE_SCOPE);
- }
+    if (!decision.allowed) {
+      const nowMs = container.resolve(CLOCK)().getTime();
+      const retryAfter = Math.max(1, Math.ceil((decision.resetAt - nowMs) / 1_000));
+      container.resolve(ANALYTICS).track('quota.exceeded', { quota: 'scans', plan: session.plan });
+      throw rateLimitError(retryAfter, ANALYZE_RATE_SCOPE);
+    }
 
- /**
- * 3 ─ Validation, server-side and authoritative.
- *
- * The same schema the form runs before submitting. That check is a courtesy to save a
- * round trip; this one is the one that decides, because a `FormData` body is whatever the
- * sender chose to send.
- *
- * `parseFormData` returns `Result` with field errors already keyed by name, so
- * `unwrapOrThrow` hands the boundary a `VALIDATION` error whose `fieldErrors` survive
- * `toClient()` and land straight in the form's `<Field error>` props.
- */
-  const file = formData.get('file') as File | null;
-  let media: { data: string; mimeType: string } | undefined = undefined;
-  let fileUrl: string | undefined = undefined;
-  let mimeType: string | undefined = undefined;
+    /**
+     * 3 ─ Validation, server-side and authoritative.
+     *
+     * The same schema the form runs before submitting. That check is a courtesy to save a
+     * round trip; this one is the one that decides, because a `FormData` body is whatever the
+     * sender chose to send.
+     *
+     * `parseFormData` returns `Result` with field errors already keyed by name, so
+     * `unwrapOrThrow` hands the boundary a `VALIDATION` error whose `fieldErrors` survive
+     * `toClient()` and land straight in the form's `<Field error>` props.
+     */
+    const file = formData.get('file') as File | null;
+    let media: { data: string; mimeType: string } | undefined = undefined;
+    let fileUrl: string | undefined = undefined;
+    let mimeType: string | undefined = undefined;
 
-  if (file && file.size > 0) {
-    mimeType = file.type;
-    
-    // Upload original file to Supabase Storage
-    if (serverEnv.SUPABASE_URL && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
-      try {
-        const supabaseAdmin = createClient(serverEnv.SUPABASE_URL, serverEnv.SUPABASE_SERVICE_ROLE_KEY);
-        const fileExt = file.name.split('.').pop() || 'bin';
-        const filePath = `${session.userId}/${uuidv4()}.${fileExt}`;
-        const buffer = Buffer.from(await file.arrayBuffer());
-        
-        await supabaseAdmin.storage.from('vault-documents').upload(filePath, buffer, { 
-          contentType: file.type,
-          upsert: true
-        });
-        
-        const { data } = supabaseAdmin.storage.from('vault-documents').getPublicUrl(filePath);
-        fileUrl = data.publicUrl;
-      } catch (e) {
-        console.error('Failed to upload to S3', e);
-        // Continue anyway; we don't want to break the pipeline if S3 fails
+    if (file && file.size > 0) {
+      mimeType = file.type;
+
+      // Upload original file to Supabase Storage
+      if (serverEnv.SUPABASE_URL && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const supabaseAdmin = createClient(
+            serverEnv.SUPABASE_URL,
+            serverEnv.SUPABASE_SERVICE_ROLE_KEY,
+          );
+          const fileExt = file.name.split('.').pop() || 'bin';
+          const filePath = `${session.userId}/${uuidv4()}.${fileExt}`;
+          const buffer = Buffer.from(await file.arrayBuffer());
+
+          await supabaseAdmin.storage.from('vault-documents').upload(filePath, buffer, {
+            contentType: file.type,
+            upsert: true,
+          });
+
+          const { data } = supabaseAdmin.storage.from('vault-documents').getPublicUrl(filePath);
+          fileUrl = data.publicUrl;
+        } catch (e) {
+          console.error('Failed to upload to S3', e);
+          // Continue anyway; we don't want to break the pipeline if S3 fails
+        }
+      }
+      if (
+        file.type.startsWith('image/') ||
+        file.type.startsWith('audio/') ||
+        file.type.startsWith('video/')
+      ) {
+        const buffer = await file.arrayBuffer();
+        media = {
+          data: Buffer.from(buffer).toString('base64'),
+          mimeType: file.type,
+        };
+        formData.set(
+          'text',
+          '[Media File Analysis: This file contains image/video content that will be analysed natively by the AI vision model. Bypass min length validation limit.]',
+        ); // Satisfy Zod schema
+      } else {
+        try {
+          const extractedText = await extractTextFromFile(file);
+
+          // HEURISTIC: For PDFs, check if the extracted text is meaningful.
+          // If it's mostly garbage (e.g. from embedded fonts) or empty, fall back to Vision.
+          const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+          const letterCount = (extractedText.match(/\p{L}/gu) ?? []).length;
+          const textIsMeaningful =
+            extractedText.trim().length > 20 && letterCount / extractedText.trim().length > 0.4;
+
+          if (isPdf && !textIsMeaningful) {
+            const buffer = await file.arrayBuffer();
+            media = {
+              data: Buffer.from(buffer).toString('base64'),
+              mimeType: 'application/pdf',
+            };
+            formData.set(
+              'text',
+              '[Scanned PDF sent as media for native AI OCR because no readable text was extracted by pdf-parse. Bypass min length limit.]',
+            );
+          } else {
+            formData.set('text', extractedText);
+          }
+        } catch (error) {
+          throw validationError({
+            text: [
+              'Failed to extract text from the provided file. Ensure it is a supported format.',
+            ],
+          });
+        }
       }
     }
-   if (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/')) {
-     const buffer = await file.arrayBuffer();
-     media = {
-       data: Buffer.from(buffer).toString('base64'),
-       mimeType: file.type,
-     };
-      formData.set('text', '[Media File Analysis: This file contains image/video content that will be analysed natively by the AI vision model. Bypass min length validation limit.]'); // Satisfy Zod schema
-   } else {
-     try {
-       const extractedText = await extractTextFromFile(file);
-       
-       // HEURISTIC: For PDFs, check if the extracted text is meaningful. 
-       // If it's mostly garbage (e.g. from embedded fonts) or empty, fall back to Vision.
-       const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-       const letterCount = (extractedText.match(/\p{L}/gu) ?? []).length;
-       const textIsMeaningful = extractedText.trim().length > 20 && letterCount / extractedText.trim().length > 0.4;
-       
-       if (isPdf && !textIsMeaningful) {
-         const buffer = await file.arrayBuffer();
-         media = {
-           data: Buffer.from(buffer).toString('base64'),
-           mimeType: 'application/pdf',
-         };
-          formData.set('text', '[Scanned PDF sent as media for native AI OCR because no readable text was extracted by pdf-parse. Bypass min length limit.]');
-       } else {
-         formData.set('text', extractedText);
-       }
-     } catch (error) {
-       throw validationError({ text: ['Failed to extract text from the provided file. Ensure it is a supported format.'] });
-     }
-   }
- }
 
- const input = unwrapOrThrow(parseFormData(analyzeDocumentSchema, formData));
+    const input = unwrapOrThrow(parseFormData(analyzeDocumentSchema, formData));
 
- // 4 ─ Intent, measured before the outcome is known, so the funnel has a denominator.
- container.resolve(ANALYTICS).track('document.submitted', {
- source: ANALYSIS_SOURCE,
- charCount: input.text.length,
- documentType: input.documentType,
- });
-
- const startedAt = container.resolve(CLOCK)().getTime();
-
- // 5 ─ The operation. One resolved use case, one call, no assembly.
-  const analysis = unwrapOrThrow(
-    await container.resolve(ANALYZE_DOCUMENT)({
-      ownerId: session.userId,
-      text: input.text,
-      media,
+    // 4 ─ Intent, measured before the outcome is known, so the funnel has a denominator.
+    container.resolve(ANALYTICS).track('document.submitted', {
+      source: ANALYSIS_SOURCE,
+      charCount: input.text.length,
       documentType: input.documentType,
-      fileUrl,
-      mimeType,
-      ...(input.title === undefined ? {} : { title: input.title }),
-    }),
-  );
+    });
 
- container.resolve(ANALYTICS).track('document.analyzed', {
- documentId: analysis.id,
- durationMs: container.resolve(CLOCK)().getTime() - startedAt,
- flagCount: analysis.flags.length,
- });
+    const startedAt = container.resolve(CLOCK)().getTime();
 
- // Background vectorize for RAG Semantic Search
- void vectorizeDocument(analysis.id, analysis.rawText);
+    // 5 ─ The operation. One resolved use case, one call, no assembly.
+    const analysis = unwrapOrThrow(
+      await container.resolve(ANALYZE_DOCUMENT)({
+        ownerId: session.userId,
+        text: input.text,
+        media,
+        documentType: input.documentType,
+        fileUrl,
+        mimeType,
+        ...(input.title === undefined ? {} : { title: input.title }),
+      }),
+    );
 
- // 5.5 ─ Increment Usage Tracking
- await incrementScanUsage(session.userId);
+    container.resolve(ANALYTICS).track('document.analyzed', {
+      documentId: analysis.id,
+      durationMs: container.resolve(CLOCK)().getTime() - startedAt,
+      flagCount: analysis.flags.length,
+    });
 
- /**
- * 6 ─ Invalidation, before the redirect.
- *
- * `expire` (not `markStale`) because the person who triggered this write is about to look
- * at the result — stale-while-revalidate would show them an empty vault one render after
- * they filled it. See `core/cache/revalidate.ts` for why those are two different verbs.
- *
- * The document's own tags are a no-op on a create: nothing has cached an id that did not
- * exist a moment ago. They are here because re-analysis will reuse this path, and an
- * invalidation that is correct only for the create case is a bug waiting for the second
- * caller. The vault tag is the one doing real work today.
- */
- expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
+    // Background vectorize for RAG Semantic Search
+    void vectorizeDocument(analysis.id, analysis.rawText);
 
- /**
- * 7 ─ Redirect, deliberately outside any try/catch.
- *
- * `redirect()` works by throwing a control-flow signal. `withActionErrors` calls
- * `normalizeError`, which re-throws that signal before treating anything as an error —
- * which is the only reason a redirect inside a wrapped action still redirects instead of
- * becoming a rendered "something went wrong".
- *
- * Redirecting rather than returning the DTO also makes the result addressable: the user
- * can bookmark it, share it, or reload without re-submitting the form.
- */
- redirect(ROUTES.document(analysis.id));
- },
+    // 5.5 ─ Increment Usage Tracking
+    await incrementScanUsage(session.userId);
+
+    /**
+     * 6 ─ Invalidation, before the redirect.
+     *
+     * `expire` (not `markStale`) because the person who triggered this write is about to look
+     * at the result — stale-while-revalidate would show them an empty vault one render after
+     * they filled it. See `core/cache/revalidate.ts` for why those are two different verbs.
+     *
+     * The document's own tags are a no-op on a create: nothing has cached an id that did not
+     * exist a moment ago. They are here because re-analysis will reuse this path, and an
+     * invalidation that is correct only for the create case is a bug waiting for the second
+     * caller. The vault tag is the one doing real work today.
+     */
+    expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
+
+    /**
+     * 7 ─ Redirect, deliberately outside any try/catch.
+     *
+     * `redirect()` works by throwing a control-flow signal. `withActionErrors` calls
+     * `normalizeError`, which re-throws that signal before treating anything as an error —
+     * which is the only reason a redirect inside a wrapped action still redirects instead of
+     * becoming a rendered "something went wrong".
+     *
+     * Redirecting rather than returning the DTO also makes the result addressable: the user
+     * can bookmark it, share it, or reload without re-submitting the form.
+     */
+    redirect(ROUTES.document(analysis.id));
+  },
 );
 
 export const resolveFlagAction = action(
@@ -227,33 +249,33 @@ export const resolveFlagAction = action(
     const session = unwrapOrThrow(await checkPermissionResult('document.read'));
     const documentId = formData.get('documentId') as string;
     const flagId = formData.get('flagId') as string;
-    
+
     if (!documentId || !flagId) {
       throw forbiddenError('Missing required identifiers');
     }
 
     const { prisma } = await import('@/server/db/prisma');
-    
+
     const doc = await prisma.documentAnalysis.findFirst({
-      where: { id: documentId, ownerId: session.userId }
+      where: { id: documentId, ownerId: session.userId },
     });
-    
+
     if (!doc) throw forbiddenError('Document not found');
 
     const isResolved = doc.resolvedFlagIds.includes(flagId);
-    const updatedIds = isResolved 
-      ? doc.resolvedFlagIds.filter(id => id !== flagId)
+    const updatedIds = isResolved
+      ? doc.resolvedFlagIds.filter((id) => id !== flagId)
       : [...doc.resolvedFlagIds, flagId];
 
     await prisma.documentAnalysis.update({
       where: { id: documentId },
-      data: { resolvedFlagIds: updatedIds }
+      data: { resolvedFlagIds: updatedIds },
     });
 
     expire([...documentTags(documentId, session.userId)]);
-    
+
     redirect(ROUTES.document(documentId));
-  }
+  },
 );
 
 export const analyzeUrlAction = action(
@@ -264,10 +286,14 @@ export const analyzeUrlAction = action(
 
     const planData = await getUserPlan();
     if (!planData.entitlements.canScan) {
-      throw forbiddenError('Scan quota exceeded. Please upgrade your plan in the Billing dashboard.');
+      throw forbiddenError(
+        'Scan quota exceeded. Please upgrade your plan in the Billing dashboard.',
+      );
     }
 
-    const decision = await container.resolve(RATE_LIMITER).consume(ANALYZE_RATE_SCOPE, session.userId);
+    const decision = await container
+      .resolve(RATE_LIMITER)
+      .consume(ANALYZE_RATE_SCOPE, session.userId);
     if (!decision.allowed) {
       const nowMs = container.resolve(CLOCK)().getTime();
       const retryAfter = Math.max(1, Math.ceil((decision.resetAt - nowMs) / 1_000));
@@ -284,7 +310,7 @@ export const analyzeUrlAction = action(
       const response = await fetch(url, { headers: { 'User-Agent': 'PaperLensBot/1.0' } });
       if (!response.ok) throw new Error('Failed to fetch URL');
       const html = await response.text();
-      
+
       const fakeFile = {
         name: 'url.html',
         type: 'text/html',
@@ -293,7 +319,9 @@ export const analyzeUrlAction = action(
       };
       extractedText = await extractTextFromFile(fakeFile as any);
     } catch (e) {
-      throw validationError({ url: ['Could not read the contents of this URL. Ensure it is public and accessible.'] });
+      throw validationError({
+        url: ['Could not read the contents of this URL. Ensure it is public and accessible.'],
+      });
     }
 
     const startedAt = container.resolve(CLOCK)().getTime();
@@ -310,5 +338,5 @@ export const analyzeUrlAction = action(
     await incrementScanUsage(session.userId);
     expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
     redirect(ROUTES.document(analysis.id));
-  }
+  },
 );

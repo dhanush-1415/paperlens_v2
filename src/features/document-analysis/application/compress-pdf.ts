@@ -17,9 +17,9 @@ type CompressOptions = {
 
 // Ordered from mild → aggressive — each pass lowers scale and quality
 const PASSES = [
-  { scale: 1.0,  quality: 0.60 },
+  { scale: 1.0, quality: 0.6 },
   { scale: 0.85, quality: 0.48 },
-  { scale: 0.70, quality: 0.38 },
+  { scale: 0.7, quality: 0.38 },
   { scale: 0.55, quality: 0.28 },
 ];
 
@@ -28,7 +28,7 @@ const MAX_DIM = 1600;
 
 async function renderPass(
   pdfDoc: Awaited<ReturnType<(typeof import('pdfjs-dist'))['getDocument']>['promise']>,
-  jsPDF: typeof import('jspdf')['jsPDF'],
+  jsPDF: (typeof import('jspdf'))['jsPDF'],
   scale: number,
   quality: number,
   onProgress?: (pct: number) => void,
@@ -36,8 +36,8 @@ async function renderPass(
   let output: InstanceType<typeof jsPDF> | null = null;
 
   for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-    const page     = await pdfDoc.getPage(pageNum);
-    const raw      = page.getViewport({ scale });
+    const page = await pdfDoc.getPage(pageNum);
+    const raw = page.getViewport({ scale });
 
     // Cap dimensions — if the page is huge, scale down further
     const dimScale = Math.min(1, MAX_DIM / Math.max(raw.width, raw.height));
@@ -47,7 +47,7 @@ async function renderPass(
     const h = Math.floor(viewport.height);
 
     const canvas = document.createElement('canvas');
-    canvas.width  = w;
+    canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context unavailable');
@@ -57,17 +57,17 @@ async function renderPass(
     const imgData = canvas.toDataURL('image/jpeg', quality);
 
     // Free the canvas memory immediately
-    canvas.width  = 0;
+    canvas.width = 0;
     canvas.height = 0;
 
     onProgress?.(Math.round((pageNum / pdfDoc.numPages) * 100));
 
     if (!output) {
       output = new jsPDF({
-        unit:        'px',
-        format:      [w, h],
+        unit: 'px',
+        format: [w, h],
         orientation: w >= h ? 'landscape' : 'portrait',
-        compress:    true,
+        compress: true,
       });
     } else {
       output.addPage([w, h], w >= h ? 'landscape' : 'portrait');
@@ -84,17 +84,14 @@ export async function compressPdf(
   file: File,
   { targetBytes, onProgress }: CompressOptions = {},
 ): Promise<File> {
-  const [pdfjsLib, { jsPDF }] = await Promise.all([
-    import('pdfjs-dist'),
-    import('jspdf'),
-  ]);
+  const [pdfjsLib, { jsPDF }] = await Promise.all([import('pdfjs-dist'), import('jspdf')]);
 
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
     import.meta.url,
   ).toString();
 
-  const data   = await file.arrayBuffer();
+  const data = await file.arrayBuffer();
   const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
 
   let bestBlob: Blob | null = null;

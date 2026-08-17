@@ -61,37 +61,37 @@ let interval: ReturnType<typeof setInterval> | null = null;
 let snapshot = 0;
 
 function currentSecond(): number {
- return Math.floor(Date.now() / TICK_MS);
+  return Math.floor(Date.now() / TICK_MS);
 }
 
 function subscribe(onChange: () => void): () => void {
- listeners.add(onChange);
- // Refreshed here so the first post-hydration read is current rather than a second stale.
- // React calls `getSnapshot` again immediately after subscribing, which picks this up.
- snapshot = currentSecond();
+  listeners.add(onChange);
+  // Refreshed here so the first post-hydration read is current rather than a second stale.
+  // React calls `getSnapshot` again immediately after subscribing, which picks this up.
+  snapshot = currentSecond();
 
- interval ??= setInterval(() => {
- snapshot = currentSecond();
- for (const listener of listeners) listener();
- }, TICK_MS);
+  interval ??= setInterval(() => {
+    snapshot = currentSecond();
+    for (const listener of listeners) listener();
+  }, TICK_MS);
 
- return () => {
- listeners.delete(onChange);
- if (listeners.size === 0 && interval !== null) {
- clearInterval(interval);
- interval = null;
- }
- };
+  return () => {
+    listeners.delete(onChange);
+    if (listeners.size === 0 && interval !== null) {
+      clearInterval(interval);
+      interval = null;
+    }
+  };
 }
 
 /** Seconds since the epoch, quantised to the tick so the value is stable within a render. */
 function getSnapshot(): number | null {
- return snapshot;
+  return snapshot;
 }
 
 /** `null` means "the server has no opinion about now" — see the header. */
 function getServerSnapshot(): number | null {
- return null;
+  return null;
 }
 
 /**
@@ -102,75 +102,75 @@ function getServerSnapshot(): number | null {
  * difference between 2 days and 2 days minus five minutes is the whole point of showing it.
  */
 function formatRemaining(seconds: number): string {
- const total = Math.abs(seconds);
- const days = Math.floor(total / 86_400);
- const hours = Math.floor((total % 86_400) / 3_600);
- const minutes = Math.floor((total % 3_600) / 60);
- const pad = (value: number) => String(value).padStart(2, '0');
- const clock = `${pad(hours)}:${pad(minutes)}:${pad(total % 60)}`;
- return days > 0 ? `${days}d ${clock}` : clock;
+  const total = Math.abs(seconds);
+  const days = Math.floor(total / 86_400);
+  const hours = Math.floor((total % 86_400) / 3_600);
+  const minutes = Math.floor((total % 3_600) / 60);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const clock = `${pad(hours)}:${pad(minutes)}:${pad(total % 60)}`;
+  return days > 0 ? `${days}d ${clock}` : clock;
 }
 
 function levelFor(remaining: number): RiskTone {
- if (remaining <= CRITICAL_WITHIN_SECONDS) return 'critical';
- if (remaining <= CAUTION_WITHIN_SECONDS) return 'caution';
- return 'safe';
+  if (remaining <= CRITICAL_WITHIN_SECONDS) return 'critical';
+  if (remaining <= CAUTION_WITHIN_SECONDS) return 'caution';
+  return 'safe';
 }
 
 export interface DeadlineCountdownProps {
- /** ISO 8601, with an offset or `Z`. A bare `YYYY-MM-DD` is parsed as UTC midnight. */
- deadline: string;
- /** What the deadline is for — "Opt-out window closes". Rendered before the time. */
- label?: string;
- size?: 'sm' | 'md';
- className?: string;
+  /** ISO 8601, with an offset or `Z`. A bare `YYYY-MM-DD` is parsed as UTC midnight. */
+  deadline: string;
+  /** What the deadline is for — "Opt-out window closes". Rendered before the time. */
+  label?: string;
+  size?: 'sm' | 'md';
+  className?: string;
 }
 
 export function DeadlineCountdown({
- deadline,
- label,
- size = 'sm',
- className,
+  deadline,
+  label,
+  size = 'sm',
+  className,
 }: DeadlineCountdownProps) {
- const now = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const now = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
- const targetMs = Date.parse(deadline);
- // A malformed date renders as the raw input rather than "NaN:NaN:NaN" or nothing at all.
- // Silently dropping it would hide a data bug behind an empty cell.
- if (Number.isNaN(targetMs)) {
- return (
- <span className={cn('text-2xs text-text-tertiary', className)}>
- {label ? `${label} ` : ''}
- {deadline}
- </span>
- );
- }
+  const targetMs = Date.parse(deadline);
+  // A malformed date renders as the raw input rather than "NaN:NaN:NaN" or nothing at all.
+  // Silently dropping it would hide a data bug behind an empty cell.
+  if (Number.isNaN(targetMs)) {
+    return (
+      <span className={cn('text-2xs text-text-tertiary', className)}>
+        {label ? `${label} ` : ''}
+        {deadline}
+      </span>
+    );
+  }
 
- const remaining = now === null ? null : Math.floor(targetMs / TICK_MS) - now;
- const overdue = remaining !== null && remaining < 0;
- const level: RiskTone = remaining === null ? 'safe' : levelFor(remaining);
+  const remaining = now === null ? null : Math.floor(targetMs / TICK_MS) - now;
+  const overdue = remaining !== null && remaining < 0;
+  const level: RiskTone = remaining === null ? 'safe' : levelFor(remaining);
 
- return (
- <span
- className={cn(
- 'inline-flex items-center gap-1.5 font-medium tabular-nums',
- size === 'md' ? 'text-sm' : 'text-2xs',
- // Before hydration there is no remainder, so there is no urgency to signal and the
- // date renders in the neutral colour. Colouring it critical on the server would be a
- // guess, and a guess about severity is worse than silence.
- remaining === null ? 'text-text-tertiary' : TONE_TEXT[level],
- className,
- )}
- >
- <ClockIcon aria-hidden className={size === 'md' ? 'size-4' : 'size-3.5'} />
- {label ? <span className="font-normal text-text-tertiary">{label}</span> : null}
- <time dateTime={deadline}>
- {remaining === null
- ? deadline.slice(0, 10)
- : overdue
- ? `Overdue by ${formatRemaining(remaining)}`
- : formatRemaining(remaining)}
- </time>
- </span>
- );
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 font-medium tabular-nums',
+        size === 'md' ? 'text-sm' : 'text-2xs',
+        // Before hydration there is no remainder, so there is no urgency to signal and the
+        // date renders in the neutral colour. Colouring it critical on the server would be a
+        // guess, and a guess about severity is worse than silence.
+        remaining === null ? 'text-text-tertiary' : TONE_TEXT[level],
+        className,
+      )}
+    >
+      <ClockIcon aria-hidden className={size === 'md' ? 'size-4' : 'size-3.5'} />
+      {label ? <span className="font-normal text-text-tertiary">{label}</span> : null}
+      <time dateTime={deadline}>
+        {remaining === null
+          ? deadline.slice(0, 10)
+          : overdue
+            ? `Overdue by ${formatRemaining(remaining)}`
+            : formatRemaining(remaining)}
+      </time>
+    </span>
+  );
 }

@@ -19,52 +19,52 @@
 import type { TenantOverridableToken } from '@/shared/ui/tokens';
 
 export interface TenantConfig {
- readonly id: string;
- readonly name: string;
- readonly productName: string;
- readonly tagline: string;
- readonly logo: { readonly light: string; readonly dark: string };
- readonly legal: {
- readonly companyName: string;
- readonly termsUrl: string;
- readonly privacyUrl: string;
- readonly supportEmail: string;
- };
- /**
- * CSS custom properties applied to `<html>`, per colour scheme.
- *
- * Keys are constrained to `TenantOverridableToken` — a tenant may restyle the system, not
- * invent new slots in it, and may not touch the risk palette, motion, layers or focus.
- * That list and its rationale live in `shared/ui/tokens/contract.ts`; the overlay is
- * rendered by `shared/ui/theme/tenant-tokens.tsx`.
- *
- * The import is type-only, so this file stays free of any runtime dependency on the UI
- * layer and remains safe to read from the server, the client and the proxy alike.
- */
- readonly tokenOverrides: {
- readonly light?: Partial<Readonly<Record<TenantOverridableToken, string>>>;
- readonly dark?: Partial<Readonly<Record<TenantOverridableToken, string>>>;
- };
- /** Flag defaults for this tenant. Runtime flag providers still win. */
- readonly flagOverrides: Readonly<Record<string, boolean>>;
+  readonly id: string;
+  readonly name: string;
+  readonly productName: string;
+  readonly tagline: string;
+  readonly logo: { readonly light: string; readonly dark: string };
+  readonly legal: {
+    readonly companyName: string;
+    readonly termsUrl: string;
+    readonly privacyUrl: string;
+    readonly supportEmail: string;
+  };
+  /**
+   * CSS custom properties applied to `<html>`, per colour scheme.
+   *
+   * Keys are constrained to `TenantOverridableToken` — a tenant may restyle the system, not
+   * invent new slots in it, and may not touch the risk palette, motion, layers or focus.
+   * That list and its rationale live in `shared/ui/tokens/contract.ts`; the overlay is
+   * rendered by `shared/ui/theme/tenant-tokens.tsx`.
+   *
+   * The import is type-only, so this file stays free of any runtime dependency on the UI
+   * layer and remains safe to read from the server, the client and the proxy alike.
+   */
+  readonly tokenOverrides: {
+    readonly light?: Partial<Readonly<Record<TenantOverridableToken, string>>>;
+    readonly dark?: Partial<Readonly<Record<TenantOverridableToken, string>>>;
+  };
+  /** Flag defaults for this tenant. Runtime flag providers still win. */
+  readonly flagOverrides: Readonly<Record<string, boolean>>;
 }
 
 export const DEFAULT_TENANT_ID = 'default';
 
 const defaultTenant: TenantConfig = {
- id: DEFAULT_TENANT_ID,
- name: 'PaperLens',
- productName: 'PaperLens',
- tagline: 'Understand any document before you sign it.',
- logo: { light: '/brand/logo-light.svg', dark: '/brand/logo-dark.svg' },
- legal: {
- companyName: 'PaperLens',
- termsUrl: '/terms',
- privacyUrl: '/privacy',
- supportEmail: 'support@paperlens.app',
- },
- tokenOverrides: {},
- flagOverrides: {},
+  id: DEFAULT_TENANT_ID,
+  name: 'PaperLens',
+  productName: 'PaperLens',
+  tagline: 'Understand any document before you sign it.',
+  logo: { light: '/brand/logo-light.svg', dark: '/brand/logo-dark.svg' },
+  legal: {
+    companyName: 'PaperLens',
+    termsUrl: '/terms',
+    privacyUrl: '/privacy',
+    supportEmail: 'support@paperlens.app',
+  },
+  tokenOverrides: {},
+  flagOverrides: {},
 };
 
 /**
@@ -77,14 +77,14 @@ const defaultTenant: TenantConfig = {
  * change.
  */
 const TENANTS: Readonly<Record<string, TenantConfig>> = {
- [DEFAULT_TENANT_ID]: defaultTenant,
+  [DEFAULT_TENANT_ID]: defaultTenant,
 };
 
 export function resolveTenant(tenantId: string | undefined): TenantConfig {
- if (!tenantId) return defaultTenant;
- return TENANTS[tenantId] ?? defaultTenant;
+  if (!tenantId) return defaultTenant;
+  return TENANTS[tenantId] ?? defaultTenant;
 }
 
 export function isKnownTenant(tenantId: string): boolean {
- return tenantId in TENANTS;
+  return tenantId in TENANTS;
 }

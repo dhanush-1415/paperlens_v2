@@ -4,10 +4,14 @@ type Urgency = 'CRITICAL' | 'HIGH' | 'MODERATE' | 'LOW' | 'SKIPPABLE';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
 
 const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
-const FROM    = () => process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
+const FROM = () => process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
 
 const URGENCY_EMOJI: Record<Urgency, string> = {
-  CRITICAL: '🔴', HIGH: '🟠', MODERATE: '🟡', LOW: '🟢', SKIPPABLE: '⚪',
+  CRITICAL: '🔴',
+  HIGH: '🟠',
+  MODERATE: '🟡',
+  LOW: '🟢',
+  SKIPPABLE: '⚪',
 };
 
 function shell(inner: string): string {
@@ -28,8 +32,8 @@ export async function sendInboundResultEmail(
   const docUrl = `${APP_URL()}/document/${args.documentId}?ref=email-in`;
   try {
     await resend.emails.send({
-      from:    FROM(),
-      to:      email,
+      from: FROM(),
+      to: email,
       subject: `✅ Analyzed: "${args.headline}"`,
       html: shell(`
         <h2 style="margin:0 0 6px;font-size:18px;color:#111827;">${URGENCY_EMOJI[args.urgency]} Your document is ready</h2>
@@ -53,8 +57,8 @@ export async function sendInboundNoticeEmail(
   const isLimit = reason === 'limit';
   try {
     await resend.emails.send({
-      from:    FROM(),
-      to:      email,
+      from: FROM(),
+      to: email,
       subject: isLimit ? '⚠️ Scan limit reached' : '⚠️ Couldn’t read that document',
       html: shell(
         isLimit

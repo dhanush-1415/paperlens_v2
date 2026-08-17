@@ -57,34 +57,34 @@ const tenant = resolveTenant(serverEnv.TENANT_ID);
  * means every page below states only its own name.
  */
 export const metadata: Metadata = {
- metadataBase: new URL(appConfig.url),
- title: {
- default: `${tenant.productName} — ${tenant.tagline}`,
- template: `%s · ${tenant.productName}`,
- },
- description: appConfig.description,
- applicationName: tenant.productName,
- referrer: 'strict-origin-when-cross-origin',
- formatDetection: { telephone: false, address: false, email: false },
- openGraph: {
- type: 'website',
- siteName: tenant.productName,
- title: `${tenant.productName} — ${tenant.tagline}`,
- description: appConfig.description,
- url: appConfig.url,
- },
- twitter: {
- card: 'summary_large_image',
- title: tenant.productName,
- description: appConfig.description,
- },
- /**
- * Pre-production deployments are excluded from search engines at the source. A staging
- * URL that ranks is a support problem that outlives the deployment.
- */
- robots: appConfig.isPreProduction
- ? { index: false, follow: false }
- : { index: true, follow: true },
+  metadataBase: new URL(appConfig.url),
+  title: {
+    default: `${tenant.productName} — ${tenant.tagline}`,
+    template: `%s · ${tenant.productName}`,
+  },
+  description: appConfig.description,
+  applicationName: tenant.productName,
+  referrer: 'strict-origin-when-cross-origin',
+  formatDetection: { telephone: false, address: false, email: false },
+  openGraph: {
+    type: 'website',
+    siteName: tenant.productName,
+    title: `${tenant.productName} — ${tenant.tagline}`,
+    description: appConfig.description,
+    url: appConfig.url,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: tenant.productName,
+    description: appConfig.description,
+  },
+  /**
+   * Pre-production deployments are excluded from search engines at the source. A staging
+   * URL that ranks is a support problem that outlives the deployment.
+   */
+  robots: appConfig.isPreProduction
+    ? { index: false, follow: false }
+    : { index: true, follow: true },
 };
 
 /**
@@ -95,42 +95,90 @@ export const metadata: Metadata = {
  * resolve inside a `<meta>` tag.
  */
 export const viewport: Viewport = {
- colorScheme: 'light dark',
- themeColor: [
- { media: '(prefers-color-scheme: light)', color: '#ffffff' },
- { media: '(prefers-color-scheme: dark)', color: '#0a1224' },
- ],
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a1224' },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
- return (
- /**
- * `suppressHydrationWarning` is required here and is not a workaround.
- *
- * `ThemeScript` writes `data-theme` onto this element before React hydrates, so the
- * server-rendered attributes and the client's differ by construction. The attribute
- * suppresses the warning for this element only — it does not extend to children, so a
- * genuine hydration mismatch anywhere else still reports.
- */
- <html
- lang="en"
- dir="ltr"
- data-tenant={tenant.id}
- suppressHydrationWarning
- className={cn(fontVariables, 'h-full')}
- >
- <head>
- {/* First, before anything paints: the theme must be resolved before the browser has
+  return (
+    /**
+     * `suppressHydrationWarning` is required here and is not a workaround.
+     *
+     * `ThemeScript` writes `data-theme` onto this element before React hydrates, so the
+     * server-rendered attributes and the client's differ by construction. The attribute
+     * suppresses the warning for this element only — it does not extend to children, so a
+     * genuine hydration mismatch anywhere else still reports.
+     */
+    <html
+      lang="en"
+      dir="ltr"
+      data-tenant={tenant.id}
+      suppressHydrationWarning
+      className={cn(fontVariables, 'h-full')}
+    >
+      <head>
+        {/* First, before anything paints: the theme must be resolved before the browser has
  content to show. */}
- <ThemeScript />
- {/* Plausible analytics – loaded after consent */}
- <Script src="https://plausible.io/js/plausible.js" defer data-domain="paperlens.io" />
- {/* Tenant tokens */}
- <TenantTokens tenant={tenant} />
- </head>
- <body suppressHydrationWarning className="flex min-h-full flex-col antialiased text-text-primary bg-canvas">
- <Providers>{children}</Providers>
- </body>
- </html>
- );
+        <ThemeScript />
+        {/* Plausible analytics – loaded after consent */}
+        <Script src="https://plausible.io/js/plausible.js" defer data-domain="paperlens.co" />
+        {/* Tenant tokens */}
+        <TenantTokens tenant={tenant} />
+
+        {/* Phase 1 SEO: JSON-LD Knowledge Graph */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'SoftwareApplication',
+                  name: 'PaperLens',
+                  operatingSystem: 'Web',
+                  applicationCategory: 'BusinessApplication',
+                  offers: {
+                    '@type': 'Offer',
+                    price: '0.00',
+                    priceCurrency: 'USD',
+                  },
+                  description:
+                    'Enterprise AI Document Analyzer. Extract truth, citations, and summaries from complex PDFs and research papers in seconds.',
+                },
+                {
+                  '@type': 'Organization',
+                  '@id': 'https://paperlens.co/#organization',
+                  name: 'PaperLens',
+                  url: 'https://paperlens.co',
+                  logo: 'https://paperlens.co/favicon.ico',
+                  sameAs: [
+                    'https://twitter.com/paperlens',
+                    'https://linkedin.com/company/paperlens',
+                  ],
+                },
+                {
+                  '@type': 'WebSite',
+                  '@id': 'https://paperlens.co/#website',
+                  url: 'https://paperlens.co',
+                  name: 'PaperLens',
+                  publisher: {
+                    '@id': 'https://paperlens.co/#organization',
+                  },
+                },
+              ],
+            }),
+          }}
+        />
+      </head>
+      <body
+        suppressHydrationWarning
+        className="flex min-h-full flex-col bg-canvas text-text-primary antialiased"
+      >
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
 }

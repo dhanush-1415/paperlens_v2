@@ -43,47 +43,47 @@ import { appConfig, devConfig, isDevelopment, isProduction } from '@/config';
 import { serverEnv } from '@/config/env.server';
 import { resolveTenant } from '@/config/tenant';
 import {
- createAnalytics,
- createLoggerAnalyticsProvider,
- createNoopAnalyticsProvider,
- grantAll,
- type AnalyticsProvider,
+  createAnalytics,
+  createLoggerAnalyticsProvider,
+  createNoopAnalyticsProvider,
+  grantAll,
+  type AnalyticsProvider,
 } from '@/core/analytics';
 import { createInMemoryAuthProvider, createSupabaseAuthProvider } from '@/core/auth';
 import { createSessionAccessors } from '@/core/auth/dal';
 import { createCookieSessionStore } from '@/core/auth/session-store';
 import {
- ANALYTICS,
- AUTH_PROVIDER,
- CLOCK,
- Container,
- DICTIONARY_LOADER,
- ERROR_REPORTER,
- FLAGS_SERVICE,
- HTTP_CLIENT,
- LOCAL_STORAGE_DRIVER,
- LOGGER,
- NETWORK_MONITOR,
- RATE_LIMITER,
- SESSION_STORAGE_DRIVER,
- SESSION_STORE,
- TRANSLATOR,
+  ANALYTICS,
+  AUTH_PROVIDER,
+  CLOCK,
+  Container,
+  DICTIONARY_LOADER,
+  ERROR_REPORTER,
+  FLAGS_SERVICE,
+  HTTP_CLIENT,
+  LOCAL_STORAGE_DRIVER,
+  LOGGER,
+  NETWORK_MONITOR,
+  RATE_LIMITER,
+  SESSION_STORAGE_DRIVER,
+  SESSION_STORE,
+  TRANSLATOR,
 } from '@/core/container';
 import { createRequestScopeAccessor } from '@/core/container/request';
 import {
- withActionErrors,
- withRouteErrors,
- type ActionResult,
- type BoundaryDeps,
+  withActionErrors,
+  withRouteErrors,
+  type ActionResult,
+  type BoundaryDeps,
 } from '@/core/errors';
 import { createFlags, createStaticFlagProvider, FLAGS } from '@/core/flags';
 import { createHttpClient, loggingInterceptor, timingInterceptor } from '@/core/http';
 import {
- createBundledDictionaryLoader,
- createTranslator,
- DEFAULT_LOCALE,
- en,
- type MessageKey,
+  createBundledDictionaryLoader,
+  createTranslator,
+  DEFAULT_LOCALE,
+  en,
+  type MessageKey,
 } from '@/core/i18n';
 import { createConsoleTransport, createJsonTransport, createLogger } from '@/core/logging';
 import { requestContextResolver } from '@/core/logging/context';
@@ -106,138 +106,138 @@ import type { FlagName, FlagValue } from '@/core/flags';
  * on one registered last.
  */
 function buildServerContainer(): Container {
- const container = new Container('server');
+  const container = new Container('server');
 
- /**
- * Time. Bound before anything else because four other services take a clock, and they
- * must all take the *same* one — two clocks in one container can disagree, and a test
- * that freezes one and not the other fails in a way that takes an afternoon to find.
- */
- container.registerValue(CLOCK, systemClock);
+  /**
+   * Time. Bound before anything else because four other services take a clock, and they
+   * must all take the *same* one — two clocks in one container can disagree, and a test
+   * that freezes one and not the other fails in a way that takes an afternoon to find.
+   */
+  container.registerValue(CLOCK, systemClock);
 
- container.register(LOGGER, (c) => {
- const clock = c.resolve(CLOCK);
+  container.register(LOGGER, (c) => {
+    const clock = c.resolve(CLOCK);
 
- return createLogger({
- scope: 'server',
- // `LOG_LEVEL` unset means "use the environment's default": everything in development,
- // info and above in production. An explicit variable always wins.
- level: serverEnv.LOG_LEVEL ?? (isDevelopment ? 'debug' : 'info'),
- // Pretty output for a human reading a terminal, one JSON object per line for a log
- // aggregator that has to index it. Defaulting on `isProduction` rather than requiring
- // the variable means a deployment that forgets to set it still ships parseable logs.
- transports: [
- (serverEnv.LOG_FORMAT ?? (isProduction ? 'json' : 'pretty')) === 'json'
- ? createJsonTransport()
- : createConsoleTransport({ colour: true }),
- ],
- bindings: {
- environment: appConfig.environment,
- commit: appConfig.commitSha,
- tenant: serverEnv.TENANT_ID,
- },
- /**
- * The request context is *injected*, not imported by the logger.
- *
- * `AsyncLocalStorage` is a Node-only API. If `core/logging/logger.ts` imported it
- * directly, the logger would be unusable in the browser and in the edge runtime, and
- * every client component that logs would drag `node:async_hooks` into its bundle.
- * Resolving it here keeps the logger portable and puts the Node dependency in the one
- * file that already knows it is running on a server.
- */
- context: requestContextResolver,
- now: clock,
- });
- });
+    return createLogger({
+      scope: 'server',
+      // `LOG_LEVEL` unset means "use the environment's default": everything in development,
+      // info and above in production. An explicit variable always wins.
+      level: serverEnv.LOG_LEVEL ?? (isDevelopment ? 'debug' : 'info'),
+      // Pretty output for a human reading a terminal, one JSON object per line for a log
+      // aggregator that has to index it. Defaulting on `isProduction` rather than requiring
+      // the variable means a deployment that forgets to set it still ships parseable logs.
+      transports: [
+        (serverEnv.LOG_FORMAT ?? (isProduction ? 'json' : 'pretty')) === 'json'
+          ? createJsonTransport()
+          : createConsoleTransport({ colour: true }),
+      ],
+      bindings: {
+        environment: appConfig.environment,
+        commit: appConfig.commitSha,
+        tenant: serverEnv.TENANT_ID,
+      },
+      /**
+       * The request context is *injected*, not imported by the logger.
+       *
+       * `AsyncLocalStorage` is a Node-only API. If `core/logging/logger.ts` imported it
+       * directly, the logger would be unusable in the browser and in the edge runtime, and
+       * every client component that logs would drag `node:async_hooks` into its bundle.
+       * Resolving it here keeps the logger portable and puts the Node dependency in the one
+       * file that already knows it is running on a server.
+       */
+      context: requestContextResolver,
+      now: clock,
+    });
+  });
 
- /**
- * Crash reporting (requirement 17).
- *
- * The logger-backed reporter is not a placeholder for a missing feature — it is the
- * correct default for an app with no vendor configured: every report reaches the same
- * stream as everything else, with the same redaction and the same correlation ID. A
- * Sentry adapter replaces this one line.
- */
- container.register(ERROR_REPORTER, (c) => createLoggerErrorReporter(c.resolve(LOGGER)));
+  /**
+   * Crash reporting (requirement 17).
+   *
+   * The logger-backed reporter is not a placeholder for a missing feature — it is the
+   * correct default for an app with no vendor configured: every report reaches the same
+   * stream as everything else, with the same redaction and the same correlation ID. A
+   * Sentry adapter replaces this one line.
+   */
+  container.register(ERROR_REPORTER, (c) => createLoggerErrorReporter(c.resolve(LOGGER)));
 
- container.register(ANALYTICS, (c) => {
- const logger = c.resolve(LOGGER);
- const now = epochMillis(c.resolve(CLOCK));
+  container.register(ANALYTICS, (c) => {
+    const logger = c.resolve(LOGGER);
+    const now = epochMillis(c.resolve(CLOCK));
 
- /**
- * Server-side analytics with no vendor: log the event, drop it otherwise. The noop
- * provider is used rather than an empty array because `createAnalytics` with zero
- * providers would still buffer events waiting for consent, which is a slow leak.
- */
- const providers: AnalyticsProvider[] = appConfig.observability.analyticsEnabled
- ? [createLoggerAnalyticsProvider(logger)]
- : [createNoopAnalyticsProvider()];
+    /**
+     * Server-side analytics with no vendor: log the event, drop it otherwise. The noop
+     * provider is used rather than an empty array because `createAnalytics` with zero
+     * providers would still buffer events waiting for consent, which is a slow leak.
+     */
+    const providers: AnalyticsProvider[] = appConfig.observability.analyticsEnabled
+      ? [createLoggerAnalyticsProvider(logger)]
+      : [createNoopAnalyticsProvider()];
 
- return createAnalytics({
- providers,
- logger,
- /**
- * Server-originated events carry no browser identity and no cross-site tracking, so
- * they are not the kind of processing a consent banner governs. Client-side analytics
- * starts at `denyAll` and waits for the user — see `app/providers.tsx`.
- */
- initialConsent: grantAll(0),
- superProperties: {
- environment: appConfig.environment,
- release: appConfig.commitSha,
- surface: 'server',
- },
- now,
- });
- });
+    return createAnalytics({
+      providers,
+      logger,
+      /**
+       * Server-originated events carry no browser identity and no cross-site tracking, so
+       * they are not the kind of processing a consent banner governs. Client-side analytics
+       * starts at `denyAll` and waits for the user — see `app/providers.tsx`.
+       */
+      initialConsent: grantAll(0),
+      superProperties: {
+        environment: appConfig.environment,
+        release: appConfig.commitSha,
+        surface: 'server',
+      },
+      now,
+    });
+  });
 
- container.register(HTTP_CLIENT, (c) => {
- const logger = c.resolve(LOGGER).child('http');
+  container.register(HTTP_CLIENT, (c) => {
+    const logger = c.resolve(LOGGER).child('http');
 
- return createHttpClient({
- timeoutMs: serverEnv.HTTP_TIMEOUT_MS,
- retries: serverEnv.HTTP_MAX_RETRIES,
- /**
- * The egress allowlist (requirement 15).
- *
- * The web has no equivalent of certificate pinning, but it does have this: a request
- * to a host that is not on the list never leaves the process. An SSRF that reaches
- * this client — a user-supplied URL that ends up as a fetch target — fails at the
- * allowlist rather than at the remote server.
- */
- allowedOrigins: serverEnv.HTTP_ALLOWED_ORIGINS,
- interceptors: [
- loggingInterceptor(logger),
- // A request slower than this is not an error, but it is a warning worth having
- // before it becomes one.
- timingInterceptor(logger, 2_000),
- ],
- logger,
- now: epochMillis(c.resolve(CLOCK)),
- });
- });
+    return createHttpClient({
+      timeoutMs: serverEnv.HTTP_TIMEOUT_MS,
+      retries: serverEnv.HTTP_MAX_RETRIES,
+      /**
+       * The egress allowlist (requirement 15).
+       *
+       * The web has no equivalent of certificate pinning, but it does have this: a request
+       * to a host that is not on the list never leaves the process. An SSRF that reaches
+       * this client — a user-supplied URL that ends up as a fetch target — fails at the
+       * allowlist rather than at the remote server.
+       */
+      allowedOrigins: serverEnv.HTTP_ALLOWED_ORIGINS,
+      interceptors: [
+        loggingInterceptor(logger),
+        // A request slower than this is not an error, but it is a warning worth having
+        // before it becomes one.
+        timingInterceptor(logger, 2_000),
+      ],
+      logger,
+      now: epochMillis(c.resolve(CLOCK)),
+    });
+  });
 
- /**
- * Network monitoring (requirement 14).
- *
- * The server is never "offline" in the sense the port models — it either served the
- * request or it did not. Binding the noop monitor rather than leaving the token
- * unregistered means shared code that resolves it works on both sides without a
- * `typeof window` check.
- */
- container.registerValue(NETWORK_MONITOR, createNoopNetworkMonitor());
+  /**
+   * Network monitoring (requirement 14).
+   *
+   * The server is never "offline" in the sense the port models — it either served the
+   * request or it did not. Binding the noop monitor rather than leaving the token
+   * unregistered means shared code that resolves it works on both sides without a
+   * `typeof window` check.
+   */
+  container.registerValue(NETWORK_MONITOR, createNoopNetworkMonitor());
 
- /**
- * The session cookie (requirement 3, 15).
- *
- * `httpOnly` so no script can read it, `Secure` in production so it never crosses plain
- * HTTP, `SameSite=Lax` so it does not ride along on a cross-site POST. Those three
- * attributes are the entire client-side defence, which is why the store is the only thing
- * permitted to set them.
- */
- container.register(SESSION_STORE, () => createCookieSessionStore());
+  /**
+   * The session cookie (requirement 3, 15).
+   *
+   * `httpOnly` so no script can read it, `Secure` in production so it never crosses plain
+   * HTTP, `SameSite=Lax` so it does not ride along on a cross-site POST. Those three
+   * attributes are the entire client-side defence, which is why the store is the only thing
+   * permitted to set them.
+   */
+  container.register(SESSION_STORE, () => createCookieSessionStore());
 
- container.register(AUTH_PROVIDER, (c) => {
+  container.register(AUTH_PROVIDER, (c) => {
     // If we're in development and missing credentials, use mock data:
     if (isDevelopment && (!serverEnv.SUPABASE_URL || !serverEnv.SUPABASE_ANON_KEY)) {
       return createInMemoryAuthProvider({
@@ -251,7 +251,9 @@ function buildServerContainer(): Container {
     if (!supabaseUrl || !supabaseKey) {
       c.resolve(LOGGER)
         .child('auth')
-        .warn('Missing SUPABASE_URL or SUPABASE_ANON_KEY for production auth. Falling back to InMemory provider for demonstration purposes.');
+        .warn(
+          'Missing SUPABASE_URL or SUPABASE_ANON_KEY for production auth. Falling back to InMemory provider for demonstration purposes.',
+        );
       return createInMemoryAuthProvider({
         store: c.resolve(SESSION_STORE),
         now: c.resolve(CLOCK),
@@ -266,108 +268,112 @@ function buildServerContainer(): Container {
     });
   });
 
- /**
- * Rate limiting (requirement 15).
- *
- * In memory, therefore per-process, therefore **not a real limit behind more than one
- * instance** — an attacker distributed across N replicas gets N times the quota. It is
- * bound anyway because the call sites, the key derivation and the `Retry-After` handling
- * all need to exist and be tested now; swapping the store for Redis or Upstash later is
- * one line and changes no caller.
- */
- container.register(RATE_LIMITER, (c) =>
- createMemoryRateLimiter({ now: epochMillis(c.resolve(CLOCK)) }),
- );
+  /**
+   * Rate limiting (requirement 15).
+   *
+   * In memory, therefore per-process, therefore **not a real limit behind more than one
+   * instance** — an attacker distributed across N replicas gets N times the quota. It is
+   * bound anyway because the call sites, the key derivation and the `Retry-After` handling
+   * all need to exist and be tested now; swapping the store for Redis or Upstash later is
+   * one line and changes no caller.
+   */
+  container.register(RATE_LIMITER, (c) =>
+    createMemoryRateLimiter({ now: epochMillis(c.resolve(CLOCK)) }),
+  );
 
- container.register(FLAGS_SERVICE, (c) => {
- const analytics = c.resolve(ANALYTICS);
+  container.register(FLAGS_SERVICE, (c) => {
+    const analytics = c.resolve(ANALYTICS);
 
- return createFlags({
- /**
- * Static defaults from the registry, plus whatever the tenant overrides. No remote
- * provider is wired: a flag service that polls an endpoint on the server would make
- * every render dynamic, and `createRemoteFlagProvider` exists for the day that
- * trade-off is worth making deliberately.
- */
- providers: [createStaticFlagProvider(resolveTenant(serverEnv.TENANT_ID).flagOverrides)],
- context: {
- environment: appConfig.environment,
- tenantId: serverEnv.TENANT_ID,
- },
- logger: c.resolve(LOGGER).child('flags'),
- /**
- * Every evaluation is an analytics event, which is what makes an experiment
- * measurable: without exposure logging, a flag is a toggle, not a test.
- */
- onEvaluate: (name: FlagName, value: FlagValue) => {
- analytics.track('feature_flag.evaluated', { flag: name, value: String(value) });
- },
- });
- });
+    return createFlags({
+      /**
+       * Static defaults from the registry, plus whatever the tenant overrides. No remote
+       * provider is wired: a flag service that polls an endpoint on the server would make
+       * every render dynamic, and `createRemoteFlagProvider` exists for the day that
+       * trade-off is worth making deliberately.
+       */
+      providers: [createStaticFlagProvider(resolveTenant(serverEnv.TENANT_ID).flagOverrides)],
+      context: {
+        environment: appConfig.environment,
+        tenantId: serverEnv.TENANT_ID,
+      },
+      logger: c.resolve(LOGGER).child('flags'),
+      /**
+       * Every evaluation is an analytics event, which is what makes an experiment
+       * measurable: without exposure logging, a flag is a toggle, not a test.
+       */
+      onEvaluate: (name: FlagName, value: FlagValue) => {
+        analytics.track('feature_flag.evaluated', { flag: name, value: String(value) });
+      },
+    });
+  });
 
- /**
- * Storage on the server (requirement 12).
- *
- * There is no `localStorage` in Node, and there must not be a shared one: a process-wide
- * key/value store read during SSR would serve one user's draft to the next. Both tokens
- * get a *scoped* memory driver so that shared code which writes a preference during SSR
- * writes into a throwaway rather than throwing — and so that anything genuinely
- * persistent is forced through a cookie or the database, where it belongs.
- */
- container.register(LOCAL_STORAGE_DRIVER, () => createMemoryStorageDriver('server-local'), 'scoped');
- container.register(
- SESSION_STORAGE_DRIVER,
- () => createMemoryStorageDriver('server-session'),
- 'scoped',
- );
+  /**
+   * Storage on the server (requirement 12).
+   *
+   * There is no `localStorage` in Node, and there must not be a shared one: a process-wide
+   * key/value store read during SSR would serve one user's draft to the next. Both tokens
+   * get a *scoped* memory driver so that shared code which writes a preference during SSR
+   * writes into a throwaway rather than throwing — and so that anything genuinely
+   * persistent is forced through a cookie or the database, where it belongs.
+   */
+  container.register(
+    LOCAL_STORAGE_DRIVER,
+    () => createMemoryStorageDriver('server-local'),
+    'scoped',
+  );
+  container.register(
+    SESSION_STORAGE_DRIVER,
+    () => createMemoryStorageDriver('server-session'),
+    'scoped',
+  );
 
- container.registerValue(DICTIONARY_LOADER, createBundledDictionaryLoader());
+  container.registerValue(DICTIONARY_LOADER, createBundledDictionaryLoader());
 
- /**
- * The translator is `scoped`, not `singleton` (requirement 29).
- *
- * Locale is a property of the request, not of the process. A singleton translator would
- * be built with the first request's language and then serve it to everyone — the classic
- * SSR concurrency bug, invisible in development where requests arrive one at a time.
- * Today there is one supported locale and the distinction is theoretical; binding it
- * correctly now means adding a second locale is a dictionary, not a refactor.
- */
- container.register(
- TRANSLATOR,
- (c) =>
- createTranslator({
- locale: DEFAULT_LOCALE,
- messages: en,
- logger: c.resolve(LOGGER).child('i18n'),
- }),
- 'scoped',
- );
+  /**
+   * The translator is `scoped`, not `singleton` (requirement 29).
+   *
+   * Locale is a property of the request, not of the process. A singleton translator would
+   * be built with the first request's language and then serve it to everyone — the classic
+   * SSR concurrency bug, invisible in development where requests arrive one at a time.
+   * Today there is one supported locale and the distinction is theoretical; binding it
+   * correctly now means adding a second locale is a dictionary, not a refactor.
+   */
+  container.register(
+    TRANSLATOR,
+    (c) =>
+      createTranslator({
+        locale: DEFAULT_LOCALE,
+        messages: en,
+        logger: c.resolve(LOGGER).child('i18n'),
+      }),
+    'scoped',
+  );
 
- /**
- * Feature registrations, last.
- *
- * Every core service above is bound by the time these run, so a feature's factories may
- * depend on any of them. The composition root's job ends here: it does not know what
- * `registerDocumentAnalysis` binds, only that the feature owns its own wiring. Adding a
- * second feature is one import and one line — which is the property that has to hold for
- * this to survive fifty of them.
- *
- * ### Why `/module` and not the feature barrel
- *
- * The barrel re-exports `presentation/`, and `presentation/actions.ts` imports *this file*
- * for `action()` and `checkPermissionResult()`. Importing the barrel here would close the
- * loop `bootstrap → index → actions → bootstrap`, and `action()` runs at module scope — so
- * the cycle would be evaluated during boot, not merely declared, and surface as a
- * `TypeError` on an undefined import from a stack trace that names none of the culprits.
- *
- * `module.ts` imports only `domain/`, `application/` and `infrastructure/`, never
- * `presentation/`. That is what makes this edge safe, and it is why every feature must keep
- * its registration function in a file that does not reach into its own UI.
- */
- registerDocumentAnalysis(container);
- registerMarketing(container);
+  /**
+   * Feature registrations, last.
+   *
+   * Every core service above is bound by the time these run, so a feature's factories may
+   * depend on any of them. The composition root's job ends here: it does not know what
+   * `registerDocumentAnalysis` binds, only that the feature owns its own wiring. Adding a
+   * second feature is one import and one line — which is the property that has to hold for
+   * this to survive fifty of them.
+   *
+   * ### Why `/module` and not the feature barrel
+   *
+   * The barrel re-exports `presentation/`, and `presentation/actions.ts` imports *this file*
+   * for `action()` and `checkPermissionResult()`. Importing the barrel here would close the
+   * loop `bootstrap → index → actions → bootstrap`, and `action()` runs at module scope — so
+   * the cycle would be evaluated during boot, not merely declared, and surface as a
+   * `TypeError` on an undefined import from a stack trace that names none of the culprits.
+   *
+   * `module.ts` imports only `domain/`, `application/` and `infrastructure/`, never
+   * `presentation/`. That is what makes this edge safe, and it is why every feature must keep
+   * its registration function in a file that does not reach into its own UI.
+   */
+  registerDocumentAnalysis(container);
+  registerMarketing(container);
 
- return container;
+  return container;
 }
 
 let rootContainer: Container | null = null;
@@ -381,8 +387,8 @@ let rootContainer: Container | null = null;
  * must not be relied on.
  */
 export function getServerContainer(): Container {
- rootContainer ??= buildServerContainer();
- return rootContainer;
+  rootContainer ??= buildServerContainer();
+  return rootContainer;
 }
 
 /**
@@ -397,18 +403,18 @@ export const getRequestScope = createRequestScopeAccessor(getServerContainer);
 
 /** The application logger. Prefer `logger().child('scope')` over a second registration. */
 export function logger() {
- return getServerContainer().resolve(LOGGER);
+  return getServerContainer().resolve(LOGGER);
 }
 
 /** The crash reporter. Never throws — see the `ErrorReporter` contract. */
 export function errorReporter() {
- return getServerContainer().resolve(ERROR_REPORTER);
+  return getServerContainer().resolve(ERROR_REPORTER);
 }
 
 /** The dependencies every error boundary needs, resolved once. */
 function boundaryDeps(): BoundaryDeps {
- const container = getServerContainer();
- return { logger: container.resolve(LOGGER), reporter: container.resolve(ERROR_REPORTER) };
+  const container = getServerContainer();
+  return { logger: container.resolve(LOGGER), reporter: container.resolve(ERROR_REPORTER) };
 }
 
 /**
@@ -424,15 +430,15 @@ function boundaryDeps(): BoundaryDeps {
  * through `AppError`, whose whole purpose is to be serializable across the wire.
  */
 function actionBoundaryDeps(): BoundaryDeps {
- const t = getRequestScope().resolve(TRANSLATOR);
+  const t = getRequestScope().resolve(TRANSLATOR);
 
- return {
- ...boundaryDeps(),
- translate: (ref) => {
- const { key, params } = decodeMessageRef(ref);
- return t.t(key as MessageKey, params);
- },
- };
+  return {
+    ...boundaryDeps(),
+    translate: (ref) => {
+      const { key, params } = decodeMessageRef(ref);
+      return t.t(key as MessageKey, params);
+    },
+  };
 }
 
 /**
@@ -453,10 +459,10 @@ function actionBoundaryDeps(): BoundaryDeps {
  * rather than whichever request happened to load the module first.
  */
 export function action<TArgs extends unknown[], TResult>(
- operation: string,
- fn: (...args: TArgs) => Promise<TResult>,
+  operation: string,
+  fn: (...args: TArgs) => Promise<TResult>,
 ): (...args: TArgs) => Promise<ActionResult<TResult>> {
- return (...args: TArgs) => withActionErrors(operation, fn, actionBoundaryDeps())(...args);
+  return (...args: TArgs) => withActionErrors(operation, fn, actionBoundaryDeps())(...args);
 }
 
 /**
@@ -467,10 +473,10 @@ export function action<TArgs extends unknown[], TResult>(
  * ```
  */
 export function route<TArgs extends unknown[]>(
- operation: string,
- fn: (...args: TArgs) => Promise<Response>,
+  operation: string,
+  fn: (...args: TArgs) => Promise<Response>,
 ): (...args: TArgs) => Promise<Response> {
- return withRouteErrors(operation, fn, boundaryDeps());
+  return withRouteErrors(operation, fn, boundaryDeps());
 }
 
 /**
@@ -487,23 +493,23 @@ export function route<TArgs extends unknown[]>(
  * {@link getServerContainer} is lazy to avoid.
  */
 function sessionAccessors() {
- const container = getServerContainer();
- return createSessionAccessors({
- authProvider: container.resolve(AUTH_PROVIDER),
- now: container.resolve(CLOCK),
- });
+  const container = getServerContainer();
+  return createSessionAccessors({
+    authProvider: container.resolve(AUTH_PROVIDER),
+    now: container.resolve(CLOCK),
+  });
 }
 
 export const verifySession = () => sessionAccessors().verifySession();
 export const requireSession = () => sessionAccessors().requireSession();
 export const requirePermission: ReturnType<typeof sessionAccessors>['requirePermission'] = (
- ...args
+  ...args
 ) => sessionAccessors().requirePermission(...args);
 export const getSessionResult = () => sessionAccessors().getSessionResult();
 export const getPublicSession = () => sessionAccessors().getPublicSession();
-export const checkPermissionResult: ReturnType<
- typeof sessionAccessors
->['checkPermissionResult'] = (...args) => sessionAccessors().checkPermissionResult(...args);
+export const checkPermissionResult: ReturnType<typeof sessionAccessors>['checkPermissionResult'] = (
+  ...args
+) => sessionAccessors().checkPermissionResult(...args);
 
 let booted = false;
 
@@ -519,30 +525,30 @@ let booted = false;
  * Idempotent, because `register()` can run again after a hot reload.
  */
 export function bootstrapServer(): void {
- console.log('[DEBUG-TRACE] bootstrapServer: starting initialization');
- if (booted) return;
- booted = true;
+  console.log('[DEBUG-TRACE] bootstrapServer: starting initialization');
+  if (booted) return;
+  booted = true;
 
- if (typeof process !== 'undefined') {
-  process.on('uncaughtException', (err) => {
-   console.error('[CRITICAL-TRACE] Uncaught Exception in Node process:', err);
+  if (typeof process !== 'undefined') {
+    process.on('uncaughtException', (err) => {
+      console.error('[CRITICAL-TRACE] Uncaught Exception in Node process:', err);
+    });
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('[CRITICAL-TRACE] Unhandled Rejection in Node process:', reason);
+    });
+  }
+
+  const container = getServerContainer();
+  const log = container.resolve(LOGGER).child('bootstrap');
+
+  log.info('Server bootstrapped', {
+    environment: appConfig.environment,
+    tenant: serverEnv.TENANT_ID,
+    commit: appConfig.commitSha,
+    flags: Object.keys(FLAGS).length,
   });
-  process.on('unhandledRejection', (reason, promise) => {
-   console.error('[CRITICAL-TRACE] Unhandled Rejection in Node process:', reason);
-  });
- }
 
- const container = getServerContainer();
- const log = container.resolve(LOGGER).child('bootstrap');
-
- log.info('Server bootstrapped', {
- environment: appConfig.environment,
- tenant: serverEnv.TENANT_ID,
- commit: appConfig.commitSha,
- flags: Object.keys(FLAGS).length,
- });
-
- if (devConfig.logContainerRegistrations) {
- log.debug('Container registrations', { tokens: container.registrations() });
- }
+  if (devConfig.logContainerRegistrations) {
+    log.debug('Container registrations', { tokens: container.registrations() });
+  }
 }

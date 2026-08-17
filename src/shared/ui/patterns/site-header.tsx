@@ -51,32 +51,32 @@ import { ThemeToggle } from '../theme/theme-toggle';
 import type { ThemePreference } from '../theme/types';
 
 export interface SiteNavItem {
- readonly href: Route;
- readonly label: string;
+  readonly href: Route;
+  readonly label: string;
 }
 
 export interface SiteHeaderLabels {
- /** Accessible name for the hamburger. */
- readonly menu: string;
- readonly closeMenu: string;
- readonly signIn: string;
- /** The primary action. One per viewport, everywhere in this product. */
- readonly cta: string;
- readonly theme: string;
- readonly themeOptions: Record<ThemePreference, string>;
- /** Reassurance under the drawer's CTA. Kept short enough for a 390px screen. */
- readonly ctaNote: string;
+  /** Accessible name for the hamburger. */
+  readonly menu: string;
+  readonly closeMenu: string;
+  readonly signIn: string;
+  /** The primary action. One per viewport, everywhere in this product. */
+  readonly cta: string;
+  readonly theme: string;
+  readonly themeOptions: Record<ThemePreference, string>;
+  /** Reassurance under the drawer's CTA. Kept short enough for a 390px screen. */
+  readonly ctaNote: string;
 }
 
 export interface SiteHeaderProps {
- productName: string;
- items: readonly SiteNavItem[];
- signInHref: Route;
- ctaHref: Route;
- dashboardHref?: Route;
- isAuthenticated?: boolean;
- labels: SiteHeaderLabels;
- className?: string;
+  productName: string;
+  items: readonly SiteNavItem[];
+  signInHref: Route;
+  ctaHref: Route;
+  dashboardHref?: Route;
+  isAuthenticated?: boolean;
+  labels: SiteHeaderLabels;
+  className?: string;
 }
 
 /**
@@ -87,215 +87,225 @@ export interface SiteHeaderProps {
  * would otherwise be permanently active.
  */
 function isActive(pathname: string, href: string): boolean {
- if (href === '/') return pathname === '/';
- return pathname === href || pathname.startsWith(`${href}/`);
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function SiteHeader({
- productName,
- items,
- signInHref,
- ctaHref,
- dashboardHref,
- isAuthenticated,
- labels,
- className,
+  productName,
+  items,
+  signInHref,
+  ctaHref,
+  dashboardHref,
+  isAuthenticated,
+  labels,
+  className,
 }: SiteHeaderProps) {
- const pathname = usePathname();
- const isScrolled = useScrolledDown();
+  const pathname = usePathname();
+  const isScrolled = useScrolledDown();
 
- /**
- * The drawer's state is *which route it was opened on*, not a boolean.
- *
- * A plain boolean leaves the drawer standing open after a link inside it navigates: the new
- * page renders behind the panel, and the user's only way out is a close button they were
- * not looking for. The usual fix is an effect that resets the boolean when the pathname
- * changes — a render, then a second render to undo it, and a rule against it.
- *
- * Storing the pathname instead makes closing-on-navigation fall out of the definition of
- * "open". It costs nothing extra, and it covers the cases an `onClick` on each link would
- * miss: the back button, and whatever link someone adds to the drawer next year.
- */
- const [openedAt, setOpenedAt] = useState<string | null>(null);
- const isMenuOpen = openedAt === pathname;
+  /**
+   * The drawer's state is *which route it was opened on*, not a boolean.
+   *
+   * A plain boolean leaves the drawer standing open after a link inside it navigates: the new
+   * page renders behind the panel, and the user's only way out is a close button they were
+   * not looking for. The usual fix is an effect that resets the boolean when the pathname
+   * changes — a render, then a second render to undo it, and a rule against it.
+   *
+   * Storing the pathname instead makes closing-on-navigation fall out of the definition of
+   * "open". It costs nothing extra, and it covers the cases an `onClick` on each link would
+   * miss: the back button, and whatever link someone adds to the drawer next year.
+   */
+  const [openedAt, setOpenedAt] = useState<string | null>(null);
+  const isMenuOpen = openedAt === pathname;
 
   return (
-  <header
-    className="sticky top-0 z-50 pt-4 px-4 sm:pt-6 sm:px-6 pointer-events-none"
-  >
-    <div
-      className={cn(
-        'mx-auto w-[95%] md:w-[90%] lg:w-[80%] pointer-events-auto rounded-full transition-all duration-(--duration-standard) ease-brand flex flex-col',
-        isScrolled
-          ? [
-              'bg-surface-1/85 shadow-lg shadow-black/5 border border-border-strong/20',
-              'supports-[backdrop-filter]:bg-surface-1/75 supports-[backdrop-filter]:backdrop-blur-2xl',
-              'dark:shadow-black/50 dark:border-white/10',
-            ]
-          : 'bg-transparent border border-transparent'
-      )}
-    >
-      {/*
+    <header className="pointer-events-none sticky top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-6">
+      <div
+        className={cn(
+          'pointer-events-auto mx-auto flex w-[95%] flex-col rounded-full transition-all duration-(--duration-standard) ease-brand md:w-[90%] lg:w-[80%]',
+          isScrolled
+            ? [
+                'border border-border-strong/20 bg-surface-1/85 shadow-lg shadow-black/5',
+                'supports-[backdrop-filter]:bg-surface-1/75 supports-[backdrop-filter]:backdrop-blur-2xl',
+                'dark:border-white/10 dark:shadow-black/50',
+              ]
+            : 'border border-transparent bg-transparent',
+        )}
+      >
+        {/*
       The skip link. First focusable element in the document, invisible until focused.
       WCAG 2.4.1: without it a keyboard user tabs through every nav item on every page
       before reaching the content. `#main` is provided by the layout, not by this component.
       */}
-      <a
-        href="#main"
-        className={cn(
-          'sr-only focus-visible:not-sr-only',
-          'focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50',
-          'focus-visible:rounded-control focus-visible:bg-surface-raised focus-visible:px-4 focus-visible:py-2',
-          'focus-visible:text-sm focus-visible:text-text-primary focus-visible:shadow-card',
-        )}
-      >
-        Skip to content
-      </a>
+        <a
+          href="#main"
+          className={cn(
+            'sr-only focus-visible:not-sr-only',
+            'focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50',
+            'focus-visible:rounded-control focus-visible:bg-surface-raised focus-visible:px-4 focus-visible:py-2',
+            'focus-visible:text-sm focus-visible:text-text-primary focus-visible:shadow-card',
+          )}
+        >
+          Skip to content
+        </a>
 
-      <div className="mx-auto flex h-16 w-full items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
- <Link
- href="/"
- className={cn(
- // `min-h-11` with `inline-flex`: the wordmark is the most-tapped link in the
- // header and its text box is only 20px tall, which is a miss on a phone. The row
- // is 64px and centred, so the larger hit area costs nothing visually.
- 'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-control',
- ' text-xl font-bold leading-none text-text-primary',
- 'transition-opacity duration-(--duration-micro) hover:opacity-80',
- )}
- >
-  <PaperLensLogo size="md" showText={false} />
-  <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 font-extrabold tracking-tight">{productName}</span>
- </Link>
+        <div className="mx-auto flex h-16 w-full items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/"
+            className={cn(
+              // `min-h-11` with `inline-flex`: the wordmark is the most-tapped link in the
+              // header and its text box is only 20px tall, which is a miss on a phone. The row
+              // is 64px and centred, so the larger hit area costs nothing visually.
+              'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-control',
+              'text-xl leading-none font-bold text-text-primary',
+              'transition-opacity duration-(--duration-micro) hover:opacity-80',
+            )}
+          >
+            <PaperLensLogo size="md" showText={false} />
+            <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text font-extrabold tracking-tight text-transparent dark:from-violet-400 dark:to-indigo-400">
+              {productName}
+            </span>
+          </Link>
 
- {/*
+          {/*
  `lg` is the breakpoint: pushing the drawer up means tablet users get a mobile
  interaction on a screen with 300px of unused header.
  */}
- <nav aria-label="Primary" className="hidden min-w-0 flex-1 lg:block">
- <ul className="flex items-center gap-1">
- {items.map((item) => {
- const active = isActive(pathname, item.href);
- return (
- <li key={item.href}>
- <Link
- href={item.href}
- aria-current={active ? 'page' : undefined}
- className={cn(
- 'inline-flex h-9 items-center rounded-control px-3 text-sm font-medium whitespace-nowrap',
- 'transition-colors duration-(--duration-micro) ease-brand',
- active
- ? 'bg-brand-primary/10 text-brand-primary font-semibold ring-1 ring-brand-primary/20 shadow-sm'
- : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',
- )}
- >
- {item.label}
- </Link>
- </li>
- );
- })}
- </ul>
- </nav>
+          <nav aria-label="Primary" className="hidden min-w-0 flex-1 lg:block">
+            <ul className="flex items-center gap-1">
+              {items.map((item) => {
+                const active = isActive(pathname, item.href);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      className={cn(
+                        'inline-flex h-9 items-center rounded-control px-3 text-sm font-medium whitespace-nowrap',
+                        'transition-colors duration-(--duration-micro) ease-brand',
+                        active
+                          ? 'bg-brand-primary/10 font-semibold text-brand-primary shadow-sm ring-1 ring-brand-primary/20'
+                          : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary',
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
- <div className="ml-auto flex items-center gap-1 lg:gap-2">
- <ThemeToggle label={labels.theme} optionLabels={labels.themeOptions} />
+          <div className="ml-auto flex items-center gap-1 lg:gap-2">
+            <ThemeToggle label={labels.theme} optionLabels={labels.themeOptions} />
 
-          {isAuthenticated && dashboardHref ? (
-            <Button asChild variant="premium" size="md" className="hidden lg:inline-flex font-bold shadow-md shadow-brand-primary/20 whitespace-nowrap">
-              <Link href={dashboardHref}>Go to Dashboard</Link>
-            </Button>
-          ) : (
-            <>
-              <Button asChild variant="tertiary" size="sm" className="hidden lg:inline-flex">
-                <Link href={signInHref}>{labels.signIn}</Link>
-              </Button>
-
-              <Button asChild variant="premium" size="md" className="hidden lg:inline-flex font-bold shadow-md shadow-brand-primary/20 whitespace-nowrap">
-                <Link href={ctaHref}>{labels.cta}</Link>
-              </Button>
-            </>
-          )}
-
- <button
- type="button"
- onClick={() => {
- setOpenedAt(pathname);
- }}
- aria-label={labels.menu}
- aria-expanded={isMenuOpen}
- className={cn(
- // 44px, per WCAG 2.5.8 — and this is the one control a phone user must hit.
- 'inline-flex size-11 items-center justify-center rounded-control lg:hidden',
- 'text-text-secondary transition-colors duration-(--duration-micro)',
- 'hover:bg-surface-2 hover:text-text-primary',
- )}
- >
- <MenuIcon className="size-5" />
- </button>
- </div>
- </div>
-
- <Drawer
- open={isMenuOpen}
- onClose={() => {
- setOpenedAt(null);
- }}
- title={productName}
- side="end"
- footer={
- /*
- * The CTA lives in the footer of the drawer, in the bottom third of the screen —
- * where a thumb actually reaches. A primary action pinned to the top of a phone
- * drawer is a design that was only ever tested on a desktop.
- */
-          <div className="flex flex-col gap-2">
             {isAuthenticated && dashboardHref ? (
-              <Button asChild variant="premium" size="lg" fullWidth>
+              <Button
+                asChild
+                variant="premium"
+                size="md"
+                className="hidden font-bold whitespace-nowrap shadow-md shadow-brand-primary/20 lg:inline-flex"
+              >
                 <Link href={dashboardHref}>Go to Dashboard</Link>
               </Button>
             ) : (
               <>
-                <Button asChild variant="premium" size="lg" fullWidth>
+                <Button asChild variant="tertiary" size="sm" className="hidden lg:inline-flex">
+                  <Link href={signInHref}>{labels.signIn}</Link>
+                </Button>
+
+                <Button
+                  asChild
+                  variant="premium"
+                  size="md"
+                  className="hidden font-bold whitespace-nowrap shadow-md shadow-brand-primary/20 lg:inline-flex"
+                >
                   <Link href={ctaHref}>{labels.cta}</Link>
                 </Button>
-                <p className="text-center text-2xs text-text-tertiary">{labels.ctaNote}</p>
               </>
             )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setOpenedAt(pathname);
+              }}
+              aria-label={labels.menu}
+              aria-expanded={isMenuOpen}
+              className={cn(
+                // 44px, per WCAG 2.5.8 — and this is the one control a phone user must hit.
+                'inline-flex size-11 items-center justify-center rounded-control lg:hidden',
+                'text-text-secondary transition-colors duration-(--duration-micro)',
+                'hover:bg-surface-2 hover:text-text-primary',
+              )}
+            >
+              <MenuIcon className="size-5" />
+            </button>
           </div>
- }
- >
- <nav aria-label="Primary">
- <ul className="flex flex-col">
- {items.map((item) => (
- <li key={item.href}>
- <Link
- href={item.href}
- aria-current={isActive(pathname, item.href) ? 'page' : undefined}
- className={cn(
- 'flex min-h-11 items-center rounded-control px-3 text-base font-medium',
- 'text-text-secondary transition-colors duration-(--duration-micro)',
- 'hover:bg-surface-2 hover:text-text-primary',
- 'aria-[current=page]:text-text-primary',
- )}
- >
- {item.label}
- </Link>
- </li>
- ))}
-                {!isAuthenticated && (
-                  <li>
-                    <Link
-                      href={signInHref}
-                      className="flex min-h-11 items-center rounded-control px-3 text-base font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
-                    >
-                      {labels.signIn}
-                    </Link>
-                  </li>
-                )}
- </ul>
- </nav>
- </Drawer>
- </div>
- </header>
- );
+        </div>
+
+        <Drawer
+          open={isMenuOpen}
+          onClose={() => {
+            setOpenedAt(null);
+          }}
+          title={productName}
+          side="end"
+          footer={
+            /*
+             * The CTA lives in the footer of the drawer, in the bottom third of the screen —
+             * where a thumb actually reaches. A primary action pinned to the top of a phone
+             * drawer is a design that was only ever tested on a desktop.
+             */
+            <div className="flex flex-col gap-2">
+              {isAuthenticated && dashboardHref ? (
+                <Button asChild variant="premium" size="lg" fullWidth>
+                  <Link href={dashboardHref}>Go to Dashboard</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild variant="premium" size="lg" fullWidth>
+                    <Link href={ctaHref}>{labels.cta}</Link>
+                  </Button>
+                  <p className="text-center text-2xs text-text-tertiary">{labels.ctaNote}</p>
+                </>
+              )}
+            </div>
+          }
+        >
+          <nav aria-label="Primary">
+            <ul className="flex flex-col">
+              {items.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+                    className={cn(
+                      'flex min-h-11 items-center rounded-control px-3 text-base font-medium',
+                      'text-text-secondary transition-colors duration-(--duration-micro)',
+                      'hover:bg-surface-2 hover:text-text-primary',
+                      'aria-[current=page]:text-text-primary',
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+              {!isAuthenticated && (
+                <li>
+                  <Link
+                    href={signInHref}
+                    className="flex min-h-11 items-center rounded-control px-3 text-base font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                  >
+                    {labels.signIn}
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </nav>
+        </Drawer>
+      </div>
+    </header>
+  );
 }

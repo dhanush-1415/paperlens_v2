@@ -27,12 +27,16 @@
 import { token } from '@/core/container';
 
 import { type DocumentAnalysisRepository, type DocumentAnalyzer } from './domain';
-import { type AnalyzeDocument, type GetDocumentAnalysis, type ListRecentAnalyses } from './application';
+import {
+  type AnalyzeDocument,
+  type GetDocumentAnalysis,
+  type ListRecentAnalyses,
+} from './application';
 
 export const DOCUMENT_ANALYZER = token<DocumentAnalyzer>('feature.documentAnalysis.analyzer');
 
 export const DOCUMENT_ANALYSIS_REPOSITORY = token<DocumentAnalysisRepository>(
- 'feature.documentAnalysis.repository',
+  'feature.documentAnalysis.repository',
 );
 
 /**
@@ -48,9 +52,9 @@ export const DOCUMENT_ANALYSIS_REPOSITORY = token<DocumentAnalysisRepository>(
 export const ANALYZE_DOCUMENT = token<AnalyzeDocument>('feature.documentAnalysis.analyzeDocument');
 
 export const GET_DOCUMENT_ANALYSIS = token<GetDocumentAnalysis>(
- 'feature.documentAnalysis.getDocumentAnalysis',
+  'feature.documentAnalysis.getDocumentAnalysis',
 );
 
 export const LIST_RECENT_ANALYSES = token<ListRecentAnalyses>(
- 'feature.documentAnalysis.listRecentAnalyses',
+  'feature.documentAnalysis.listRecentAnalyses',
 );

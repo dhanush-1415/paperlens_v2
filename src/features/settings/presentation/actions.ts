@@ -7,17 +7,20 @@ import { requireSession } from '@/server/bootstrap';
 /**
  * Schedules the authenticated user's account for deletion in 48 hours.
  */
-export async function requestAccountDeletionAction(): Promise<{ error?: string; success?: boolean }> {
+export async function requestAccountDeletionAction(): Promise<{
+  error?: string;
+  success?: boolean;
+}> {
   try {
     const session = await requireSession();
-    
+
     // We update the profile record to indicate deletion requested
     const now = new Date();
     await prisma.profile.update({
       where: { id: session.userId },
-      data: { deletionRequestedAt: now }
+      data: { deletionRequestedAt: now },
     });
-    
+
     // Email sending could be implemented here as well in the future
 
     revalidatePath('/settings');
@@ -31,13 +34,16 @@ export async function requestAccountDeletionAction(): Promise<{ error?: string; 
 /**
  * Cancels a pending account deletion request.
  */
-export async function cancelAccountDeletionAction(): Promise<{ error?: string; success?: boolean }> {
+export async function cancelAccountDeletionAction(): Promise<{
+  error?: string;
+  success?: boolean;
+}> {
   try {
     const session = await requireSession();
-    
+
     await prisma.profile.update({
       where: { id: session.userId },
-      data: { deletionRequestedAt: null }
+      data: { deletionRequestedAt: null },
     });
 
     revalidatePath('/settings');

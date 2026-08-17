@@ -12,7 +12,7 @@ export function ClearSessionButton({ children }: { children: React.ReactNode }) 
     // Optimistically clear cookies on client side
     document.cookie = 'pl_session=; Max-Age=0; path=/';
     document.cookie = 'pl_session_hint=; Max-Age=0; path=/';
-    
+
     // Perform server sign out
     startTransition(async () => {
       try {

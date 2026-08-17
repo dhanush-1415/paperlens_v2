@@ -4,10 +4,10 @@ import { isDevelopment } from '@/config/runtime';
 import { buildContentSecurityPolicy, CSP_STRATEGY } from '@/core/security';
 import { COOKIE_NAMES, HTTP_HEADERS, QUERY_PARAMS, sanitizeRedirectTo } from '@/shared/constants';
 import {
- DEFAULT_AUTHENTICATED_ROUTE,
- isAuthOnlyPath,
- isProtectedPath,
- ROUTES,
+  DEFAULT_AUTHENTICATED_ROUTE,
+  isAuthOnlyPath,
+  isProtectedPath,
+  ROUTES,
 } from '@/shared/constants/routes';
 import { correlationId } from '@/shared/utils/id';
 
@@ -58,10 +58,10 @@ import { correlationId } from '@/shared/utils/id';
  * 431.
  */
 function withRequestHeaders(request: NextRequest, extra: Record<string, string>): NextResponse {
- const headers = new Headers(request.headers);
- for (const [name, value] of Object.entries(extra)) headers.set(name, value);
+  const headers = new Headers(request.headers);
+  for (const [name, value] of Object.entries(extra)) headers.set(name, value);
 
- return NextResponse.next({ request: { headers } });
+  return NextResponse.next({ request: { headers } });
 }
 
 import { createServerClient } from '@supabase/ssr';
@@ -92,7 +92,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     loginUrl.pathname = ROUTES.login;
     loginUrl.searchParams.set('error', 'session_reset');
     const recovery = applyResponseHeaders(NextResponse.redirect(loginUrl), correlation);
-    request.cookies.getAll()
+    request.cookies
+      .getAll()
       .filter((c) => c.name.startsWith('sb-'))
       .forEach((c) => recovery.cookies.delete(c.name));
     return recovery;
@@ -116,16 +117,14 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
-            );
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
             supabaseResponse = withRequestHeaders(request, requestHeaders);
             cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set(name, value, options)
+              supabaseResponse.cookies.set(name, value, options),
             );
           },
         },
-      }
+      },
     );
   } catch (error) {
     console.error('[DEBUG-TRACE] proxy.ts: Supabase client initialization failed:', error);
@@ -148,7 +147,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     loginUrl.search = '';
     loginUrl.searchParams.set(
       QUERY_PARAMS.redirectTo,
-      sanitizeRedirectTo(`${pathname}${search}`, ROUTES.home)
+      sanitizeRedirectTo(`${pathname}${search}`, ROUTES.home),
     );
     return applyResponseHeaders(NextResponse.redirect(loginUrl), correlation);
   }
@@ -173,51 +172,51 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
  * it must vary per response and a config-level header cannot.
  */
 function applyResponseHeaders(response: NextResponse, correlation: string): NextResponse {
- response.headers.set(HTTP_HEADERS.correlationId, correlation);
+  response.headers.set(HTTP_HEADERS.correlationId, correlation);
 
- /**
- * CSP, and the trade-off it forces (requirement 15).
- *
- * A nonce must be unique per response, which means any component that reads it becomes
- * dynamic — and the root layout reads it, so `'strict-nonce'` opts the *entire application*
- * out of the static shell that `cacheComponents` exists to produce. `'compatible'` keeps
- * the shell and accepts a weaker `script-src`.
- *
- * This is a genuine choice between two goods, recorded in `docs/adr/0009-csp-strategy.md`
- * rather than settled by whichever was easier. Flipping the constant is the whole change;
- * the layout comment explains what else must move with it.
- */
- response.headers.set(
- 'Content-Security-Policy',
- buildContentSecurityPolicy({ isDev: isDevelopment }),
- );
+  /**
+   * CSP, and the trade-off it forces (requirement 15).
+   *
+   * A nonce must be unique per response, which means any component that reads it becomes
+   * dynamic — and the root layout reads it, so `'strict-nonce'` opts the *entire application*
+   * out of the static shell that `cacheComponents` exists to produce. `'compatible'` keeps
+   * the shell and accepts a weaker `script-src`.
+   *
+   * This is a genuine choice between two goods, recorded in `docs/adr/0009-csp-strategy.md`
+   * rather than settled by whichever was easier. Flipping the constant is the whole change;
+   * the layout comment explains what else must move with it.
+   */
+  response.headers.set(
+    'Content-Security-Policy',
+    buildContentSecurityPolicy({ isDev: isDevelopment }),
+  );
 
- if (CSP_STRATEGY === 'strict-nonce' && isDevelopment) {
- // A loud reminder rather than a silent half-configuration: the strategy is set but the
- // layout is not reading a nonce, so scripts would be blocked.
- response.headers.set('x-csp-note', 'strict-nonce requires the root layout to read the nonce');
- }
+  if (CSP_STRATEGY === 'strict-nonce' && isDevelopment) {
+    // A loud reminder rather than a silent half-configuration: the strategy is set but the
+    // layout is not reading a nonce, so scripts would be blocked.
+    response.headers.set('x-csp-note', 'strict-nonce requires the root layout to read the nonce');
+  }
 
- return response;
+  return response;
 }
 
 export const config = {
- /**
- * Everything except the paths where a proxy can only cost time.
- *
- * `_next/static` and `_next/image` are served by the framework and immutable;
- * `favicon.ico`, `robots.txt` and `sitemap.xml` are static files. Running this function
- * for each of them would add work to every asset on every page load and change nothing
- * about the response.
- *
- * Two things worth knowing about this matcher:
- *
- * · It must be a **static constant**. Next parses it at build time to generate the route
- * manifest — a computed value throws.
- * · `_next/data` requests invoke the proxy **regardless of whether the pattern excludes
- * them**. Next documents this as intentional, to prevent exactly the class of bug where
- * a data route quietly escapes a check its page was subject to. Do not rely on a
- * negative match to skip them.
- */
- matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)'],
+  /**
+   * Everything except the paths where a proxy can only cost time.
+   *
+   * `_next/static` and `_next/image` are served by the framework and immutable;
+   * `favicon.ico`, `robots.txt` and `sitemap.xml` are static files. Running this function
+   * for each of them would add work to every asset on every page load and change nothing
+   * about the response.
+   *
+   * Two things worth knowing about this matcher:
+   *
+   * · It must be a **static constant**. Next parses it at build time to generate the route
+   * manifest — a computed value throws.
+   * · `_next/data` requests invoke the proxy **regardless of whether the pattern excludes
+   * them**. Next documents this as intentional, to prevent exactly the class of bug where
+   * a data route quietly escapes a check its page was subject to. Do not rely on a
+   * negative match to skip them.
+   */
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)'],
 };

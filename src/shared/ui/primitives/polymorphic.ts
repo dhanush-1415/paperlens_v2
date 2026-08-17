@@ -42,37 +42,37 @@
 
 /** Tags a layout box may be. All block-level, all semantic, none with unique attributes. */
 export const LAYOUT_ELEMENTS = [
- 'div',
- 'section',
- 'article',
- 'aside',
- 'header',
- 'footer',
- 'main',
- 'nav',
- 'ul',
- 'ol',
- 'li',
- 'dl',
- 'figure',
+  'div',
+  'section',
+  'article',
+  'aside',
+  'header',
+  'footer',
+  'main',
+  'nav',
+  'ul',
+  'ol',
+  'li',
+  'dl',
+  'figure',
 ] as const;
 
 export type LayoutElement = (typeof LAYOUT_ELEMENTS)[number];
 
 /** Tags a run of text may be. `strong`/`em` carry meaning; the rest are containers. */
 export const TEXT_ELEMENTS = [
- 'p',
- 'span',
- 'div',
- 'strong',
- 'em',
- 'li',
- 'dd',
- 'dt',
- 'figcaption',
- 'address',
- 'blockquote',
- 'legend',
+  'p',
+  'span',
+  'div',
+  'strong',
+  'em',
+  'li',
+  'dd',
+  'dt',
+  'figcaption',
+  'address',
+  'blockquote',
+  'legend',
 ] as const;
 
 export type TextElement = (typeof TEXT_ELEMENTS)[number];

@@ -19,7 +19,7 @@ const MARK_PATH = [
 type Size = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZES: Record<Size, { height: number; font: number; gap: number }> = {
-  sm: { height: 24, font: 14, gap: 8  },
+  sm: { height: 24, font: 14, gap: 8 },
   md: { height: 32, font: 18, gap: 10 },
   lg: { height: 44, font: 24, gap: 12 },
   xl: { height: 56, font: 30, gap: 15 },
@@ -27,13 +27,7 @@ const SIZES: Record<Size, { height: number; font: number; gap: number }> = {
 
 const LOCKUP_VIEWBOX = '18 18 130 164';
 
-export function PaperLensMark({
-  size = 200,
-  className,
-}: {
-  size?: number;
-  className?: string;
-}) {
+export function PaperLensMark({ size = 200, className }: { size?: number; className?: string }) {
   return (
     <svg
       width={size}
@@ -46,15 +40,20 @@ export function PaperLensMark({
     >
       <defs>
         <linearGradient id="premium-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8b5cf6" />   {/* violet-500 */}
-          <stop offset="50%" stopColor="#6366f1" />  {/* indigo-500 */}
+          <stop offset="0%" stopColor="#8b5cf6" /> {/* violet-500 */}
+          <stop offset="50%" stopColor="#6366f1" /> {/* indigo-500 */}
           <stop offset="100%" stopColor="#3b82f6" /> {/* blue-500 */}
         </linearGradient>
         <filter id="premium-glow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#6366f1" floodOpacity="0.4" />
         </filter>
       </defs>
-      <path fillRule="evenodd" fill="url(#premium-gradient)" filter="url(#premium-glow)" d={MARK_PATH} />
+      <path
+        fillRule="evenodd"
+        fill="url(#premium-gradient)"
+        filter="url(#premium-glow)"
+        d={MARK_PATH}
+      />
     </svg>
   );
 }
@@ -72,10 +71,7 @@ export function PaperLensLogo({
   const width = Math.round(height * (110 / 160));
 
   return (
-    <div
-      className={cn('flex items-center', className)}
-      style={{ gap: showText ? gap : 0 }}
-    >
+    <div className={cn('flex items-center', className)} style={{ gap: showText ? gap : 0 }}>
       <svg
         width={width}
         height={height}
@@ -95,11 +91,16 @@ export function PaperLensLogo({
             <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#6366f1" floodOpacity="0.3" />
           </filter>
         </defs>
-        <path fillRule="evenodd" fill={`url(#logo-gradient-${size})`} filter={`url(#logo-glow-${size})`} d={MARK_PATH} />
+        <path
+          fillRule="evenodd"
+          fill={`url(#logo-gradient-${size})`}
+          filter={`url(#logo-glow-${size})`}
+          d={MARK_PATH}
+        />
       </svg>
       {showText && (
         <span
-          className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400"
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent dark:from-violet-400 dark:to-indigo-400"
           style={{
             fontSize: font,
             fontWeight: 800,

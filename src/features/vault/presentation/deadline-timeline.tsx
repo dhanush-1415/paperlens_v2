@@ -21,7 +21,7 @@ export function formatDeadline(dateString: string): string {
 export function downloadICS(filename: string, events: any[]) {
   // Simplified ICS export
   let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//PaperLens//EN\n';
-  events.forEach(e => {
+  events.forEach((e) => {
     const d = new Date(e.dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     ics += `BEGIN:VEVENT\nUID:${e.uid}\nDTSTAMP:${d}\nDTSTART:${d}\nSUMMARY:${e.title}\nEND:VEVENT\n`;
   });
@@ -37,10 +37,13 @@ export function downloadICS(filename: string, events: any[]) {
 }
 
 function countdown(days: number): string {
-  return days < 0  ? `${Math.abs(days)}d overdue`
-    : days === 0 ? 'Due today'
-    : days === 1 ? 'Due tomorrow'
-    : `${days}d left`;
+  return days < 0
+    ? `${Math.abs(days)}d overdue`
+    : days === 0
+      ? 'Due today'
+      : days === 1
+        ? 'Due tomorrow'
+        : `${days}d left`;
 }
 
 interface Row {
@@ -48,35 +51,51 @@ interface Row {
   days: number;
 }
 
-function DeadlineGroup({ label, items, toneClass }: { label: string; items: Row[]; toneClass: string }) {
+function DeadlineGroup({
+  label,
+  items,
+  toneClass,
+}: {
+  label: string;
+  items: Row[];
+  toneClass: string;
+}) {
   if (items.length === 0) return null;
   return (
     <div className="space-y-2">
-      <p className={cn('text-xs font-bold uppercase tracking-widest', toneClass)}>{label} · {items.length}</p>
+      <p className={cn('text-xs font-bold tracking-widest uppercase', toneClass)}>
+        {label} · {items.length}
+      </p>
       {items.map(({ doc, days }) => (
         <div
           key={doc.id}
-          className="group/row flex items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-surface-1 px-4 py-3 transition-colors hover:border-brand-primary/30 hover:shadow-sm cursor-pointer"
+          className="group/row flex cursor-pointer items-center gap-4 rounded-[1.25rem] border border-border-subtle bg-surface-1 px-4 py-3 transition-colors hover:border-brand-primary/30 hover:shadow-sm"
         >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-tertiary group-hover/row:text-brand-primary transition-colors">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-text-tertiary transition-colors group-hover/row:text-brand-primary">
             <CalendarIcon className="size-5" />
           </div>
           <Link href={`/document/${doc.id}`} className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-text-primary group-hover/row:text-brand-primary transition-colors">{doc.name}</p>
-            <p className="mt-0.5 text-xs text-text-tertiary">{doc.deadlineDate ? formatDeadline(doc.deadlineDate) : 'No date'}</p>
+            <p className="truncate text-sm font-semibold text-text-primary transition-colors group-hover/row:text-brand-primary">
+              {doc.name}
+            </p>
+            <p className="mt-0.5 text-xs text-text-tertiary">
+              {doc.deadlineDate ? formatDeadline(doc.deadlineDate) : 'No date'}
+            </p>
           </Link>
           <span
             className={cn(
-              'shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold tabular-nums border',
-              days <= 3 ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-              : days <= 7 ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-              : 'bg-surface-2 text-text-secondary border-border-subtle',
+              'shrink-0 rounded-lg border px-2.5 py-1 text-xs font-bold tabular-nums',
+              days <= 3
+                ? 'border-rose-500/20 bg-rose-500/10 text-rose-500'
+                : days <= 7
+                  ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
+                  : 'border-border-subtle bg-surface-2 text-text-secondary',
             )}
           >
             {countdown(days)}
           </span>
-          <button className="p-2 text-text-tertiary hover:text-text-primary hover:bg-surface-2 rounded-xl transition-colors shrink-0">
-             <MoreVerticalIcon className="size-4" />
+          <button className="shrink-0 rounded-xl p-2 text-text-tertiary transition-colors hover:bg-surface-2 hover:text-text-primary">
+            <MoreVerticalIcon className="size-4" />
           </button>
         </div>
       ))}
@@ -87,23 +106,26 @@ function DeadlineGroup({ label, items, toneClass }: { label: string; items: Row[
 export function DeadlineTimeline({ docs }: { docs: VaultDocument[] }) {
   const rows = useMemo<Row[]>(() => {
     return docs
-      .filter(d => d.deadlineDate && !d.resolved)
-      .map(d => ({ doc: d, days: daysUntilDeadline(d.deadlineDate!) }))
+      .filter((d) => d.deadlineDate && !d.resolved)
+      .map((d) => ({ doc: d, days: daysUntilDeadline(d.deadlineDate!) }))
       .sort((a, b) => a.days - b.days);
   }, [docs]);
 
   if (rows.length === 0) return null;
 
-  const overdue  = rows.filter(r => r.days < 0);
-  const thisWeek = rows.filter(r => r.days >= 0 && r.days <= 7);
-  const later    = rows.filter(r => r.days > 7);
+  const overdue = rows.filter((r) => r.days < 0);
+  const thisWeek = rows.filter((r) => r.days >= 0 && r.days <= 7);
+  const later = rows.filter((r) => r.days > 7);
 
   const exportAll = () => {
-    downloadICS('paperlens-deadlines', rows.map(r => ({
-      title: `Deadline: ${r.doc.name}`,
-      dateString: r.doc.deadlineDate!,
-      uid: r.doc.id
-    })));
+    downloadICS(
+      'paperlens-deadlines',
+      rows.map((r) => ({
+        title: `Deadline: ${r.doc.name}`,
+        dateString: r.doc.deadlineDate!,
+        uid: r.doc.id,
+      })),
+    );
   };
 
   return (
@@ -111,18 +133,22 @@ export function DeadlineTimeline({ docs }: { docs: VaultDocument[] }) {
       <div className="mb-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
-             <CalendarIcon className="size-5" />
+            <CalendarIcon className="size-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-text-primary leading-tight">Upcoming Deadlines</h2>
-            <span className="text-xs font-medium text-text-tertiary">{rows.length} pending action{rows.length > 1 ? 's' : ''}</span>
+            <h2 className="text-base leading-tight font-bold text-text-primary">
+              Upcoming Deadlines
+            </h2>
+            <span className="text-xs font-medium text-text-tertiary">
+              {rows.length} pending action{rows.length > 1 ? 's' : ''}
+            </span>
           </div>
         </div>
         <Button
           variant="secondary"
           size="sm"
           onClick={exportAll}
-          className="hidden sm:flex text-xs h-9 px-3"
+          className="hidden h-9 px-3 text-xs sm:flex"
         >
           Export Calendar (.ics)
         </Button>

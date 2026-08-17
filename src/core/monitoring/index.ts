@@ -1,14 +1,14 @@
 export type {
- ErrorBoundaryKind,
- ErrorReportContext,
- ErrorReportTrail,
- ErrorReporter,
- ErrorReporterUser,
+  ErrorBoundaryKind,
+  ErrorReportContext,
+  ErrorReportTrail,
+  ErrorReporter,
+  ErrorReporterUser,
 } from './types';
 
 export {
- createLoggerErrorReporter,
- createMemoryErrorReporter,
- createNoopErrorReporter,
- type RecordedReport,
+  createLoggerErrorReporter,
+  createMemoryErrorReporter,
+  createNoopErrorReporter,
+  type RecordedReport,
 } from './reporters';

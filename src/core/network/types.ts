@@ -34,39 +34,39 @@ export type Reachability = 'reachable' | 'unreachable' | 'unknown';
 export type ConnectionQuality = 'slow-2g' | '2g' | '3g' | '4g' | 'unknown';
 
 export interface NetworkStatus {
- readonly connection: ConnectionState;
- readonly reachability: Reachability;
- readonly quality: ConnectionQuality;
- /** True when the user asked for reduced data usage. Respect it. */
- readonly saveData: boolean;
- /** Epoch ms of the last state change, for "offline since" copy. */
- readonly changedAt: number;
+  readonly connection: ConnectionState;
+  readonly reachability: Reachability;
+  readonly quality: ConnectionQuality;
+  /** True when the user asked for reduced data usage. Respect it. */
+  readonly saveData: boolean;
+  /** Epoch ms of the last state change, for "offline since" copy. */
+  readonly changedAt: number;
 }
 
 export interface NetworkMonitor {
- readonly name: string;
- getStatus(): NetworkStatus;
- /**
- * Subscribe to changes. Returns an unsubscribe function.
- *
- * The signature is exactly what `useSyncExternalStore` wants, which is why the hook in
- * this directory is six lines long and correct under concurrent rendering.
- */
- subscribe(listener: () => void): () => void;
- /** Actively probe our own origin. Resolves to the new reachability. */
- probe(): Promise<Reachability>;
- /** Release listeners. Called on unmount in tests; the app-level monitor lives forever. */
- dispose(): void;
+  readonly name: string;
+  getStatus(): NetworkStatus;
+  /**
+   * Subscribe to changes. Returns an unsubscribe function.
+   *
+   * The signature is exactly what `useSyncExternalStore` wants, which is why the hook in
+   * this directory is six lines long and correct under concurrent rendering.
+   */
+  subscribe(listener: () => void): () => void;
+  /** Actively probe our own origin. Resolves to the new reachability. */
+  probe(): Promise<Reachability>;
+  /** Release listeners. Called on unmount in tests; the app-level monitor lives forever. */
+  dispose(): void;
 }
 
 /** How the app should behave for a given operation while degraded. */
 export interface OfflinePolicy {
- /** Attempt the request anyway? `navigator.onLine === false` is trustworthy enough to skip. */
- readonly shouldAttempt: boolean;
- /** Show the user a blocking offline state, or degrade quietly? */
- readonly blockUi: boolean;
- /** Retry automatically once connectivity returns? */
- readonly retryOnReconnect: boolean;
- /** i18n key for what to tell the user. */
- readonly messageKey: string;
+  /** Attempt the request anyway? `navigator.onLine === false` is trustworthy enough to skip. */
+  readonly shouldAttempt: boolean;
+  /** Show the user a blocking offline state, or degrade quietly? */
+  readonly blockUi: boolean;
+  /** Retry automatically once connectivity returns? */
+  readonly retryOnReconnect: boolean;
+  /** i18n key for what to tell the user. */
+  readonly messageKey: string;
 }

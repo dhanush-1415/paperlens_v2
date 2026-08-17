@@ -50,56 +50,56 @@ export const LEGAL_DOCUMENT_SLUGS = ['terms', 'privacy', 'cookies'] as const;
 export type LegalDocumentSlug = (typeof LEGAL_DOCUMENT_SLUGS)[number];
 
 export function isLegalDocumentSlug(value: string): value is LegalDocumentSlug {
- return (LEGAL_DOCUMENT_SLUGS as readonly string[]).includes(value);
+  return (LEGAL_DOCUMENT_SLUGS as readonly string[]).includes(value);
 }
 
 /** One row of a list. `term` renders as the bolded lead-in of a definition. */
 export interface LegalListItem {
- readonly term?: string;
- readonly text: string;
+  readonly term?: string;
+  readonly text: string;
 }
 
 export type LegalBlock =
- | { readonly kind: 'paragraph'; readonly text: string }
- | { readonly kind: 'list'; readonly items: readonly LegalListItem[] }
- /**
- * A clause the reader must not miss — the AI disclaimer, the deletion window, the advice to
- * cover an SSN before photographing. Rendered as a bordered aside rather than as bold body
- * text, because a wall of bold reads as no emphasis at all.
- */
- | { readonly kind: 'callout'; readonly text: string };
+  | { readonly kind: 'paragraph'; readonly text: string }
+  | { readonly kind: 'list'; readonly items: readonly LegalListItem[] }
+  /**
+   * A clause the reader must not miss — the AI disclaimer, the deletion window, the advice to
+   * cover an SSN before photographing. Rendered as a bordered aside rather than as bold body
+   * text, because a wall of bold reads as no emphasis at all.
+   */
+  | { readonly kind: 'callout'; readonly text: string };
 
 export interface LegalSubsection {
- readonly heading: string;
- readonly blocks: readonly LegalBlock[];
+  readonly heading: string;
+  readonly blocks: readonly LegalBlock[];
 }
 
 export interface LegalSection {
- /**
- * The URL fragment. Stable and hand-written, never derived from the heading — a heading is
- * copy and will be reworded, and an anchor that changes with its wording breaks every
- * citation of it, including the ones in a signed contract.
- */
- readonly id: string;
- readonly heading: string;
- readonly blocks: readonly LegalBlock[];
- readonly subsections: readonly LegalSubsection[];
+  /**
+   * The URL fragment. Stable and hand-written, never derived from the heading — a heading is
+   * copy and will be reworded, and an anchor that changes with its wording breaks every
+   * citation of it, including the ones in a signed contract.
+   */
+  readonly id: string;
+  readonly heading: string;
+  readonly blocks: readonly LegalBlock[];
+  readonly subsections: readonly LegalSubsection[];
 }
 
 export interface LegalDocument {
- readonly slug: LegalDocumentSlug;
- readonly title: string;
- /** For `<meta name="description">`. One sentence. */
- readonly description: string;
- /** Short label above the title — "Terms & governance", "Compliance & security". */
- readonly eyebrow: string;
- /** ISO 8601 date, so `<time dateTime>` is machine-readable and the display format is ours. */
- readonly lastUpdatedIso: string;
- /** Present only where the document has an effective date distinct from its last revision. */
- readonly effectiveIso?: string;
- /** The paragraph under the title. Sets the tone before the numbering starts. */
- readonly intro: string;
- readonly sections: readonly LegalSection[];
+  readonly slug: LegalDocumentSlug;
+  readonly title: string;
+  /** For `<meta name="description">`. One sentence. */
+  readonly description: string;
+  /** Short label above the title — "Terms & governance", "Compliance & security". */
+  readonly eyebrow: string;
+  /** ISO 8601 date, so `<time dateTime>` is machine-readable and the display format is ours. */
+  readonly lastUpdatedIso: string;
+  /** Present only where the document has an effective date distinct from its last revision. */
+  readonly effectiveIso?: string;
+  /** The paragraph under the title. Sets the tone before the numbering starts. */
+  readonly intro: string;
+  readonly sections: readonly LegalSection[];
 }
 
 /**
@@ -109,7 +109,7 @@ export interface LegalDocument {
  * list that will disagree with them.
  */
 export function legalTableOfContents(
- document: LegalDocument,
+  document: LegalDocument,
 ): readonly { readonly id: string; readonly heading: string }[] {
- return document.sections.map((section) => ({ id: section.id, heading: section.heading }));
+  return document.sections.map((section) => ({ id: section.id, heading: section.heading }));
 }

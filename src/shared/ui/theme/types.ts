@@ -28,34 +28,34 @@ export type ResolvedTheme = 'light' | 'dark';
 export const DEFAULT_THEME_PREFERENCE: ThemePreference = 'system';
 
 export function isThemePreference(value: unknown): value is ThemePreference {
- return typeof value === 'string' && (THEME_PREFERENCES as readonly string[]).includes(value);
+  return typeof value === 'string' && (THEME_PREFERENCES as readonly string[]).includes(value);
 }
 
 export interface ThemeState {
- /** What the user chose. Persisted. */
- readonly preference: ThemePreference;
- /** What is rendered. Derived from `preference` and, when it is `'system'`, the OS. */
- readonly resolved: ResolvedTheme;
- /**
- * Whether the provider has taken over from the inline bootstrap script.
- *
- * False during the server render and the first client render, because the server cannot
- * know the user's OS preference — only the inline script can, and it runs in the browser
- * after the HTML is streamed. A component that renders one icon for light and another for
- * dark must not branch on `resolved` until this is true, or the two renders disagree and
- * React reports a hydration mismatch.
- */
- readonly isHydrated: boolean;
+  /** What the user chose. Persisted. */
+  readonly preference: ThemePreference;
+  /** What is rendered. Derived from `preference` and, when it is `'system'`, the OS. */
+  readonly resolved: ResolvedTheme;
+  /**
+   * Whether the provider has taken over from the inline bootstrap script.
+   *
+   * False during the server render and the first client render, because the server cannot
+   * know the user's OS preference — only the inline script can, and it runs in the browser
+   * after the HTML is streamed. A component that renders one icon for light and another for
+   * dark must not branch on `resolved` until this is true, or the two renders disagree and
+   * React reports a hydration mismatch.
+   */
+  readonly isHydrated: boolean;
 }
 
 export interface ThemeController extends ThemeState {
- setPreference: (preference: ThemePreference) => void;
- /**
- * Cycles light → dark → system.
- *
- * A three-state cycle rather than a two-state flip because `'system'` has to stay
- * reachable: a user who once tapped the toggle would otherwise be locked out of ever
- * following their OS again.
- */
- toggle: () => void;
+  setPreference: (preference: ThemePreference) => void;
+  /**
+   * Cycles light → dark → system.
+   *
+   * A three-state cycle rather than a two-state flip because `'system'` has to stay
+   * reachable: a user who once tapped the toggle would otherwise be locked out of ever
+   * following their OS again.
+   */
+  toggle: () => void;
 }

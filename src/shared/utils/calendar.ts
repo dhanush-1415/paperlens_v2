@@ -1,34 +1,34 @@
 export interface CalendarEventOptions {
-  urgency?:     string;
-  actionText?:  string;
-  summary?:     string;
+  urgency?: string;
+  actionText?: string;
+  summary?: string;
   keyEntities?: { label: string; value: string }[];
   documentUrl?: string;
 }
 
 export interface CalendarEvent {
-  title:      string;
+  title: string;
   dateString: string;
-  options?:   CalendarEventOptions;
-  uid?:       string;
+  options?: CalendarEventOptions;
+  uid?: string;
 }
 
 const URGENCY_EMOJI: Record<string, string> = {
   critical: '🔴',
-  high:     '🟠',
-  caution:  '🟡',
-  medium:   '🟡',
-  low:      '🟢',
-  safe:     '🟢',
+  high: '🟠',
+  caution: '🟡',
+  medium: '🟡',
+  low: '🟢',
+  safe: '🟢',
 };
 
 const URGENCY_LABEL: Record<string, string> = {
   critical: 'CRITICAL — Act Immediately',
-  high:     'HIGH — Act Soon',
-  caution:  'CAUTION — Requires Review',
-  medium:   'MODERATE',
-  low:      'LOW',
-  safe:     'SAFE',
+  high: 'HIGH — Act Soon',
+  caution: 'CAUTION — Requires Review',
+  medium: 'MODERATE',
+  low: 'LOW',
+  safe: 'SAFE',
 };
 
 function parseCalendarDate(dateString: string): Date | null {
@@ -70,7 +70,7 @@ function buildCalendarDescription(options?: CalendarEventOptions): string {
   }
   if (keyEntities?.length) {
     lines.push('📌 KEY INFORMATION');
-    keyEntities.forEach(e => lines.push(`  • ${e.label}: ${e.value}`));
+    keyEntities.forEach((e) => lines.push(`  • ${e.label}: ${e.value}`));
     lines.push('');
   }
   if (summary) {
@@ -93,16 +93,17 @@ function buildCalendarDescription(options?: CalendarEventOptions): string {
 }
 
 export function generateGoogleCalendarUrl(
-  title:      string,
+  title: string,
   dateString: string,
-  options?:   CalendarEventOptions,
+  options?: CalendarEventOptions,
 ): string {
   const date = parseCalendarDate(dateString);
   if (!date) return '#';
 
   const start = toCalDate(date);
-  const next  = new Date(date); next.setDate(next.getDate() + 1);
-  const end   = toCalDate(next);
+  const next = new Date(date);
+  next.setDate(next.getDate() + 1);
+  const end = toCalDate(next);
 
   const details = buildCalendarDescription(options);
   const parts = [
@@ -115,16 +116,17 @@ export function generateGoogleCalendarUrl(
 }
 
 export function generateOutlookCalendarUrl(
-  title:      string,
+  title: string,
   dateString: string,
-  options?:   CalendarEventOptions,
+  options?: CalendarEventOptions,
 ): string {
   const date = parseCalendarDate(dateString);
   if (!date) return '#';
 
-  const iso   = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-  const next  = new Date(date); next.setDate(next.getDate() + 1);
-  const body  = buildCalendarDescription(options);
+  const iso = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const next = new Date(date);
+  next.setDate(next.getDate() + 1);
+  const body = buildCalendarDescription(options);
 
   const parts = [
     'path=/calendar/action/compose',
@@ -147,7 +149,12 @@ function escapeICS(text: string): string {
 }
 
 export function buildICS(events: CalendarEvent[], stamp?: string): string {
-  const dtstamp = stamp ?? new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const dtstamp =
+    stamp ??
+    new Date()
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}/, '');
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -159,8 +166,9 @@ export function buildICS(events: CalendarEvent[], stamp?: string): string {
   events.forEach((ev, i) => {
     const date = parseCalendarDate(ev.dateString);
     if (!date) return;
-    const next = new Date(date); next.setDate(next.getDate() + 1);
-    const uid  = (ev.uid ?? `${toCalDate(date)}-${i}`) + '@paperlens.app';
+    const next = new Date(date);
+    next.setDate(next.getDate() + 1);
+    const uid = (ev.uid ?? `${toCalDate(date)}-${i}`) + '@paperlens.app';
     lines.push(
       'BEGIN:VEVENT',
       `UID:${uid}`,
@@ -181,8 +189,8 @@ export function buildICS(events: CalendarEvent[], stamp?: string): string {
 export function downloadICS(filename: string, events: CalendarEvent[]): void {
   if (typeof document === 'undefined') return;
   const blob = new Blob([buildICS(events)], { type: 'text/calendar;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename.endsWith('.ics') ? filename : `${filename}.ics`;
   document.body.appendChild(a);

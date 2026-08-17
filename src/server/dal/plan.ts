@@ -17,13 +17,13 @@ export async function getUserPlan() {
     const freePlan = await prisma.plan.findUnique({
       where: { tierName: 'free' },
     });
-    
+
     if (!freePlan) {
       // If the plans table is completely empty, fail safely.
       // This should never happen once seed data is added.
       throw new Error('Critical: Default Free plan missing from database.');
     }
-    
+
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
 
@@ -43,7 +43,7 @@ export async function getUserPlan() {
   if (sub.usageResetAt < now) {
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
-    
+
     sub = await prisma.userSubscription.update({
       where: { id: sub.id },
       data: {
@@ -67,7 +67,7 @@ export async function getUserPlan() {
       canChat,
       hasVault: sub.plan.capVault,
       hasExport: sub.plan.capExport,
-    }
+    },
   };
 }
 

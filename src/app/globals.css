@@ -115,20 +115,36 @@
   --color-risk-safe-fg: var(--risk-safe-fg);
   --color-risk-safe-bg: var(--risk-safe-bg);
   --color-risk-safe-border: var(--risk-safe-border);
-  
+
   --animate-scan: scan 3s ease-in-out infinite;
   @keyframes scan {
-    0% { transform: translateY(-100%); }
-    50% { transform: translateY(100%); }
-    100% { transform: translateY(-100%); }
+    0% {
+      transform: translateY(-100%);
+    }
+    50% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(-100%);
+    }
   }
 
   --animate-scan-document: scan-document 4s ease-in-out infinite;
   @keyframes scan-document {
-    0% { top: 0%; opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { top: 100%; opacity: 0; }
+    0% {
+      top: 0%;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
   }
 
   --animate-dash: dash 2s linear infinite;
@@ -140,8 +156,12 @@
 
   --animate-shimmer: shimmer 1.5s infinite linear;
   @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 
   --animate-fade-in-up: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -175,7 +195,12 @@
 }
 
 @layer base {
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: var(--tracking-display);
   }
@@ -197,10 +222,10 @@
     /* Anchor links and `scrollIntoView` land below the sticky header rather than under it. */
     scroll-padding-top: 6rem;
     -webkit-text-size-adjust: 100%;
-    
+
     /* 120fps Smooth Scrolling for premium feel */
     scroll-behavior: smooth;
-    
+
     /* Hardware acceleration for scroll */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: none;
@@ -233,7 +258,8 @@
   }
 
   /* Lenis smooth scrolling required base styles */
-  html.lenis, html.lenis body {
+  html.lenis,
+  html.lenis body {
     height: auto;
   }
   .lenis.lenis-smooth {
@@ -257,12 +283,20 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     /* Smooth transition for theme switching */
-    transition: background-color 0.4s ease, color 0.4s ease;
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease;
   }
-  
+
   /* Global smooth transitions for interactive elements */
-  a, button, input, select, textarea {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, fill, stroke, opacity,
+      box-shadow, transform, filter, backdrop-filter;
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     transition-duration: 300ms;
   }

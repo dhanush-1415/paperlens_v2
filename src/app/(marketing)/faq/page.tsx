@@ -1,16 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import {
-  LandingClosingCta,
-  MarketingPageIntro,
-  FaqAccordion,
-} from '@/features/marketing';
+import { LandingClosingCta, MarketingPageIntro, FaqAccordion } from '@/features/marketing';
 import { ROUTES } from '@/shared/constants';
 
 export const metadata: Metadata = {
   title: 'FAQ — Frequently Asked Questions',
-  description: 'Everything you need to know about PaperLens — pricing, privacy, AI accuracy, supported document types, and how the Vault works.',
+  description:
+    'Everything you need to know about PaperLens — pricing, privacy, AI accuracy, supported document types, and how the Vault works.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/faq' },
 };
@@ -32,7 +29,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'What kinds of documents can I upload?',
-        a: "Pretty much anything that comes in an envelope and stresses you out. IRS and tax notices, medical bills, lease agreements, insurance denials, parking tickets, court letters, eviction notices, debt collection letters, student loan notices, employment contracts, and more. If it looks scary and official, PaperLens can decode it.",
+        a: 'Pretty much anything that comes in an envelope and stresses you out. IRS and tax notices, medical bills, lease agreements, insurance denials, parking tickets, court letters, eviction notices, debt collection letters, student loan notices, employment contracts, and more. If it looks scary and official, PaperLens can decode it.',
       },
       {
         q: 'How do I upload a document?',
@@ -80,7 +77,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Do you keep a copy of my document?',
-        a: "Only if you choose to save it to your Vault. Without an account, your document is analyzed and discarded — nothing is stored on our servers after the upload. With a free account, documents are temporarily saved and auto-deleted. Pro users get permanent Vault storage.",
+        a: 'Only if you choose to save it to your Vault. Without an account, your document is analyzed and discarded — nothing is stored on our servers after the upload. With a free account, documents are temporarily saved and auto-deleted. Pro users get permanent Vault storage.',
       },
       {
         q: 'Is my document used to train AI?',
@@ -102,7 +99,7 @@ const FAQ_CATEGORIES = [
     items: [
       {
         q: 'How accurate is it?',
-        a: "Very accurate for standard printed documents — IRS letters, medical bills, lease agreements, etc. The AI reads the full document, not just snippets. That said, always double-check the original before taking action on legal or financial matters. PaperLens is your first read, not your last.",
+        a: 'Very accurate for standard printed documents — IRS letters, medical bills, lease agreements, etc. The AI reads the full document, not just snippets. That said, always double-check the original before taking action on legal or financial matters. PaperLens is your first read, not your last.',
       },
       {
         q: 'What languages does PaperLens support?',
@@ -124,7 +121,7 @@ const FAQ_CATEGORIES = [
     items: [
       {
         q: 'What is the Vault?',
-        a: 'Your Vault is a private, encrypted library of every document you\'ve uploaded and saved. Each document keeps its full AI summary, urgency rating, deadline, and action — all searchable, all accessible from any device.',
+        a: "Your Vault is a private, encrypted library of every document you've uploaded and saved. Each document keeps its full AI summary, urgency rating, deadline, and action — all searchable, all accessible from any device.",
       },
       {
         q: 'How do email reminders work?',
@@ -152,14 +149,17 @@ const faqSchema = {
       '@type': 'Question',
       name: q,
       acceptedAnswer: { '@type': 'Answer', text: a },
-    }))
+    })),
   ),
 };
 
 export default function FaqPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
       <MarketingPageIntro
         eyebrow="Help & Support"
@@ -167,21 +167,17 @@ export default function FaqPage() {
         lede="Everything you need to know about PaperLens — from how the AI works to how we protect your data. Can't find what you're looking for? Reach out to support."
       />
 
-      <section className="w-full py-24 relative overflow-hidden bg-canvas">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--brand-primary-rgb),0.06),transparent_80%)] pointer-events-none" />
-        
-        <div className="w-[95%] md:w-[90%] lg:w-[80%] mx-auto relative z-10 flex flex-col gap-24">
-          
+      <section className="relative w-full overflow-hidden bg-canvas py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--brand-primary-rgb),0.06),transparent_80%)]" />
+
+        <div className="relative z-10 mx-auto flex w-[95%] flex-col gap-24 md:w-[90%] lg:w-[80%]">
           {/* Categories Nav */}
-          <nav
-            aria-label="FAQ categories"
-            className="flex flex-wrap justify-center gap-3"
-          >
+          <nav aria-label="FAQ categories" className="flex flex-wrap justify-center gap-3">
             {FAQ_CATEGORIES.map(({ id, label }) => (
               <a
                 key={id}
                 href={`#${id}`}
-                className="inline-flex cursor-pointer items-center rounded-full border border-border-strong bg-surface-1/30 backdrop-blur-md px-6 py-2.5 text-sm font-bold text-text-secondary transition-all duration-300 hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 shadow-sm"
+                className="inline-flex cursor-pointer items-center rounded-full border border-border-strong bg-surface-1/30 px-6 py-2.5 text-sm font-bold text-text-secondary shadow-sm backdrop-blur-md transition-all duration-300 hover:border-brand-primary/30 hover:bg-brand-primary/10 hover:text-brand-primary"
               >
                 {label}
               </a>
@@ -189,18 +185,19 @@ export default function FaqPage() {
           </nav>
 
           {/* FAQ Sections */}
-          <div className="w-full max-w-4xl mx-auto space-y-24">
+          <div className="mx-auto w-full max-w-4xl space-y-24">
             {FAQ_CATEGORIES.map(({ id, label, items }) => (
               <section key={id} id={id} className="scroll-mt-32">
-                <div className="flex items-center gap-6 mb-10">
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-text-primary whitespace-nowrap">{label}</h2>
+                <div className="mb-10 flex items-center gap-6">
+                  <h2 className="text-2xl font-extrabold whitespace-nowrap text-text-primary md:text-3xl">
+                    {label}
+                  </h2>
                   <div className="h-px w-full bg-gradient-to-r from-border-strong to-transparent" />
                 </div>
                 <FaqAccordion items={items} />
               </section>
             ))}
           </div>
-          
         </div>
       </section>
 

@@ -31,11 +31,11 @@ export { ThemeToggle, type ThemeToggleProps } from './theme-toggle';
 export { TenantTokens, type TenantTokensProps } from './tenant-tokens';
 
 export {
- DEFAULT_THEME_PREFERENCE,
- THEME_PREFERENCES,
- isThemePreference,
- type ResolvedTheme,
- type ThemeController,
- type ThemePreference,
- type ThemeState,
+  DEFAULT_THEME_PREFERENCE,
+  THEME_PREFERENCES,
+  isThemePreference,
+  type ResolvedTheme,
+  type ThemeController,
+  type ThemePreference,
+  type ThemeState,
 } from './types';

@@ -5,10 +5,19 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 Font.register({
   family: 'Inter',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyeMZhrib2Bg-4.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYMZhrib2Bg-4.ttf', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf', fontWeight: 700 }
-  ]
+    {
+      src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyeMZhrib2Bg-4.ttf',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYMZhrib2Bg-4.ttf',
+      fontWeight: 600,
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf',
+      fontWeight: 700,
+    },
+  ],
 });
 
 const styles = StyleSheet.create({
@@ -95,7 +104,7 @@ const styles = StyleSheet.create({
     width: 15,
     fontSize: 11,
     color: '#64748b',
-  }
+  },
 });
 
 export function AnalysisReportPDF({ data }: { data: any }) {
@@ -108,7 +117,9 @@ export function AnalysisReportPDF({ data }: { data: any }) {
         <View style={styles.header}>
           <Text style={styles.logo}>PaperLens</Text>
           <Text style={styles.title}>{data.title || 'Document Analysis Report'}</Text>
-          <Text style={styles.subtitle}>Analyzed on {new Date(data.analyzedAt).toLocaleDateString()} • {data.documentType}</Text>
+          <Text style={styles.subtitle}>
+            Analyzed on {new Date(data.analyzedAt).toLocaleDateString()} • {data.documentType}
+          </Text>
         </View>
 
         <View style={styles.section}>
@@ -118,32 +129,46 @@ export function AnalysisReportPDF({ data }: { data: any }) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Identified Risks & Flags</Text>
-          {flags.length > 0 ? flags.map((flag: any, i: number) => {
-            const isCritical = flag.severity?.toLowerCase() === 'critical' || flag.severity?.toLowerCase() === 'high';
-            const isCaution = flag.severity?.toLowerCase() === 'caution' || flag.severity?.toLowerCase() === 'medium';
-            const riskStyle = isCritical ? styles.flagRiskCritical : isCaution ? styles.flagRiskCaution : styles.flagRiskSafe;
-            return (
-              <View key={i} style={styles.flagItem}>
-                <View style={styles.flagHeader}>
-                  <Text style={styles.flagTitle}>{flag.title || flag.category || 'Observation'}</Text>
-                  <Text style={[styles.flagRisk, riskStyle]}>{flag.severity || 'Notice'}</Text>
+          {flags.length > 0 ? (
+            flags.map((flag: any, i: number) => {
+              const isCritical =
+                flag.severity?.toLowerCase() === 'critical' ||
+                flag.severity?.toLowerCase() === 'high';
+              const isCaution =
+                flag.severity?.toLowerCase() === 'caution' ||
+                flag.severity?.toLowerCase() === 'medium';
+              const riskStyle = isCritical
+                ? styles.flagRiskCritical
+                : isCaution
+                  ? styles.flagRiskCaution
+                  : styles.flagRiskSafe;
+              return (
+                <View key={i} style={styles.flagItem}>
+                  <View style={styles.flagHeader}>
+                    <Text style={styles.flagTitle}>
+                      {flag.title || flag.category || 'Observation'}
+                    </Text>
+                    <Text style={[styles.flagRisk, riskStyle]}>{flag.severity || 'Notice'}</Text>
+                  </View>
+                  <Text style={styles.text}>{flag.description}</Text>
                 </View>
-                <Text style={styles.text}>{flag.description}</Text>
-              </View>
-            );
-          }) : (
+              );
+            })
+          ) : (
             <Text style={styles.text}>No significant risks identified.</Text>
           )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recommended Action Plan</Text>
-          {actionPlan.length > 0 ? actionPlan.map((action: string, i: number) => (
-            <View key={i} style={styles.actionItem}>
-              <Text style={styles.bullet}>•</Text>
-              <Text style={styles.text}>{action}</Text>
-            </View>
-          )) : (
+          {actionPlan.length > 0 ? (
+            actionPlan.map((action: string, i: number) => (
+              <View key={i} style={styles.actionItem}>
+                <Text style={styles.bullet}>•</Text>
+                <Text style={styles.text}>{action}</Text>
+              </View>
+            ))
+          ) : (
             <Text style={styles.text}>No specific actions required.</Text>
           )}
         </View>

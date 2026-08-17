@@ -59,13 +59,13 @@ export const systemClock: Clock = () => new Date();
  * ```
  */
 export function fixedClock(instant: Date | string | number): Clock {
- const frozen = new Date(instant).getTime();
+  const frozen = new Date(instant).getTime();
 
- if (Number.isNaN(frozen)) {
- throw new TypeError(`fixedClock: not a valid instant: ${String(instant)}`);
- }
+  if (Number.isNaN(frozen)) {
+    throw new TypeError(`fixedClock: not a valid instant: ${String(instant)}`);
+  }
 
- return () => new Date(frozen);
+  return () => new Date(frozen);
 }
 
 /**
@@ -83,39 +83,39 @@ export function fixedClock(instant: Date | string | number): Clock {
  * ```
  */
 export interface ManualClock {
- /** Pass this to whatever takes a `Clock`. */
- readonly now: Clock;
- /** Move forward. Negative values are rejected — time does not run backwards. */
- advance(milliseconds: number): void;
- /** Jump to an absolute instant, forwards or backwards. */
- set(instant: Date | string | number): void;
+  /** Pass this to whatever takes a `Clock`. */
+  readonly now: Clock;
+  /** Move forward. Negative values are rejected — time does not run backwards. */
+  advance(milliseconds: number): void;
+  /** Jump to an absolute instant, forwards or backwards. */
+  set(instant: Date | string | number): void;
 }
 
 export function manualClock(start: Date | string | number = 0): ManualClock {
- let current = new Date(start).getTime();
+  let current = new Date(start).getTime();
 
- if (Number.isNaN(current)) {
- throw new TypeError(`manualClock: not a valid instant: ${String(start)}`);
- }
+  if (Number.isNaN(current)) {
+    throw new TypeError(`manualClock: not a valid instant: ${String(start)}`);
+  }
 
- return {
- now: () => new Date(current),
+  return {
+    now: () => new Date(current),
 
- advance(milliseconds) {
- if (milliseconds < 0) {
- throw new RangeError('manualClock.advance: use set() to move backwards');
- }
- current += milliseconds;
- },
+    advance(milliseconds) {
+      if (milliseconds < 0) {
+        throw new RangeError('manualClock.advance: use set() to move backwards');
+      }
+      current += milliseconds;
+    },
 
- set(instant) {
- const next = new Date(instant).getTime();
- if (Number.isNaN(next)) {
- throw new TypeError(`manualClock.set: not a valid instant: ${String(instant)}`);
- }
- current = next;
- },
- };
+    set(instant) {
+      const next = new Date(instant).getTime();
+      if (Number.isNaN(next)) {
+        throw new TypeError(`manualClock.set: not a valid instant: ${String(instant)}`);
+      }
+      current = next;
+    },
+  };
 }
 
 /**
@@ -127,7 +127,7 @@ export function manualClock(start: Date | string | number = 0): ManualClock {
  * look like tomorrow" without restating the whole instant.
  */
 export function offsetClock(base: Clock, offsetMilliseconds: number): Clock {
- return () => new Date(base().getTime() + offsetMilliseconds);
+  return () => new Date(base().getTime() + offsetMilliseconds);
 }
 
 /**
@@ -139,5 +139,5 @@ export function offsetClock(base: Clock, offsetMilliseconds: number): Clock {
  * a test that froze one and not the other would fail in a way nobody enjoys debugging.
  */
 export function epochMillis(clock: Clock): EpochClock {
- return () => clock().getTime();
+  return () => clock().getTime();
 }

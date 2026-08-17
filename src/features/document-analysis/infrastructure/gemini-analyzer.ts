@@ -6,13 +6,13 @@ import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 
-import { 
-  CLAUSE_CATEGORIES, 
-  type AnalysisRequest, 
-  type ClauseCategory, 
-  type DocumentAnalyzer, 
-  type RiskFlag, 
-  type RiskLevel 
+import {
+  CLAUSE_CATEGORIES,
+  type AnalysisRequest,
+  type ClauseCategory,
+  type DocumentAnalyzer,
+  type RiskFlag,
+  type RiskLevel,
 } from '../domain';
 
 const SYSTEM_PROMPT = `You are PaperLens AI — an expert legal and document intelligence engine. 
@@ -37,35 +37,77 @@ You MUST also provide a high-level assessment of the document:
 - suggestedQuestions: Provide exactly 4 highly contextual questions the user could ask a Copilot about this document.`;
 
 const RISK_FLAG_SCHEMA = z.object({
-  flags: z.array(z.object({
-    category: z.enum([
-      'auto_renewal', 'arbitration', 'liability_cap', 'unilateral_change',
-      'termination_penalty', 'data_sharing', 'late_fee', 'indemnity',
-      'non_compete', 'jurisdiction'
-    ] as const),
-    level: z.enum(['critical', 'caution', 'safe']),
-    title: z.string(),
-    excerpt: z.string().describe("Exact verbatim quote from the text. Must be an exact substring of the document."),
-    explanation: z.string(),
-    recommendation: z.string().optional(),
-  })),
-  summary: z.string().describe('A 2-3 sentence summary of the document, including key dates and monetary amounts if present.'),
+  flags: z.array(
+    z.object({
+      category: z.enum([
+        'auto_renewal',
+        'arbitration',
+        'liability_cap',
+        'unilateral_change',
+        'termination_penalty',
+        'data_sharing',
+        'late_fee',
+        'indemnity',
+        'non_compete',
+        'jurisdiction',
+      ] as const),
+      level: z.enum(['critical', 'caution', 'safe']),
+      title: z.string(),
+      excerpt: z
+        .string()
+        .describe(
+          'Exact verbatim quote from the text. Must be an exact substring of the document.',
+        ),
+      explanation: z.string(),
+      recommendation: z.string().optional(),
+    }),
+  ),
+  summary: z
+    .string()
+    .describe(
+      'A 2-3 sentence summary of the document, including key dates and monetary amounts if present.',
+    ),
   actionPlan: z.array(z.string()).describe('1-4 actionable steps for the user.'),
   urgency: z.enum(['critical', 'medium', 'low']),
-  entities: z.array(z.object({
-    label: z.string().describe('The type of entity (e.g., Effective Date, Counterparty)'),
-    value: z.string().describe('The value (e.g., 2024-01-01, Acme Corp)'),
-    iconHint: z.string().describe('A lucide-react icon name hint (e.g., calendar, user, building, currency, file-text)')
-  })).describe('Key entities extracted from the document.'),
+  entities: z
+    .array(
+      z.object({
+        label: z.string().describe('The type of entity (e.g., Effective Date, Counterparty)'),
+        value: z.string().describe('The value (e.g., 2024-01-01, Acme Corp)'),
+        iconHint: z
+          .string()
+          .describe(
+            'A lucide-react icon name hint (e.g., calendar, user, building, currency, file-text)',
+          ),
+      }),
+    )
+    .describe('Key entities extracted from the document.'),
   legitimacy: z.enum(['VERIFIED_FORMAT', 'UNVERIFIABLE', 'SUSPICIOUS']),
   confidence: z.enum(['HIGH', 'MEDIUM', 'LOW']),
-  suggestedQuestions: z.array(z.string()).length(4).describe('Exactly 4 questions the user could ask the copilot about this document.'),
-  transcription: z.string().optional().describe('If the input is an image or media file without text, provide the fully transcribed text (OCR) here so the user can read what you analyzed. If text was already provided, leave this empty.'),
-  timeline: z.array(z.object({
-    timestamp: z.string().describe('The timestamp in the video or audio (e.g., "12:04")'),
-    riskLevel: z.enum(['critical', 'caution', 'safe']),
-    description: z.string().describe('A brief description of what was discussed or agreed upon at this timestamp.')
-  })).optional().describe('For video or audio files, map identified risks or key topics to specific timestamps.'),
+  suggestedQuestions: z
+    .array(z.string())
+    .length(4)
+    .describe('Exactly 4 questions the user could ask the copilot about this document.'),
+  transcription: z
+    .string()
+    .optional()
+    .describe(
+      'If the input is an image or media file without text, provide the fully transcribed text (OCR) here so the user can read what you analyzed. If text was already provided, leave this empty.',
+    ),
+  timeline: z
+    .array(
+      z.object({
+        timestamp: z.string().describe('The timestamp in the video or audio (e.g., "12:04")'),
+        riskLevel: z.enum(['critical', 'caution', 'safe']),
+        description: z
+          .string()
+          .describe('A brief description of what was discussed or agreed upon at this timestamp.'),
+      }),
+    )
+    .optional()
+    .describe(
+      'For video or audio files, map identified risks or key topics to specific timestamps.',
+    ),
 });
 
 export function createGeminiAnalyzer(): DocumentAnalyzer {
@@ -77,7 +119,10 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
         const { text, documentType, media } = request;
 
         const promptContent: any[] = [
-          { type: 'text', text: `Analyze the following document (Type: ${documentType}). Extract the risk flags.\n\nDocument text:\n${text || '[See attached media]'}` }
+          {
+            type: 'text',
+            text: `Analyze the following document (Type: ${documentType}). Extract the risk flags.\n\nDocument text:\n${text || '[See attached media]'}`,
+          },
         ];
 
         if (media) {
@@ -98,7 +143,7 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
             {
               role: 'user',
               content: promptContent,
-            }
+            },
           ],
           temperature: 0.1,
         });
@@ -113,7 +158,7 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
 
           let charStart = text.indexOf(flag.excerpt);
           let charEnd = 0;
-          
+
           if (charStart === -1) {
             // Fallback: If AI hallucinates the exact wording, try to find a partial match
             // or default to 0 if completely hallucinated.
@@ -121,7 +166,7 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
             charStart = text.indexOf(snippet);
             if (charStart === -1) charStart = 0;
           }
-          
+
           charEnd = charStart + flag.excerpt.length;
 
           found.push({

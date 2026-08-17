@@ -50,81 +50,88 @@ import { CLAUSE_CATEGORY_LABEL } from '../constants';
  */
 
 export interface RiskFlagCardProps {
- readonly documentId: string;
- readonly flag: RiskFlagDto;
+  readonly documentId: string;
+  readonly flag: RiskFlagDto;
 }
 
 export function RiskFlagCard({ documentId, flag }: RiskFlagCardProps) {
- const analytics = useService(ANALYTICS);
- const [state, formAction] = useActionState(resolveFlagAction, null);
+  const analytics = useService(ANALYTICS);
+  const [state, formAction] = useActionState(resolveFlagAction, null);
 
- return (
- <AccordionItem
- variant="separated"
- /*
- * No `group`. `AccordionItem`'s group prop maps onto the native `name` attribute, which
- * makes the items *mutually exclusive* — opening one closes the rest. That is right for
- * an FAQ and wrong here: comparing two clauses is the main thing a user does with this
- * list, and it would also mean only the last of several critical findings could honour
- * `defaultOpen`. Independent disclosure is the correct behaviour, and it is the default.
- */
- /*
- * Critical findings start open. A user who scrolls past a collapsed row has not been
- * warned — and "we told you, it was behind the chevron" is not a defence when the
- * clause costs them a deposit.
- */
- defaultOpen={flag.level === 'critical'}
- onToggle={(event) => {
- if (!event.currentTarget.open) return;
- analytics.track('risk_flag.expanded', { documentId, severity: flag.level });
- }}
- title={
- <span className="flex min-w-0 flex-1 items-center gap-3">
- <RiskBadge level={flag.level} size="sm" />
- <span className="min-w-0 flex-1">
- <Text as="span" size="sm" weight="medium" tone="primary" truncate className={flag.isResolved ? 'line-through text-text-tertiary' : ''}>
- {flag.title}
- </Text>
- </span>
- {flag.isResolved && (
- <span className="hidden sm:inline-flex px-2 py-0.5 rounded bg-green-500/10 border border-green-500/20 text-[10px] font-bold text-green-600 uppercase tracking-wider items-center gap-1">
- <CheckCircle2Icon className="w-3 h-3" /> Resolved
- </span>
- )}
- <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
- {CLAUSE_CATEGORY_LABEL[flag.category]}
- </Text>
- </span>
- }
- >
- <div className="flex flex-col gap-4 pt-1">
- {/*
- * The user's own words, quoted, before our interpretation of them. Order matters: a
- * verdict shown above its evidence asks to be taken on trust, and this product's whole
- * proposition is that it does not have to be.
- */}
- <DocumentExcerpt level={flag.level} clamp="long">
- {flag.excerpt}
- </DocumentExcerpt>
+  return (
+    <AccordionItem
+      variant="separated"
+      /*
+       * No `group`. `AccordionItem`'s group prop maps onto the native `name` attribute, which
+       * makes the items *mutually exclusive* — opening one closes the rest. That is right for
+       * an FAQ and wrong here: comparing two clauses is the main thing a user does with this
+       * list, and it would also mean only the last of several critical findings could honour
+       * `defaultOpen`. Independent disclosure is the correct behaviour, and it is the default.
+       */
+      /*
+       * Critical findings start open. A user who scrolls past a collapsed row has not been
+       * warned — and "we told you, it was behind the chevron" is not a defence when the
+       * clause costs them a deposit.
+       */
+      defaultOpen={flag.level === 'critical'}
+      onToggle={(event) => {
+        if (!event.currentTarget.open) return;
+        analytics.track('risk_flag.expanded', { documentId, severity: flag.level });
+      }}
+      title={
+        <span className="flex min-w-0 flex-1 items-center gap-3">
+          <RiskBadge level={flag.level} size="sm" />
+          <span className="min-w-0 flex-1">
+            <Text
+              as="span"
+              size="sm"
+              weight="medium"
+              tone="primary"
+              truncate
+              className={flag.isResolved ? 'text-text-tertiary line-through' : ''}
+            >
+              {flag.title}
+            </Text>
+          </span>
+          {flag.isResolved && (
+            <span className="hidden items-center gap-1 rounded border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-green-600 uppercase sm:inline-flex">
+              <CheckCircle2Icon className="h-3 w-3" /> Resolved
+            </span>
+          )}
+          <Text as="span" size="xs" tone="tertiary" className="hidden sm:inline">
+            {CLAUSE_CATEGORY_LABEL[flag.category]}
+          </Text>
+        </span>
+      }
+    >
+      <div className="flex flex-col gap-4 pt-1">
+        {/*
+         * The user's own words, quoted, before our interpretation of them. Order matters: a
+         * verdict shown above its evidence asks to be taken on trust, and this product's whole
+         * proposition is that it does not have to be.
+         */}
+        <DocumentExcerpt level={flag.level} clamp="long">
+          {flag.excerpt}
+        </DocumentExcerpt>
 
- <Text size="sm" tone="secondary" editorial measure>
- {flag.explanation}
- </Text>
+        <Text size="sm" tone="secondary" editorial measure>
+          {flag.explanation}
+        </Text>
 
- {flag.recommendation ? (
- <Text size="sm" tone="primary" weight="medium" measure>
- {flag.recommendation}
- </Text>
- ) : null}
+        {flag.recommendation ? (
+          <Text size="sm" tone="primary" weight="medium" measure>
+            {flag.recommendation}
+          </Text>
+        ) : null}
 
- <form action={formAction} className="pt-2">
- <input type="hidden" name="documentId" value={documentId} />
- <input type="hidden" name="flagId" value={flag.id} />
- <Button variant={flag.isResolved ? 'secondary' : 'premium'} size="sm" type="submit">
- {flag.isResolved ? 'Reopen Flag' : 'Mark as Resolved'}
- </Button>
- </form>
- </div>
- </AccordionItem>
- );
+        <form action={formAction} className="pt-2">
+          <input type="hidden" name="documentId" value={documentId} />
+          <input type="hidden" name="flagId" value={flag.id} />
+          <Button variant={flag.isResolved ? 'secondary' : 'premium'} size="sm" type="submit">
+            {flag.isResolved ? 'Reopen Flag' : 'Mark as Resolved'}
+          </Button>
+        </form>
+      </div>
+    </AccordionItem>
+  );
 }

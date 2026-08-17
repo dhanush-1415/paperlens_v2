@@ -6,17 +6,17 @@ import { appConfig } from '@/config';
 import { TRANSLATOR } from '@/core/container';
 import { unwrapOrThrow } from '@/core/result/result';
 import {
- GET_DOCUMENT_GUIDE,
- GuideChecklist,
- GuideFaqSection,
- GuideHero,
- GuideRelated,
- GuideRisks,
- GuideStructuredData,
- LandingClosingCta,
- LIST_GUIDES_BY_CATEGORY,
- LIST_GUIDE_SLUGS,
- type DocumentGuide,
+  GET_DOCUMENT_GUIDE,
+  GuideChecklist,
+  GuideFaqSection,
+  GuideHero,
+  GuideRelated,
+  GuideRisks,
+  GuideStructuredData,
+  LandingClosingCta,
+  LIST_GUIDES_BY_CATEGORY,
+  LIST_GUIDE_SLUGS,
+  type DocumentGuide,
 } from '@/features/marketing';
 import { getRequestScope } from '@/server/bootstrap';
 
@@ -54,22 +54,22 @@ import { getRequestScope } from '@/server/bootstrap';
  */
 
 const readGuide = cache(async (slug: string): Promise<DocumentGuide> => {
- const getDocumentGuide = getRequestScope().resolve(GET_DOCUMENT_GUIDE);
- const guide = unwrapOrThrow(await getDocumentGuide(slug));
+  const getDocumentGuide = getRequestScope().resolve(GET_DOCUMENT_GUIDE);
+  const guide = unwrapOrThrow(await getDocumentGuide(slug));
 
- /**
- * `null` is not an error here — the port answers "no such guide", and that is a fact about
- * the corpus rather than a failure of it. The route is the layer that knows a missing guide
- * means a 404 rather than an empty page, so the translation happens here.
- */
- if (guide === null) notFound();
- return guide;
+  /**
+   * `null` is not an error here — the port answers "no such guide", and that is a fact about
+   * the corpus rather than a failure of it. The route is the layer that knows a missing guide
+   * means a 404 rather than an empty page, so the translation happens here.
+   */
+  if (guide === null) notFound();
+  return guide;
 });
 
 export async function generateStaticParams() {
- const listGuideSlugs = getRequestScope().resolve(LIST_GUIDE_SLUGS);
- const slugs = unwrapOrThrow(await listGuideSlugs());
- return slugs.map((slug) => ({ slug }));
+  const listGuideSlugs = getRequestScope().resolve(LIST_GUIDE_SLUGS);
+  const slugs = unwrapOrThrow(await listGuideSlugs());
+  return slugs.map((slug) => ({ slug }));
 }
 
 /**
@@ -82,56 +82,56 @@ export async function generateStaticParams() {
  * a second time.
  */
 export async function generateMetadata({ params }: PageProps<'/for/[slug]'>): Promise<Metadata> {
- const { slug } = await params;
- const guide = await readGuide(slug);
- const url = `/for/${guide.slug}`;
+  const { slug } = await params;
+  const guide = await readGuide(slug);
+  const url = `/for/${guide.slug}`;
 
- return {
- title: { absolute: guide.title },
- description: guide.description,
- alternates: { canonical: url },
- openGraph: {
- type: 'article',
- title: guide.title,
- description: guide.description,
- url,
- },
- };
+  return {
+    title: { absolute: guide.title },
+    description: guide.description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'article',
+      title: guide.title,
+      description: guide.description,
+      url,
+    },
+  };
 }
 
 export default async function GuidePage({ params }: PageProps<'/for/[slug]'>) {
- const { slug } = await params;
- const scope = getRequestScope();
+  const { slug } = await params;
+  const scope = getRequestScope();
 
- const guide = await readGuide(slug);
+  const guide = await readGuide(slug);
 
- /**
- * Siblings, computed from the grouping use case rather than by filtering the whole corpus
- * here. The route asks for guides by category and removes the one being read; deciding what
- * "related" means is a product rule and lives one layer down.
- */
- const listGuidesByCategory = scope.resolve(LIST_GUIDES_BY_CATEGORY);
- const groups = unwrapOrThrow(await listGuidesByCategory());
- const related =
- groups
- .find((group) => group.category === guide.category)
- ?.guides.filter((sibling) => sibling.slug !== guide.slug) ?? [];
+  /**
+   * Siblings, computed from the grouping use case rather than by filtering the whole corpus
+   * here. The route asks for guides by category and removes the one being read; deciding what
+   * "related" means is a product rule and lives one layer down.
+   */
+  const listGuidesByCategory = scope.resolve(LIST_GUIDES_BY_CATEGORY);
+  const groups = unwrapOrThrow(await listGuidesByCategory());
+  const related =
+    groups
+      .find((group) => group.category === guide.category)
+      ?.guides.filter((sibling) => sibling.slug !== guide.slug) ?? [];
 
- const t = scope.resolve(TRANSLATOR);
- const ctaLabel = t.t('cta.analyze');
- const reassurance = t.t('cta.reassurance');
+  const t = scope.resolve(TRANSLATOR);
+  const ctaLabel = t.t('cta.analyze');
+  const reassurance = t.t('cta.reassurance');
 
- return (
- <>
- <GuideStructuredData guide={guide} siteUrl={appConfig.url} />
+  return (
+    <>
+      <GuideStructuredData guide={guide} siteUrl={appConfig.url} />
 
- <GuideHero guide={guide} ctaLabel={ctaLabel} reassurance={reassurance} />
- <GuideRisks risks={guide.typicalRisks} />
- <GuideChecklist steps={guide.checklist} />
- <GuideFaqSection faqs={guide.faqs} />
- <GuideRelated categoryLabel={guide.categoryLabel} guides={related} />
+      <GuideHero guide={guide} ctaLabel={ctaLabel} reassurance={reassurance} />
+      <GuideRisks risks={guide.typicalRisks} />
+      <GuideChecklist steps={guide.checklist} />
+      <GuideFaqSection faqs={guide.faqs} />
+      <GuideRelated categoryLabel={guide.categoryLabel} guides={related} />
 
- <LandingClosingCta ctaLabel={ctaLabel} reassurance={reassurance} />
- </>
- );
+      <LandingClosingCta ctaLabel={ctaLabel} reassurance={reassurance} />
+    </>
+  );
 }

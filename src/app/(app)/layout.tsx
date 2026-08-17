@@ -6,7 +6,17 @@ import { TRANSLATOR } from '@/core/container';
 import { signOutFormAction } from '@/server/actions/auth';
 import { getPublicSession, getRequestScope } from '@/server/bootstrap';
 import { ROUTES } from '@/shared/constants/routes';
-import { Button, Container, Skeleton, Text, ThemeToggle, AppSidebar, AppTopBar, AppBreadcrumbs, ProfileDropdown } from '@/shared/ui';
+import {
+  Button,
+  Container,
+  Skeleton,
+  Text,
+  ThemeToggle,
+  AppSidebar,
+  AppTopBar,
+  AppBreadcrumbs,
+  ProfileDropdown,
+} from '@/shared/ui';
 
 import Link from 'next/link';
 import { AuthProvider } from '@/shared/contexts/auth-context';
@@ -50,9 +60,14 @@ async function SessionChip({ session }: { session: any }) {
 
   const { serverEnv } = await import('@/config/env.server');
   const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(serverEnv.SUPABASE_URL as string, serverEnv.SUPABASE_SERVICE_ROLE_KEY as string);
-  
-  const { data: { user } } = await supabase.auth.admin.getUserById(session.userId);
+  const supabase = createClient(
+    serverEnv.SUPABASE_URL as string,
+    serverEnv.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.admin.getUserById(session.userId);
   const userName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
   const userInitials = userName.substring(0, 2).toUpperCase();
 
@@ -70,15 +85,21 @@ function AppShellSkeleton() {
   return (
     <div className="flex min-h-screen bg-canvas">
       <div className="w-64 border-r border-border-subtle bg-surface-1" />
-      <div className="flex w-full flex-1 flex-col min-w-0">
+      <div className="flex w-full min-w-0 flex-1 flex-col">
         <div className="h-16 border-b border-border-subtle bg-surface-1" />
-        <main className="flex-1 relative" />
+        <main className="relative flex-1" />
       </div>
     </div>
   );
 }
 
-async function DynamicShell({ children, themeLabels }: { children: React.ReactNode, themeLabels: any }) {
+async function DynamicShell({
+  children,
+  themeLabels,
+}: {
+  children: React.ReactNode;
+  themeLabels: any;
+}) {
   const session = await getPublicSession();
   const role = session?.role || 'user';
   const plan = session?.plan || 'free';
@@ -111,35 +132,42 @@ async function DynamicShell({ children, themeLabels }: { children: React.ReactNo
           productName={tenant.productName}
           signOutAction={signOutFormAction}
         />
-        <div className="flex w-full flex-1 flex-col min-w-0">
-          <AppTopBar
-            themeLabels={themeLabels}
-            sessionChip={<SessionChip session={session} />}
-          />
+        <div className="flex w-full min-w-0 flex-1 flex-col">
+          <AppTopBar themeLabels={themeLabels} sessionChip={<SessionChip session={session} />} />
           {isLimitReached && (
-            <div className="bg-gradient-to-r from-rose-600 via-fuchsia-600 to-indigo-600 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-16 z-30 shadow-[0_4px_20px_-5px_rgba(225,29,72,0.5)]">
+            <div className="sticky top-16 z-30 flex flex-col justify-between gap-4 bg-gradient-to-r from-rose-600 via-fuchsia-600 to-indigo-600 px-4 py-4 shadow-[0_4px_20px_-5px_rgba(225,29,72,0.5)] sm:flex-row sm:items-center sm:px-6">
               <div className="flex items-center gap-4">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-rose-600 shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse">
-                  <span className="font-black text-xl">!</span>
+                <div className="flex size-10 shrink-0 animate-pulse items-center justify-center rounded-full bg-white text-rose-600 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+                  <span className="text-xl font-black">!</span>
                 </div>
                 <div className="flex flex-col">
-                  <Text size="md" className="font-extrabold text-white tracking-tight uppercase drop-shadow-sm">
+                  <Text
+                    size="md"
+                    className="font-extrabold tracking-tight text-white uppercase drop-shadow-sm"
+                  >
                     Workspace Scan Limit Exceeded
                   </Text>
-                  <Text size="sm" className="font-bold text-white/90 drop-shadow-sm mt-0.5">
-                    Your {plan} tier has reached its maximum capacity. Upgrade to unlock unmetered multi-page analysis.
+                  <Text size="sm" className="mt-0.5 font-bold text-white/90 drop-shadow-sm">
+                    Your {plan} tier has reached its maximum capacity. Upgrade to unlock unmetered
+                    multi-page analysis.
                   </Text>
                 </div>
               </div>
-              <Button asChild variant="primary" size="lg" className="shrink-0 bg-white text-rose-600 hover:bg-surface-1 shadow-[0_0_20px_rgba(255,255,255,0.3)] font-black text-[15px] tracking-wide transition-all hover:scale-105 group w-full sm:w-auto h-12">
+              <Button
+                asChild
+                variant="primary"
+                size="lg"
+                className="group h-12 w-full shrink-0 bg-white text-[15px] font-black tracking-wide text-rose-600 shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:bg-surface-1 sm:w-auto"
+              >
                 <Link href={ROUTES.billing}>
-                  UPGRADE WORKSPACE <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                  UPGRADE WORKSPACE{' '}
+                  <span className="ml-2 transition-transform group-hover:translate-x-1">→</span>
                 </Link>
               </Button>
             </div>
           )}
-          <main className="flex-1 relative">
-            <div className="p-4 sm:p-6 lg:p-8 w-full">
+          <main className="relative flex-1">
+            <div className="w-full p-4 sm:p-6 lg:p-8">
               <AppBreadcrumbs />
               {children}
             </div>
@@ -155,7 +183,7 @@ import { connection } from 'next/server';
 export default async function AppLayout({ children }: LayoutProps<'/'>) {
   await connection();
   const t = getRequestScope().resolve(TRANSLATOR);
-  
+
   const themeLabels = {
     label: t.t('theme.label'),
     light: t.t('theme.light'),
@@ -165,9 +193,7 @@ export default async function AppLayout({ children }: LayoutProps<'/'>) {
 
   return (
     <Suspense fallback={<AppShellSkeleton />}>
-      <DynamicShell themeLabels={themeLabels}>
-        {children}
-      </DynamicShell>
+      <DynamicShell themeLabels={themeLabels}>{children}</DynamicShell>
     </Suspense>
   );
 }

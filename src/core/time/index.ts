@@ -7,12 +7,12 @@
  */
 
 export {
- epochMillis,
- fixedClock,
- manualClock,
- offsetClock,
- systemClock,
- type Clock,
- type EpochClock,
- type ManualClock,
+  epochMillis,
+  fixedClock,
+  manualClock,
+  offsetClock,
+  systemClock,
+  type Clock,
+  type EpochClock,
+  type ManualClock,
 } from './clock';

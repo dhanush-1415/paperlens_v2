@@ -7,15 +7,15 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
  * Non-fatal — logs on failure but never throws.
  */
 export async function sendWelcomeEmail(email: string, name?: string | null): Promise<void> {
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
-  const fromEmail = process.env.RESEND_FROM_EMAIL   ?? 'PaperLens <hello@paperlens.co>';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
   const firstName = name?.split(' ')[0] ?? 'there';
 
   try {
     const { error } = await resend.emails.send({
-      from:    fromEmail,
-      to:      email,
-      subject: '👋 Welcome to PaperLens — you\'re all set',
+      from: fromEmail,
+      to: email,
+      subject: "👋 Welcome to PaperLens — you're all set",
       html: `
 <!DOCTYPE html>
 <html lang="en">

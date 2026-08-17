@@ -7,26 +7,26 @@
  */
 
 export {
- SERVER_NETWORK_STATUS,
- createBrowserNetworkMonitor,
- createFakeNetworkMonitor,
- createNoopNetworkMonitor,
- type BrowserMonitorOptions,
- type FakeNetworkMonitor,
+  SERVER_NETWORK_STATUS,
+  createBrowserNetworkMonitor,
+  createFakeNetworkMonitor,
+  createNoopNetworkMonitor,
+  type BrowserMonitorOptions,
+  type FakeNetworkMonitor,
 } from './monitor';
 
 export {
- allowsNonEssentialTraffic,
- isDegraded,
- resolveOfflinePolicy,
- type OperationClass,
+  allowsNonEssentialTraffic,
+  isDegraded,
+  resolveOfflinePolicy,
+  type OperationClass,
 } from './policy';
 
 export type {
- ConnectionQuality,
- ConnectionState,
- NetworkMonitor,
- NetworkStatus,
- OfflinePolicy,
- Reachability,
+  ConnectionQuality,
+  ConnectionState,
+  NetworkMonitor,
+  NetworkStatus,
+  OfflinePolicy,
+  Reachability,
 } from './types';

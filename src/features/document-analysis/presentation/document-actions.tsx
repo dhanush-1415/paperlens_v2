@@ -3,15 +3,30 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Tooltip, cn } from '@/shared/ui';
-import { DownloadIcon, Trash2Icon, RefreshCwIcon, LanguagesIcon, Settings2Icon, CheckCircle2Icon, CheckIcon, Loader2Icon } from 'lucide-react';
+import {
+  DownloadIcon,
+  Trash2Icon,
+  RefreshCwIcon,
+  LanguagesIcon,
+  Settings2Icon,
+  CheckCircle2Icon,
+  CheckIcon,
+  Loader2Icon,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { toggleResolvedAction, deleteDocumentAction } from '../../vault/actions';
 
-export function DocumentActions({ documentId, initialResolved = false }: { documentId: string, initialResolved?: boolean }) {
+export function DocumentActions({
+  documentId,
+  initialResolved = false,
+}: {
+  documentId: string;
+  initialResolved?: boolean;
+}) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
-  
+
   const [resolved, setResolved] = useState(initialResolved);
   const [isResolving, startTransition] = useTransition();
 
@@ -21,7 +36,9 @@ export function DocumentActions({ documentId, initialResolved = false }: { docum
         const newResolved = !resolved;
         setResolved(newResolved); // Optimistic
         await toggleResolvedAction(documentId, newResolved);
-        toast.success(newResolved ? 'Document marked as resolved' : 'Document marked as unresolved');
+        toast.success(
+          newResolved ? 'Document marked as resolved' : 'Document marked as unresolved',
+        );
       } catch (e) {
         console.error(e);
         setResolved(resolved); // Revert
@@ -31,8 +48,9 @@ export function DocumentActions({ documentId, initialResolved = false }: { docum
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this document? This cannot be undone.")) return;
-    
+    if (!window.confirm('Are you sure you want to delete this document? This cannot be undone.'))
+      return;
+
     setIsDeleting(true);
     try {
       await deleteDocumentAction(documentId);
@@ -47,7 +65,7 @@ export function DocumentActions({ documentId, initialResolved = false }: { docum
 
   const handleReanalyze = async () => {
     setIsReanalyzing(true);
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 1200));
     setIsReanalyzing(false);
     toast.success('Document re-analyzed successfully.');
     router.refresh();
@@ -65,62 +83,63 @@ export function DocumentActions({ documentId, initialResolved = false }: { docum
         onClick={handleToggleResolved}
         disabled={isResolving}
         className={cn(
-          'transition-all duration-200 hidden md:inline-flex',
-          resolved 
-            ? 'bg-green-500/15 text-green-600 hover:bg-green-500/25 border-green-500/40 border' 
-            : 'text-text-secondary border border-transparent hover:border-green-500/30 hover:text-green-600 hover:bg-green-500/5'
+          'hidden transition-all duration-200 md:inline-flex',
+          resolved
+            ? 'border border-green-500/40 bg-green-500/15 text-green-600 hover:bg-green-500/25'
+            : 'border border-transparent text-text-secondary hover:border-green-500/30 hover:bg-green-500/5 hover:text-green-600',
         )}
       >
         {isResolving ? (
-          <><Loader2Icon className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+          <>
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" /> Saving...
+          </>
         ) : resolved ? (
-          <><CheckCircle2Icon className="w-4 h-4 mr-2" /> Resolved</>
+          <>
+            <CheckCircle2Icon className="mr-2 h-4 w-4" /> Resolved
+          </>
         ) : (
-          <><CheckCircle2Icon className="w-4 h-4 mr-2" /> Mark Resolved</>
+          <>
+            <CheckCircle2Icon className="mr-2 h-4 w-4" /> Mark Resolved
+          </>
         )}
       </Button>
 
-      <div className="h-4 w-px bg-border-subtle mx-1 hidden sm:block" />
+      <div className="mx-1 hidden h-4 w-px bg-border-subtle sm:block" />
 
       <Tooltip content="Translate Report">
-        <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-text-secondary">
-          <LanguagesIcon className="w-4 h-4 mr-2" />
+        <Button variant="ghost" size="sm" className="hidden text-text-secondary sm:inline-flex">
+          <LanguagesIcon className="mr-2 h-4 w-4" />
           Language
         </Button>
       </Tooltip>
-      
+
       <Tooltip content="Adjust Tone">
-        <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-text-secondary">
-          <Settings2Icon className="w-4 h-4 mr-2" />
+        <Button variant="ghost" size="sm" className="hidden text-text-secondary sm:inline-flex">
+          <Settings2Icon className="mr-2 h-4 w-4" />
           Tone
         </Button>
       </Tooltip>
 
-      <div className="h-4 w-px bg-border-subtle mx-1 hidden sm:block" />
+      <div className="mx-1 hidden h-4 w-px bg-border-subtle sm:block" />
 
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={handleReanalyze}
-        disabled={isReanalyzing}
-      >
-        <RefreshCwIcon className={`w-4 h-4 mr-2 ${isReanalyzing ? 'animate-spin' : ''}`} />
+      <Button variant="ghost" size="sm" onClick={handleReanalyze} disabled={isReanalyzing}>
+        <RefreshCwIcon className={`mr-2 h-4 w-4 ${isReanalyzing ? 'animate-spin' : ''}`} />
         Re-analyze
       </Button>
-      
+
       <Button variant="secondary" size="sm" onClick={handleExport}>
-        <DownloadIcon className="w-4 h-4 mr-2" />
+        <DownloadIcon className="mr-2 h-4 w-4" />
         Export
       </Button>
 
-      <Button 
-        variant="ghost" 
-        size="sm" 
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={handleDelete}
         disabled={isDeleting}
-        className="text-risk-critical hover:text-risk-critical hover:bg-risk-critical/10"
+        className="text-risk-critical hover:bg-risk-critical/10 hover:text-risk-critical"
       >
-        <Trash2Icon className="w-4 h-4" />
+        <Trash2Icon className="h-4 w-4" />
       </Button>
     </div>
   );

@@ -5,13 +5,7 @@ import { AppError, unauthenticatedError } from '../errors/app-error';
 import { err, ok, type Result } from '../result/result';
 import { LIFETIME_SECONDS } from '@/shared/constants/time';
 
-import type {
-  AuthProvider,
-  Credentials,
-  Session,
-  SessionStore,
-  SignUpInput,
-} from './types';
+import type { AuthProvider, Credentials, Session, SessionStore, SignUpInput } from './types';
 
 export interface SupabaseAuthOptions {
   supabaseUrl: string;
@@ -22,7 +16,7 @@ export interface SupabaseAuthOptions {
 
 export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthProvider {
   const { supabaseUrl, supabaseKey, now } = options;
-  
+
   async function getServerClient() {
     const cookieStore = await cookies();
     return createServerClient(supabaseUrl, supabaseKey, {
@@ -33,7 +27,7 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // Ignore if called from a Server Component.
@@ -61,7 +55,7 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       const supabase = await getServerClient();
       const { data, error } = await supabase.auth.getUser();
       if (error || !data.user) {
-        return ok(null); 
+        return ok(null);
       }
 
       return ok(mapUserToSession(data.user));
@@ -75,7 +69,9 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       });
 
       if (error || !data.session) {
-        return err(new AppError('INVALID_CREDENTIALS', { message: error?.message || 'Sign in failed' }));
+        return err(
+          new AppError('INVALID_CREDENTIALS', { message: error?.message || 'Sign in failed' }),
+        );
       }
 
       return ok(mapUserToSession(data.user));
@@ -89,8 +85,8 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
         options: {
           data: {
             display_name: input.displayName,
-          }
-        }
+          },
+        },
       });
 
       if (error) {
@@ -100,7 +96,7 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       if (!data.user) {
         return err(new AppError('INTERNAL_ERROR', { message: 'Signup failed to return user' }));
       }
-      
+
       return ok(mapUserToSession(data.user));
     },
 
@@ -137,9 +133,13 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
       const supabase = await getServerClient();
       const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
       if (error || !data.session) {
-        return err(new AppError('INVALID_CREDENTIALS', { message: error?.message || 'Invalid or expired code.' }));
+        return err(
+          new AppError('INVALID_CREDENTIALS', {
+            message: error?.message || 'Invalid or expired code.',
+          }),
+        );
       }
-      
+
       return ok(mapUserToSession(data.user));
     },
 
@@ -150,6 +150,6 @@ export function createSupabaseAuthProvider(options: SupabaseAuthOptions): AuthPr
         return err(new AppError('INTERNAL_ERROR', { message: error.message }));
       }
       return ok(undefined);
-    }
+    },
   };
 }

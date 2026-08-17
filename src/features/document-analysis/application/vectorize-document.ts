@@ -11,7 +11,7 @@ export async function vectorizeDocument(analysisId: string, rawText: string) {
     const chunkSize = 1500;
     const overlap = 200;
     const chunks: string[] = [];
-    
+
     let i = 0;
     while (i < rawText.length) {
       chunks.push(rawText.slice(i, i + chunkSize));
@@ -26,12 +26,12 @@ export async function vectorizeDocument(analysisId: string, rawText: string) {
 
     // 3. Store in database
     // Prisma with pgvector requires raw SQL for the Unsupported vector type right now,
-    // or we can use the prisma extension. 
+    // or we can use the prisma extension.
     // Since we enabled `postgresqlExtensions`, we can insert them using raw queries.
     for (let index = 0; index < chunks.length; index++) {
       const textContent = chunks[index];
       const embedding = embeddings[index];
-      
+
       if (!embedding) continue;
 
       // Formatting the array into the postgres vector format: '[0.1, 0.2, ...]'
@@ -48,7 +48,7 @@ export async function vectorizeDocument(analysisId: string, rawText: string) {
         )
       `;
     }
-    
+
     console.log(`Vectorized document ${analysisId} into ${chunks.length} chunks.`);
   } catch (err) {
     console.error('Failed to vectorize document:', err);

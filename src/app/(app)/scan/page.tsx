@@ -3,31 +3,35 @@ import { Heading, Text } from '@/shared/ui';
 import { OmniDropzone } from './components/omni-dropzone';
 
 export const metadata: Metadata = {
- title: 'Scan a document',
- description:
- 'Paste a contract, lease or notice and see the clauses that cost you money, ranked by severity.',
+  title: 'Scan a document',
+  description:
+    'Paste a contract, lease or notice and see the clauses that cost you money, ranked by severity.',
 };
 
 export default function ScanPage() {
- return (
- <div className="flex flex-col w-full min-h-[calc(100vh-80px)] px-4 md:px-8 py-8 bg-canvas">
- <div className="flex-1 flex flex-col w-full mx-auto">
- <div className="flex flex-col mb-4">
-   <Heading level={1} size="display-md" className="font-geist font-extrabold tracking-tight text-text-primary mb-3">
-     Scan & Analyze
-   </Heading>
-   <Text size="md" tone="secondary" className="font-inter max-w-2xl leading-relaxed">
-     Upload any contract, audio log, or URL. PaperLens automatically routes and analyzes your data.
-   </Text>
- </div>
+  return (
+    <div className="flex min-h-[calc(100vh-80px)] w-full flex-col bg-canvas px-4 py-8 md:px-8">
+      <div className="mx-auto flex w-full flex-1 flex-col">
+        <div className="mb-4 flex flex-col">
+          <Heading
+            level={1}
+            size="display-md"
+            className="font-geist mb-3 font-extrabold tracking-tight text-text-primary"
+          >
+            Scan & Analyze
+          </Heading>
+          <Text size="md" tone="secondary" className="font-inter max-w-2xl leading-relaxed">
+            Upload any contract, audio log, or URL. PaperLens automatically routes and analyzes your
+            data.
+          </Text>
+        </div>
 
- <div className="flex-1 w-full h-full mt-4">
-   <OmniDropzone />
- </div>
-
- </div>
- </div>
- );
+        <div className="mt-4 h-full w-full flex-1">
+          <OmniDropzone />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ScanIcon(props: React.SVGProps<SVGSVGElement>) {

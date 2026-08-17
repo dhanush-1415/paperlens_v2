@@ -33,7 +33,7 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1, 
+      wheelMultiplier: 1,
       touchMultiplier: 2,
     });
 

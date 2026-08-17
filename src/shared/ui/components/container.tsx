@@ -27,39 +27,38 @@ import { cn } from '@/shared/ui/cn';
 import type { LayoutElement } from '../primitives/polymorphic';
 
 const containerVariants = cva('mx-auto w-full', {
- variants: {
- width: {
- content: 'max-w-content',
- shell: 'max-w-shell',
- measure: 'max-w-measure',
- full: 'max-w-none',
- },
- /**
- * Off for a container nested inside another container — otherwise the gutters compound
- * and the inner column is inset twice for no reason anyone can see in the markup.
- */
- gutter: {
- true: 'px-5 sm:px-6 lg:px-8',
- false: '',
- },
- },
- defaultVariants: {
- width: 'content',
- gutter: true,
- },
+  variants: {
+    width: {
+      content: 'max-w-content',
+      shell: 'max-w-shell',
+      measure: 'max-w-measure',
+      full: 'max-w-none',
+    },
+    /**
+     * Off for a container nested inside another container — otherwise the gutters compound
+     * and the inner column is inset twice for no reason anyone can see in the markup.
+     */
+    gutter: {
+      true: 'px-5 sm:px-6 lg:px-8',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    width: 'content',
+    gutter: true,
+  },
 });
 
 export interface ContainerProps
- extends HTMLAttributes<HTMLElement>,
- VariantProps<typeof containerVariants> {
- /** Semantic tag. `div` by default; `main`, `header`, `footer` and `nav` are the usual ones. */
- as?: LayoutElement;
+  extends HTMLAttributes<HTMLElement>, VariantProps<typeof containerVariants> {
+  /** Semantic tag. `div` by default; `main`, `header`, `footer` and `nav` are the usual ones. */
+  as?: LayoutElement;
 }
 
 export function Container({ as = 'div', width, gutter, className, ...props }: ContainerProps) {
- // Widening annotation — see the note in primitives/polymorphic.ts.
- const Component: ElementType = as;
- return <Component className={cn(containerVariants({ width, gutter }), className)} {...props} />;
+  // Widening annotation — see the note in primitives/polymorphic.ts.
+  const Component: ElementType = as;
+  return <Component className={cn(containerVariants({ width, gutter }), className)} {...props} />;
 }
 
 export { containerVariants };

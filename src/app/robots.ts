@@ -6,15 +6,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: [
-        '/api/', 
-        '/_next/', 
-        '/login', 
-        '/signup', 
-        '/dashboard/', 
-        '/onboarding/',
-      ],
+      disallow: ['/api/', '/_next/', '/login', '/signup', '/dashboard/', '/onboarding/'],
     },
-    sitemap: `${serverEnv.APP_URL}/sitemap.xml`,
+    sitemap: 'https://paperlens.co/sitemap.xml',
   };
 }
