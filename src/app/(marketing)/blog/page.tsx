@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { Button } from '@/shared/ui';
 import { ROUTES } from '@/shared/constants/routes';
 
-export const revalidate = 86400; // Blog list — revalidate daily
+
 
 export const metadata: Metadata = {
   title: 'Blog — Documents Decoded. No Jargon.',

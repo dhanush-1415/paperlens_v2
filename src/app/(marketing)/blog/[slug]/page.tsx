@@ -8,7 +8,7 @@ import { getAllSlugs, getPostBySlug } from '@/lib/blog';
 import { Button } from '@/shared/ui';
 import { ROUTES } from '@/shared/constants/routes';
 
-export const revalidate = 86400;
+
 
 export async function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
