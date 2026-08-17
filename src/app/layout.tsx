@@ -9,6 +9,8 @@ import { fontVariables } from '@/shared/ui/fonts';
 import { TenantTokens, ThemeScript } from '@/shared/ui/theme';
 
 import { Providers } from './providers';
+import { CookieConsent } from '@/shared/ui/patterns/cookie-consent';
+import { ROUTES } from '@/shared/constants/routes';
 
 import './globals.css';
 
@@ -124,60 +126,27 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
  content to show. */}
         <ThemeScript />
         {/* Plausible analytics – loaded after consent */}
-        <Script src="https://plausible.io/js/plausible.js" defer data-domain="paperlens.co" />
+        <Script src="https://plausible.io/js/plausible.js" defer data-domain="paperlens.io" />
         {/* Tenant tokens */}
         <TenantTokens tenant={tenant} />
-
-        {/* Phase 1 SEO: JSON-LD Knowledge Graph */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@graph': [
-                {
-                  '@type': 'SoftwareApplication',
-                  name: 'PaperLens',
-                  operatingSystem: 'Web',
-                  applicationCategory: 'BusinessApplication',
-                  offers: {
-                    '@type': 'Offer',
-                    price: '0.00',
-                    priceCurrency: 'USD',
-                  },
-                  description:
-                    'Enterprise AI Document Analyzer. Extract truth, citations, and summaries from complex PDFs and research papers in seconds.',
-                },
-                {
-                  '@type': 'Organization',
-                  '@id': 'https://paperlens.co/#organization',
-                  name: 'PaperLens',
-                  url: 'https://paperlens.co',
-                  logo: 'https://paperlens.co/favicon.ico',
-                  sameAs: [
-                    'https://twitter.com/paperlens',
-                    'https://linkedin.com/company/paperlens',
-                  ],
-                },
-                {
-                  '@type': 'WebSite',
-                  '@id': 'https://paperlens.co/#website',
-                  url: 'https://paperlens.co',
-                  name: 'PaperLens',
-                  publisher: {
-                    '@id': 'https://paperlens.co/#organization',
-                  },
-                },
-              ],
-            }),
-          }}
-        />
       </head>
       <body
         suppressHydrationWarning
         className="flex min-h-full flex-col bg-canvas text-text-primary antialiased"
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <CookieConsent
+            labels={{
+              title: 'Your privacy',
+              body: 'We use essential cookies to make our site work. With your consent, we may also use non-essential cookies to improve user experience and analyze website traffic.',
+              accept: 'Accept',
+              reject: 'Reject',
+              policyLink: 'Cookie Policy',
+            }}
+            policyHref={ROUTES.cookies as any}
+          />
+        </Providers>
       </body>
     </html>
   );

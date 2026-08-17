@@ -101,10 +101,15 @@ export function BillingPage({
     {
       id: 'action',
       header: '',
-      cell: () => (
-        <button className="flex items-center gap-2 text-sm font-bold text-brand-primary hover:underline">
+      cell: (inv) => (
+        <a
+          href={inv.downloadUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm font-bold text-brand-primary hover:underline"
+        >
           <DownloadIcon className="size-4" /> PDF
-        </button>
+        </a>
       ),
     },
   ];

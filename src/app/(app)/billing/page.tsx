@@ -1,6 +1,6 @@
 import { requireSession } from '@/server/bootstrap';
 import { BillingPage } from '@/features/billing';
-import { getUserPlan } from '@/server/dal/plan';
+import { getUserPlan, getUserInvoices } from '@/server/dal/plan';
 import { prisma } from '@/server/db/prisma';
 import { scoreOf } from '@/features/document-analysis/domain';
 
@@ -76,12 +76,14 @@ export default async function BillingRoute() {
         : null,
   };
 
+  const invoices = await getUserInvoices(session.userId);
+
   return (
     <BillingPage
       planData={planData}
       usageData={usageData}
       paymentMethod={paymentMethod}
-      invoices={[]}
+      invoices={invoices}
     />
   );
 }

@@ -152,6 +152,36 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
           </Field>
         </div>
 
+        <div className="mt-2 flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="acceptedTerms"
+            name="acceptedTerms"
+            required
+            className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded-sm border border-border-strong bg-transparent text-brand-primary transition-all focus:ring-2 focus:ring-brand-primary/20"
+          />
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="acceptedTerms"
+              className="cursor-pointer text-sm font-medium text-text-secondary"
+            >
+              I agree to the{' '}
+              <a href="/terms" className="text-brand-primary hover:underline">
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a href="/privacy" className="text-brand-primary hover:underline">
+                Privacy Policy
+              </a>
+            </label>
+            {fieldError('acceptedTerms') && (
+              <span className="text-destructive text-xs font-medium">
+                {fieldError('acceptedTerms')}
+              </span>
+            )}
+          </div>
+        </div>
+
         <Button
           variant="premium"
           size="lg"

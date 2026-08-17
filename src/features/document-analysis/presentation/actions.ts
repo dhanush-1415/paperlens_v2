@@ -21,6 +21,7 @@ import { ANALYZE_DOCUMENT } from '../tokens';
 import { analyzeDocumentSchema } from '../validation';
 import { extractTextFromFile } from '../application';
 import { vectorizeDocument } from '../application/vectorize-document';
+import { dispatchWebhookEvent } from '@/features/webhooks/application';
 
 /**
  * The mutation entry point (requirements 2, 3, 4, 5, 11, 15, 16).
@@ -210,6 +211,14 @@ export const analyzeDocumentAction = action(
 
     // Background vectorize for RAG Semantic Search
     void vectorizeDocument(analysis.id, analysis.rawText);
+
+    // Background Webhook dispatch for B2B ERPs
+    void dispatchWebhookEvent(session.userId, 'document.analyzed', {
+      analysisId: analysis.id,
+      title: analysis.title,
+      riskLevel: analysis.score.level,
+      flagsCount: analysis.flags.length,
+    });
 
     // 5.5 ─ Increment Usage Tracking
     await incrementScanUsage(session.userId);

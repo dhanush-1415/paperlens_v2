@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/server/bootstrap';
 import { prisma } from '@/server/db/prisma';
 import { renderToStream } from '@react-pdf/renderer';

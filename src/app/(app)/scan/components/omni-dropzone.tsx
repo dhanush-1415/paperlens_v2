@@ -18,6 +18,8 @@ import {
 import { ScannerCamera } from '@/features/document-analysis/presentation/scanner-camera';
 import { AudioUploader } from './audio-uploader';
 import { VideoUploader } from './video-uploader';
+import { SampleDemoBar } from './sample-demo-bar';
+import { SecurityBadges } from './security-badges';
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
 const MAX_COMPRESSIBLE_SIZE = 10 * 1024 * 1024;
@@ -493,36 +495,17 @@ export function OmniDropzone() {
         )}
       </Dialog>
       {/* Capability Segmented Control */}
-      <div className="mb-8 flex items-center justify-center sm:justify-start">
-        <div className="inline-flex items-center rounded-2xl border border-brand-primary/10 bg-brand-primary/[0.03] p-1.5 shadow-inner backdrop-blur-md">
+      <div className="scrollbar-hide mb-6 flex w-full justify-start overflow-x-auto pb-2 sm:mb-8 sm:pb-0 md:justify-center">
+        <div className="inline-flex min-w-max items-center rounded-2xl border border-border-subtle bg-surface-2/80 p-1.5 shadow-inner backdrop-blur-md md:mx-auto">
           {[
-            { id: 'document', label: 'Upload', icon: <DocumentIcon className="size-4" /> },
-            { id: 'link', label: 'URL', icon: <ScanIcon className="size-4" /> },
-            {
-              id: 'text',
-              label: 'Text',
-              icon: (
-                <svg
-                  className="size-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="21" x2="3" y1="6" y2="6" />
-                  <line x1="15" x2="3" y1="12" y2="12" />
-                  <line x1="17" x2="3" y1="18" y2="18" />
-                </svg>
-              ),
-            },
+            { id: 'document', label: 'Upload', icon: <DocumentIcon className="size-4 shrink-0" /> },
+            { id: 'url', label: 'URL / Text', icon: <ScanIcon className="size-4 shrink-0" /> },
             {
               id: 'audio',
               label: 'Audio',
               icon: (
                 <svg
-                  className="size-4"
+                  className="size-4 shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -541,7 +524,7 @@ export function OmniDropzone() {
               label: 'Video',
               icon: (
                 <svg
-                  className="size-4"
+                  className="size-4 shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -559,10 +542,10 @@ export function OmniDropzone() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'relative flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 outline-none',
+                'relative flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold transition-all duration-300 outline-none sm:px-5 sm:text-sm',
                 activeTab === tab.id
-                  ? 'border border-brand-primary/20 bg-brand-primary/10 text-brand-primary shadow-sm ring-1 ring-brand-primary/10'
-                  : 'border border-transparent text-text-secondary hover:bg-brand-primary/5 hover:text-brand-primary/80',
+                  ? 'border border-border-strong bg-surface-1 text-brand-primary shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                  : 'border border-transparent text-text-secondary hover:bg-surface-2/50 hover:text-text-primary',
               )}
             >
               <span
@@ -579,21 +562,23 @@ export function OmniDropzone() {
         </div>
       </div>
 
-      {/* Main Layout: Asymmetric Split Grid */}
-      <div className="flex min-h-[520px] w-full flex-col gap-8 lg:flex-row">
-        {/* Left Side: Omni-Drop Vault (Premium Focus) */}
+      {/* Main Layout: Linear Stack matching clearcut-app */}
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        {/* Active Tab Content Area */}
         <div
           className={cn(
-            'group relative flex flex-1 flex-col overflow-hidden rounded-3xl p-10 transition-all duration-400 sm:p-14',
-            activeTab === 'link'
-              ? 'border border-brand-primary/20 bg-brand-primary/[0.02] shadow-sm'
-              : isDragging
-                ? 'scale-[1.005] border-2 border-brand-primary bg-brand-primary/[0.04] shadow-[0_0_60px_-15px_rgba(37,99,235,0.15)]'
-                : 'border border-brand-primary/20 bg-brand-primary/[0.02] shadow-sm hover:border-brand-primary/40 hover:shadow-md',
+            'group relative flex flex-col overflow-hidden rounded-3xl p-4 transition-all duration-400 sm:p-10 lg:p-12',
+            activeTab === 'url'
+              ? 'min-h-[50vh] border border-brand-primary/20 bg-brand-primary/[0.02] shadow-sm sm:min-h-[65vh]'
+              : activeTab === 'video' || activeTab === 'audio'
+                ? 'min-h-[50vh] border border-brand-primary/20 bg-brand-primary/[0.02] p-0 shadow-sm sm:min-h-[65vh] sm:p-0 lg:p-0'
+                : isDragging
+                  ? 'min-h-[50vh] scale-[1.005] border-2 border-brand-primary bg-brand-primary/[0.04] shadow-[0_0_60px_-15px_rgba(37,99,235,0.15)] sm:min-h-[70vh]'
+                  : 'min-h-[50vh] border border-brand-primary/20 bg-brand-primary/[0.02] shadow-sm hover:border-brand-primary/40 hover:shadow-md sm:min-h-[70vh]',
           )}
-          onDragOver={activeTab !== 'link' ? onDragOver : undefined}
-          onDragLeave={activeTab !== 'link' ? onDragLeave : undefined}
-          onDrop={activeTab !== 'link' ? onDrop : undefined}
+          onDragOver={activeTab !== 'url' ? onDragOver : undefined}
+          onDragLeave={activeTab !== 'url' ? onDragLeave : undefined}
+          onDrop={activeTab !== 'url' ? onDrop : undefined}
         >
           {/* Ambient Glow for Drag State */}
           <div
@@ -603,12 +588,9 @@ export function OmniDropzone() {
             )}
           />
 
-          {activeTab === 'text' ? (
-            <div
-              key="text"
-              className="relative z-10 flex h-full w-full animate-fade-in-up flex-col"
-            >
-              <div className="mt-2 mb-8 flex items-center gap-4">
+          {activeTab === 'url' ? (
+            <div key="url" className="relative z-10 flex h-full w-full animate-fade-in-up flex-col">
+              <div className="mt-2 mb-6 flex items-center gap-4">
                 <div className="inline-flex size-12 items-center justify-center rounded-xl border border-border-subtle bg-surface-1 shadow-sm ring-1 ring-black/5 dark:ring-white/5">
                   <svg
                     className="size-5 text-brand-primary"
@@ -630,115 +612,65 @@ export function OmniDropzone() {
                     size="md"
                     className="font-geist mb-0.5 font-bold tracking-tight text-text-primary"
                   >
-                    Paste Raw Text
+                    Analyze Text or URL
                   </Heading>
                   <Text size="sm" tone="secondary" className="font-inter">
-                    Instantly scan raw clauses, paragraphs, or entire policy documents.
+                    Paste any document text or a public web link below.
                   </Text>
                 </div>
               </div>
 
-              <form
-                action={textFormAction}
-                className="group/input relative min-h-[240px] w-full flex-1"
-              >
-                {textState && !textState.ok && textState.error && !textState.error.fieldErrors && (
-                  <div className="absolute -top-12 right-0 left-0 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-500">
-                    {textState.error.messageKey}
-                  </div>
-                )}
-                <div className="absolute inset-0 rounded-2xl bg-brand-primary/5 opacity-0 blur-xl transition-opacity duration-500 group-focus-within/input:opacity-100" />
-                <div className="relative flex h-full flex-col rounded-2xl border border-border-strong/50 bg-surface-1 p-1.5 shadow-sm transition-all duration-300 focus-within:border-brand-primary/50 focus-within:ring-2 focus-within:ring-brand-primary/20">
+              <div className="group/input relative flex min-h-[320px] w-full flex-1 flex-col gap-4 sm:min-h-[280px]">
+                <div className="relative flex flex-1 flex-col rounded-2xl border border-border-strong/50 bg-surface-1 shadow-sm transition-all duration-300 focus-within:border-brand-primary/50 focus-within:ring-2 focus-within:ring-brand-primary/20">
                   <textarea
-                    name="text"
                     required
-                    placeholder="Paste your contract clauses or text here..."
-                    className="font-inter w-full flex-1 resize-none border-none bg-transparent px-4 py-4 text-base text-text-primary outline-none placeholder:text-text-tertiary"
-                  />
-                  <input type="hidden" name="documentType" value="other" />
-                  <div className="flex items-center justify-between border-t border-border-subtle/50 px-4 py-3">
-                    <span className="text-xs font-semibold tracking-wider text-text-tertiary uppercase">
-                      Text Analysis Engine
-                    </span>
-                    <Button type="submit" variant="premium" loading={isTextPending}>
-                      {isTextPending ? 'Analyzing...' : 'Analyze Text'}
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          ) : activeTab === 'link' ? (
-            <div
-              key="link"
-              className="relative z-10 mx-auto flex h-full w-full max-w-3xl animate-fade-in-up flex-col items-center justify-center text-center"
-            >
-              <div className="mb-6 inline-flex size-14 items-center justify-center rounded-2xl border border-border-subtle bg-surface-1 shadow-sm ring-1 ring-black/5 dark:ring-white/5">
-                <ScanIcon className="size-6 text-brand-primary" />
-              </div>
-              <Heading
-                level={2}
-                size="md"
-                className="font-geist mb-3 font-bold tracking-tight text-text-primary"
-              >
-                Analyze a Web Link
-              </Heading>
-              <Text size="md" tone="secondary" className="font-inter mb-10 max-w-lg">
-                Paste a URL to a privacy policy, terms of service, or any public document. Our
-                engine will fetch and parse it instantly.
-              </Text>
-
-              <div className="group/input relative mb-8 w-full">
-                <div className="absolute inset-0 rounded-full bg-brand-primary/5 opacity-0 blur-xl transition-opacity duration-500 group-focus-within/input:opacity-100" />
-                <div className="relative flex items-center rounded-full border border-border-strong/50 bg-surface-1 p-1.5 shadow-sm transition-all duration-300 focus-within:border-brand-primary/50 focus-within:ring-2 focus-within:ring-brand-primary/20 hover:border-border-strong">
-                  <div className="pl-5 text-text-tertiary">
-                    <svg
-                      className="size-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                    </svg>
-                  </div>
-                  <input
-                    type="url"
-                    placeholder="https://example.com/terms"
-                    className="font-inter flex-1 border-none bg-transparent px-4 py-3 text-base text-text-primary outline-none placeholder:text-text-tertiary"
+                    maxLength={200000}
+                    placeholder={
+                      'Paste a URL — https://example.com/privacy\n\nor paste the document text directly...'
+                    }
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     disabled={isAnalyzing}
+                    className="font-inter h-full w-full flex-1 resize-none rounded-2xl border-none bg-transparent px-4 pt-4 pb-8 text-sm text-text-primary outline-none placeholder:text-text-tertiary sm:text-base"
                   />
-                  <Button
-                    variant="premium"
-                    className="h-11 rounded-full px-6"
-                    onClick={() => handleUrlAnalyze()}
-                    disabled={!urlInput.trim() || isAnalyzing}
-                  >
-                    {isAnalyzing ? 'Analyzing...' : 'Analyze'}
-                  </Button>
+                  <div className="pointer-events-none absolute right-3 bottom-2.5 select-none">
+                    <span
+                      className={cn(
+                        'text-[10px] font-medium transition-colors',
+                        urlInput.length >= 200000
+                          ? 'text-destructive'
+                          : urlInput.length > 180000
+                            ? 'text-warning'
+                            : 'text-text-tertiary',
+                      )}
+                    >
+                      {urlInput.length.toLocaleString()} / 200,000
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <span className="mr-2 text-xs font-semibold tracking-wider text-text-tertiary uppercase">
-                  Quick Try:
-                </span>
-                {[
-                  { label: 'OpenAI Privacy', icon: '🔒' },
-                  { label: 'Stripe Terms', icon: '💳' },
-                  { label: 'GitHub SLA', icon: '🐙' },
-                ].map((chip) => (
-                  <button
-                    key={chip.label}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-2 px-3 py-1.5 text-xs font-semibold text-text-secondary transition-all hover:border-border-strong hover:bg-surface-raised hover:text-text-primary"
+                <Button
+                  variant="premium"
+                  className="h-12 w-full rounded-xl font-semibold shadow-lg shadow-brand-primary/20 transition-all duration-300"
+                  loading={isAnalyzing}
+                  onClick={() => handleUrlAnalyze()}
+                  disabled={!urlInput.trim() || isAnalyzing}
+                >
+                  <svg
+                    className="mr-2 size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <span>{chip.icon}</span> {chip.label}
-                  </button>
-                ))}
+                    <line x1="21" x2="3" y1="6" y2="6" />
+                    <line x1="15" x2="3" y1="12" y2="12" />
+                    <line x1="17" x2="3" y1="18" y2="18" />
+                  </svg>
+                  {isAnalyzing ? 'Analyzing...' : 'Analyze Text / URL'}
+                </Button>
               </div>
             </div>
           ) : activeTab === 'video' ? (
@@ -780,120 +712,110 @@ export function OmniDropzone() {
           )}
         </div>
 
-        {/* Right Side: Trust & Metadata Panel (Bento Style) */}
-        <div className="flex w-full flex-col gap-6 lg:w-[380px]">
-          {/* Bento Box 1: Privacy & Security */}
-          <div className="flex flex-1 flex-col justify-center rounded-3xl border border-border-subtle bg-surface-1 p-8 shadow-sm">
-            <div className="font-geist mb-8 inline-flex w-fit items-center gap-2 rounded-lg border border-border-subtle bg-surface-2 px-3 py-1.5 text-xs font-semibold text-text-primary">
-              <ShieldIcon className="size-3.5 text-brand-primary" /> Enterprise Grade
-            </div>
+        {/* -- Bottom Utilities Area -- */}
 
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="mt-0.5 shrink-0 text-brand-primary">
+        {/* Sample Demo Bar */}
+        <SampleDemoBar
+          onSelectSample={(sampleText) => handleUrlAnalyze(sampleText)}
+          disabled={isUploading || isAnalyzing}
+        />
+
+        {/* Supported formats strip */}
+        <div className="rounded-2xl border border-border-subtle bg-surface-2/30 px-4 py-4 sm:px-5">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+              <span className="text-[11px] font-bold tracking-widest whitespace-nowrap text-text-tertiary uppercase">
+                Supported
+              </span>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 text-[13px] font-medium text-text-secondary sm:text-xs">
+                <span className="flex items-center gap-1.5">
+                  <DocumentIcon className="h-3.5 w-3.5 text-text-tertiary" /> PDF, DOCX, TXT
+                </span>
+                <span className="flex items-center gap-1.5">
                   <svg
-                    className="size-5"
+                    className="h-3.5 w-3.5 text-text-tertiary"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                   </svg>
-                </div>
-                <div>
-                  <Heading
-                    level={3}
-                    size="sm"
-                    className="font-geist mb-1 font-bold text-text-primary"
+                  Images
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg
+                    className="h-3.5 w-3.5 text-text-tertiary"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    AES-256 Encryption
-                  </Heading>
-                  <Text size="sm" tone="secondary" className="font-inter leading-relaxed">
-                    Data is encrypted in transit and at rest using industry-leading protocols.
-                  </Text>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="mt-0.5 shrink-0 text-brand-primary">
-                  <VaultIcon className="size-5" />
-                </div>
-                <div>
-                  <Heading
-                    level={3}
-                    size="sm"
-                    className="font-geist mb-1 font-bold text-text-primary"
+                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                    <path d="M3 9h18" />
+                    <path d="M3 15h18" />
+                    <path d="M9 3v18" />
+                    <path d="M15 3v18" />
+                  </svg>
+                  CSV, Excel
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg
+                    className="h-3.5 w-3.5 text-text-tertiary"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    Zero Data Retention
-                  </Heading>
-                  <Text size="sm" tone="secondary" className="font-inter leading-relaxed">
-                    Files are wiped instantly from our processing servers after analysis.
-                  </Text>
-                </div>
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" x2="12" y1="19" y2="22" />
+                  </svg>
+                  Audio &amp; Video
+                </span>
               </div>
             </div>
-          </div>
-
-          {/* Bento Box 2: Specifications */}
-          <div className="rounded-3xl border border-border-subtle bg-surface-2/50 p-8 shadow-sm">
-            <Heading
-              level={3}
-              size="sm"
-              className="font-geist mb-6 flex items-center gap-2 font-bold text-text-primary"
-            >
-              <InfoIcon className="size-4 text-text-tertiary" /> Specifications
-            </Heading>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-              <div>
-                <Text
-                  size="xs"
-                  tone="secondary"
-                  className="font-inter mb-1 font-semibold tracking-wider uppercase"
+            <div className="flex items-center">
+              <span className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-1 px-2.5 py-1.5 text-[11px] font-semibold whitespace-nowrap text-text-secondary shadow-sm">
+                <svg
+                  className="h-3 w-3 text-brand-primary"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  Max Size
-                </Text>
-                <Text size="sm" className="font-geist font-medium text-text-primary">
-                  25 MB / file
-                </Text>
-              </div>
-              <div>
-                <Text
-                  size="xs"
-                  tone="secondary"
-                  className="font-inter mb-1 font-semibold tracking-wider uppercase"
-                >
-                  Time to Parse
-                </Text>
-                <Text size="sm" className="font-geist font-medium text-text-primary">
-                  ~1.2 seconds
-                </Text>
-              </div>
-              <div className="col-span-2">
-                <Text
-                  size="xs"
-                  tone="secondary"
-                  className="font-inter mb-1 font-semibold tracking-wider uppercase"
-                >
-                  Supported Types
-                </Text>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {['PDF', 'DOCX', 'TXT', 'MP3', 'WAV', 'PNG', 'JPEG'].map((type) => (
-                    <span
-                      key={type}
-                      className="rounded border border-border-strong/50 bg-surface-1 px-2 py-0.5 font-mono text-[10px] font-bold text-text-secondary"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Max 10 MB
+              </span>
             </div>
           </div>
         </div>
+
+        {/* Security Badges */}
+        <SecurityBadges className="mt-2" />
+
+        <p className="mx-auto mt-2 max-w-sm text-center text-[10px] text-text-tertiary/70">
+          By uploading a document, you agree to our{' '}
+          <a href="/terms" className="underline transition-colors hover:text-text-primary">
+            Terms of Service
+          </a>{' '}
+          and acknowledge our{' '}
+          <a href="/privacy" className="underline transition-colors hover:text-text-primary">
+            Privacy Policy
+          </a>
+          .
+        </p>
       </div>
     </div>
   );

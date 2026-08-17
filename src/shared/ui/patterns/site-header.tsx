@@ -76,6 +76,7 @@ export interface SiteHeaderProps {
   dashboardHref?: Route;
   isAuthenticated?: boolean;
   labels: SiteHeaderLabels;
+  forceSolid?: boolean;
   className?: string;
 }
 
@@ -99,10 +100,11 @@ export function SiteHeader({
   dashboardHref,
   isAuthenticated,
   labels,
+  forceSolid = false,
   className,
 }: SiteHeaderProps) {
   const pathname = usePathname();
-  const isScrolled = useScrolledDown();
+  const isScrolled = useScrolledDown() || forceSolid;
 
   /**
    * The drawer's state is *which route it was opened on*, not a boolean.
@@ -120,7 +122,9 @@ export function SiteHeader({
   const isMenuOpen = openedAt === pathname;
 
   return (
-    <header className="pointer-events-none sticky top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-6">
+    <header
+      className={cn('pointer-events-none sticky top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-6', className)}
+    >
       <div
         className={cn(
           'pointer-events-auto mx-auto flex w-[95%] flex-col rounded-full transition-all duration-(--duration-standard) ease-brand md:w-[90%] lg:w-[80%]',
@@ -250,55 +254,91 @@ export function SiteHeader({
           onClose={() => {
             setOpenedAt(null);
           }}
-          title={productName}
+          title={labels.menu}
           side="end"
+          className="shadow-[0_0_60px_rgba(0,0,0,0.2)]"
           footer={
-            /*
-             * The CTA lives in the footer of the drawer, in the bottom third of the screen —
-             * where a thumb actually reaches. A primary action pinned to the top of a phone
-             * drawer is a design that was only ever tested on a desktop.
-             */
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full flex-col gap-3 pt-2 pb-4">
               {isAuthenticated && dashboardHref ? (
-                <Button asChild variant="premium" size="lg" fullWidth>
+                <Button
+                  asChild
+                  variant="premium"
+                  size="lg"
+                  fullWidth
+                  className="font-bold shadow-lg shadow-brand-primary/20"
+                >
                   <Link href={dashboardHref}>Go to Dashboard</Link>
                 </Button>
               ) : (
                 <>
-                  <Button asChild variant="premium" size="lg" fullWidth>
+                  <Button
+                    asChild
+                    variant="premium"
+                    size="lg"
+                    fullWidth
+                    className="font-bold shadow-lg shadow-brand-primary/20"
+                  >
                     <Link href={ctaHref}>{labels.cta}</Link>
                   </Button>
-                  <p className="text-center text-2xs text-text-tertiary">{labels.ctaNote}</p>
+                  <p className="px-2 text-center text-xs font-medium text-text-tertiary">
+                    {labels.ctaNote}
+                  </p>
                 </>
               )}
             </div>
           }
         >
-          <nav aria-label="Primary">
-            <ul className="flex flex-col">
+          <nav aria-label="Primary" className="mt-2">
+            <ul className="flex flex-col gap-2">
               {items.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     aria-current={isActive(pathname, item.href) ? 'page' : undefined}
                     className={cn(
-                      'flex min-h-11 items-center rounded-control px-3 text-base font-medium',
-                      'text-text-secondary transition-colors duration-(--duration-micro)',
+                      'flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-base font-bold',
+                      'text-text-secondary transition-all duration-300',
                       'hover:bg-surface-2 hover:text-text-primary',
-                      'aria-[current=page]:text-text-primary',
+                      'aria-[current=page]:bg-brand-primary/10 aria-[current=page]:text-brand-primary',
                     )}
                   >
                     {item.label}
+                    <svg
+                      className="size-4 opacity-40"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </Link>
                 </li>
               ))}
               {!isAuthenticated && (
-                <li>
+                <li className="mt-4 border-t border-border-subtle/50 pt-4">
                   <Link
                     href={signInHref}
-                    className="flex min-h-11 items-center rounded-control px-3 text-base font-medium text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                    className="flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-base font-bold text-text-secondary transition-all duration-300 hover:bg-surface-2 hover:text-text-primary"
                   >
                     {labels.signIn}
+                    <svg
+                      className="size-4 opacity-40"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      />
+                    </svg>
                   </Link>
                 </li>
               )}

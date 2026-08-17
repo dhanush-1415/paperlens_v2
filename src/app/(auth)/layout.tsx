@@ -2,21 +2,48 @@ import { TRANSLATOR } from '@/core/container';
 import { resolveTenant } from '@/config/tenant';
 import { serverEnv } from '@/config/env.server';
 import { getRequestScope } from '@/server/bootstrap';
-import { CookieConsent } from '@/shared/ui';
+import { CookieConsent, SiteHeader } from '@/shared/ui';
 import Link from 'next/link';
 import { ROUTES } from '@/shared/constants/routes';
 import { AuthAnimation } from './auth-animation';
 import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
+import { siteNavItems } from '@/features/marketing';
+import { getPublicSession } from '@/server/bootstrap';
 
 const tenant = resolveTenant(serverEnv.TENANT_ID);
 
 export default async function AuthLayout({ children }: LayoutProps<'/'>) {
   const scope = getRequestScope();
   const t = scope.resolve(TRANSLATOR);
+  const session = await getPublicSession();
 
   return (
     <AuthAnimation>
-      <div className="flex w-full bg-canvas">
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
+        <SiteHeader
+          productName={tenant.productName}
+          items={siteNavItems(t)}
+          signInHref={ROUTES.login}
+          ctaHref={ROUTES.scan}
+          dashboardHref={ROUTES.welcome}
+          isAuthenticated={!!session}
+          forceSolid={true}
+          labels={{
+            menu: t.t('nav.menu'),
+            closeMenu: t.t('nav.closeMenu'),
+            signIn: t.t('common.signIn'),
+            cta: t.t('cta.analyze'),
+            ctaNote: t.t('cta.reassurance'),
+            theme: t.t('theme.label'),
+            themeOptions: {
+              light: t.t('theme.light'),
+              dark: t.t('theme.dark'),
+              system: t.t('theme.system'),
+            },
+          }}
+        />
+      </div>
+      <div className="flex min-h-screen w-full bg-canvas">
         {/* Left Pane - Brand / Imagery (Hidden on Mobile) */}
         <div className="relative hidden w-1/2 flex-col justify-center gap-24 overflow-hidden bg-brand-primary p-12 text-white lg:flex lg:p-16">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.15),transparent_50%)]" />
@@ -70,18 +97,11 @@ export default async function AuthLayout({ children }: LayoutProps<'/'>) {
         {/* Right Pane - Form Content */}
         <main
           id="main"
-          className="relative flex flex-1 flex-col items-center justify-center p-6 md:p-12 lg:p-16"
+          className="relative flex flex-1 flex-col items-center justify-center p-6 pt-24 md:p-12 lg:p-16"
         >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--brand-primary-rgb),0.05),transparent_60%)] lg:hidden" />
 
-          {/* Mobile Header */}
-          <div className="absolute top-8 left-8 z-20 flex lg:hidden">
-            <Link href="/" className="flex items-center gap-3">
-              <PaperLensLogo size="sm" showText={true} />
-            </Link>
-          </div>
-
-          <div className="auth-box relative z-10 w-full max-w-[440px] rounded-3xl border border-border-strong bg-surface-1 p-8 shadow-[0_8px_40px_rgb(0,0,0,0.08)] md:p-10 dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
+          <div className="auth-box relative z-10 w-full max-w-[440px] rounded-3xl border border-border-strong bg-surface-1 p-8 shadow-none sm:shadow-[0_8px_40px_rgb(0,0,0,0.08)] md:p-10 sm:dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
             {children}
           </div>
         </main>

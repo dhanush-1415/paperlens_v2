@@ -30,7 +30,6 @@ import type { Instrumentation } from 'next';
  */
 
 export async function register(): Promise<void> {
-  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
 
   const { bootstrapServer } = await import('@/server/bootstrap');
@@ -38,7 +37,6 @@ export async function register(): Promise<void> {
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
-  // eslint-disable-next-line no-restricted-syntax
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
 
   const { getServerContainer } = await import('@/server/bootstrap');

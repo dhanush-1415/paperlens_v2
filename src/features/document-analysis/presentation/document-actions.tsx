@@ -19,9 +19,11 @@ import { toggleResolvedAction, deleteDocumentAction } from '../../vault/actions'
 export function DocumentActions({
   documentId,
   initialResolved = false,
+  canExport = false,
 }: {
   documentId: string;
   initialResolved?: boolean;
+  canExport?: boolean;
 }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -127,10 +129,14 @@ export function DocumentActions({
         Re-analyze
       </Button>
 
-      <Button variant="secondary" size="sm" onClick={handleExport}>
-        <DownloadIcon className="mr-2 h-4 w-4" />
-        Export
-      </Button>
+      <Tooltip content={canExport ? 'Download PDF Report' : 'Upgrade to Pro to export PDF reports'}>
+        <div>
+          <Button variant="secondary" size="sm" onClick={handleExport} disabled={!canExport}>
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </div>
+      </Tooltip>
 
       <Button
         variant="ghost"

@@ -138,7 +138,6 @@ export function VerifyEmailForm() {
 
   useEffect(() => {
     if (otp.length === 6 && !digits.includes('')) setTimeout(handleVerify, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otp]);
 
   const handleResend = useCallback(() => {

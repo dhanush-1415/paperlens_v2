@@ -15,4 +15,5 @@ export {
   getSubscription,
   listSubscriptions,
   cancelSubscription,
+  listOrders,
 } from '@lemonsqueezy/lemonsqueezy.js';

@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function ScanPage() {
   return (
-    <div className="flex min-h-[calc(100vh-80px)] w-full flex-col bg-canvas px-4 py-8 md:px-8">
-      <div className="mx-auto flex w-full flex-1 flex-col">
+    <div className="flex min-h-[calc(100vh-80px)] w-full flex-col bg-canvas px-0 py-8 sm:px-4">
+      <div className="mx-auto flex w-full flex-1 flex-col md:px-8">
         <div className="mb-4 flex flex-col">
           <Heading
             level={1}

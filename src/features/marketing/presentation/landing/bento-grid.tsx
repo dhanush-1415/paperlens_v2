@@ -50,7 +50,7 @@ export function LandingBentoGrid({ id = 'features' }: LandingBentoGridProps) {
       <div className="pointer-events-none absolute top-[30%] -right-[10%] h-[500px] w-[500px] rounded-full bg-brand-primary/5 blur-[120px]" />
       <div className="bg-brand-accent/5 pointer-events-none absolute bottom-[10%] -left-[10%] h-[600px] w-[600px] rounded-full blur-[150px]" />
 
-      <div className="relative z-10 mx-auto flex w-[95%] flex-col gap-12 px-6 md:w-[90%] lg:w-[80%]">
+      <div className="relative z-10 mx-auto flex w-full max-w-shell flex-col gap-12 px-5 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto flex max-w-2xl flex-col gap-3 text-center">
           <span className="text-xs font-bold tracking-widest text-brand-primary uppercase">

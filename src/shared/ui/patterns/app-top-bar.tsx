@@ -1,8 +1,7 @@
 'use client';
 
 import { useSidebarStore } from '@/shared/state/sidebar-store';
-import { cn } from '@/shared/ui/cn';
-import { Button, Input, Skeleton } from '@/shared/ui/components';
+import { Skeleton } from '@/shared/ui/components';
 import { MenuIcon, SearchIcon } from '@/shared/ui/icons';
 import { BellIcon } from '@/shared/ui/icons/dashboard-icons';
 import { ThemeToggle } from '@/shared/ui/theme';

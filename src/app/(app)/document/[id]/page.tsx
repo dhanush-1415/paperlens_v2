@@ -87,6 +87,7 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
 
   const plan = {
     canChat: sub ? sub.chatMessagesUsed < (sub.plan?.quotaChatMessagesPerMonth || 20) : false,
+    canExport: sub ? (sub.plan?.capExport ?? false) : false,
     usage: { chatMsgs: sub?.chatMessagesUsed || 0 },
     limits: { chatMsgs: sub?.plan?.quotaChatMessagesPerMonth || 20 },
   };
@@ -100,7 +101,7 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
         </div>
 
         {/* Actions: Re-analyze, Translate, Delete etc. */}
-        <DocumentActions documentId={id} initialResolved={isResolved} />
+        <DocumentActions documentId={id} initialResolved={isResolved} canExport={plan.canExport} />
       </header>
 
       <main className="min-h-0 flex-1 overflow-hidden">

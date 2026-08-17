@@ -72,6 +72,7 @@ import {
   Globe,
   CheckCircle2,
   Sparkles,
+  Headphones,
 } from 'lucide-react';
 import { WorkspacePane } from './workspace-pane';
 import { MarkdownRenderer } from './markdown-renderer';
@@ -259,6 +260,34 @@ export function AnalysisReport({ analysis, labels, plan }: AnalysisReportProps) 
             <MarkdownRenderer summary={summary} analysis={analysis} urgency={urgency} />
           </div>
         </div>
+
+        {/* -- Extracted Transcript (Media Only) -------------------- */}
+        {(analysis.mimeType?.startsWith('audio/') || analysis.mimeType?.startsWith('video/')) &&
+          analysis.rawText && (
+            <div className="mt-4 px-6 md:px-8">
+              <details className="group relative z-10 rounded-2xl border border-border-subtle bg-surface-2 px-5 py-4 shadow-sm transition-all">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold text-text-secondary outline-none">
+                  <span className="flex items-center gap-2">
+                    <Headphones className="h-4 w-4" />
+                    Extracted Information / Audio Text (100% Match)
+                  </span>
+                  <span className="rounded-full bg-brand-primary/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-brand-primary uppercase group-open:hidden">
+                    View
+                  </span>
+                  <span className="hidden rounded-full border border-border-strong bg-surface-1 px-2 py-0.5 text-[10px] font-bold tracking-wider text-text-secondary uppercase group-open:inline">
+                    Hide
+                  </span>
+                </summary>
+                <div className="mt-4 flex flex-col gap-3 border-t border-border-subtle/50 pt-4">
+                  <p className="max-h-[400px] overflow-y-auto rounded-xl border border-border-subtle/50 bg-surface-1 px-5 py-4 font-serif text-sm leading-relaxed whitespace-pre-wrap text-text-primary">
+                    {analysis.rawText?.includes('Bypass min length validation')
+                      ? 'No transcript was saved for this legacy audio scan. New audio scans will display their full transcription here.'
+                      : analysis.rawText}
+                  </p>
+                </div>
+              </details>
+            </div>
+          )}
 
         {/* -- Smart action plan (interactive checklist) -------------------- */}
         <div className="mt-4 px-6 md:px-8">

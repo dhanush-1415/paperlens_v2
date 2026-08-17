@@ -20,6 +20,7 @@ import {
 
 import Link from 'next/link';
 import { AuthProvider } from '@/shared/contexts/auth-context';
+import { VaultChat } from '@/features/vault';
 
 /**
  * The signed-in shell.
@@ -135,33 +136,41 @@ async function DynamicShell({
         <div className="flex w-full min-w-0 flex-1 flex-col">
           <AppTopBar themeLabels={themeLabels} sessionChip={<SessionChip session={session} />} />
           {isLimitReached && (
-            <div className="sticky top-16 z-30 flex flex-col justify-between gap-4 bg-gradient-to-r from-rose-600 via-fuchsia-600 to-indigo-600 px-4 py-4 shadow-[0_4px_20px_-5px_rgba(225,29,72,0.5)] sm:flex-row sm:items-center sm:px-6">
-              <div className="flex items-center gap-4">
-                <div className="flex size-10 shrink-0 animate-pulse items-center justify-center rounded-full bg-white text-rose-600 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+            <div className="sticky top-16 z-30 flex flex-row items-center justify-between gap-3 bg-gradient-to-r from-rose-600 via-fuchsia-600 to-indigo-600 px-3 py-2.5 shadow-[0_4px_20px_-5px_rgba(225,29,72,0.5)] sm:px-6 sm:py-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="hidden size-10 shrink-0 animate-pulse items-center justify-center rounded-full bg-white text-rose-600 shadow-[0_0_15px_rgba(255,255,255,0.4)] sm:flex">
                   <span className="text-xl font-black">!</span>
                 </div>
-                <div className="flex flex-col">
+                <div className="flex min-w-0 flex-col">
                   <Text
-                    size="md"
-                    className="font-extrabold tracking-tight text-white uppercase drop-shadow-sm"
+                    size="sm"
+                    className="leading-tight font-extrabold tracking-tight text-white uppercase sm:truncate sm:text-base"
                   >
                     Workspace Scan Limit Exceeded
                   </Text>
-                  <Text size="sm" className="mt-0.5 font-bold text-white/90 drop-shadow-sm">
+                  <Text
+                    size="xs"
+                    className="mt-0.5 hidden font-bold text-white/90 drop-shadow-sm sm:block"
+                  >
                     Your {plan} tier has reached its maximum capacity. Upgrade to unlock unmetered
                     multi-page analysis.
+                  </Text>
+                  <Text size="2xs" className="mt-0.5 truncate font-medium text-white/90 sm:hidden">
+                    Upgrade to continue
                   </Text>
                 </div>
               </div>
               <Button
                 asChild
                 variant="primary"
-                size="lg"
-                className="group h-12 w-full shrink-0 bg-white text-[15px] font-black tracking-wide text-rose-600 shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:bg-surface-1 sm:w-auto"
+                size="sm"
+                className="group h-8 shrink-0 rounded-full bg-white px-3 text-[11px] font-bold tracking-wide text-rose-600 shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:bg-surface-1 sm:h-12 sm:rounded-control sm:px-6 sm:text-[15px] sm:font-black"
               >
                 <Link href={ROUTES.billing}>
-                  UPGRADE WORKSPACE{' '}
-                  <span className="ml-2 transition-transform group-hover:translate-x-1">→</span>
+                  UPGRADE{' '}
+                  <span className="ml-2 hidden transition-transform group-hover:translate-x-1 sm:inline">
+                    →
+                  </span>
                 </Link>
               </Button>
             </div>
@@ -172,6 +181,7 @@ async function DynamicShell({
               {children}
             </div>
           </main>
+          <VaultChat />
         </div>
       </div>
     </AuthProvider>

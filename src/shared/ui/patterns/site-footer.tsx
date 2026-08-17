@@ -29,7 +29,7 @@ export interface SiteFooterProps {
 
 function FooterAnchor({ link }: { link: FooterLink }) {
   const className = cn(
-    'inline-flex min-h-11 items-center py-1 text-sm md:min-h-0 md:py-0',
+    'inline-flex items-center py-1.5 text-sm md:py-1',
     'text-text-secondary transition-all duration-300 ease-brand',
     'hover:translate-x-1 hover:text-text-primary',
   );
@@ -69,9 +69,9 @@ export function SiteFooter({
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-brand-primary/30 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(var(--brand-primary-rgb),0.08),transparent_70%)]" />
 
-      <div className="relative z-10 mx-auto w-[95%] max-w-7xl pt-16 pb-16 lg:pt-24 lg:pb-24">
-        <div className="grid gap-16 md:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] md:gap-8">
-          <div className="flex max-w-xs flex-col items-start gap-6">
+      <div className="relative z-10 mx-auto w-full max-w-shell px-5 pt-16 pb-12 sm:px-6 lg:px-8 lg:pt-24 lg:pb-16">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] md:gap-8">
+          <div className="col-span-2 flex max-w-xs flex-col items-start gap-6 md:col-span-1">
             <Link
               href="/"
               className="inline-flex items-center gap-3 transition-opacity hover:opacity-90"
@@ -93,10 +93,10 @@ export function SiteFooter({
 
           {groups.map((group) => (
             <nav key={group.title} aria-label={group.title}>
-              <h2 className="mb-6 text-[11px] font-bold tracking-[0.2em] text-text-primary uppercase">
+              <h2 className="mb-4 text-[11px] font-bold tracking-[0.2em] text-text-primary uppercase">
                 {group.title}
               </h2>
-              <ul className="flex flex-col gap-4">
+              <ul className="flex flex-col gap-1.5">
                 {group.links.map((link) => (
                   <li key={`${link.href}${link.label}`}>
                     <FooterAnchor link={link} />

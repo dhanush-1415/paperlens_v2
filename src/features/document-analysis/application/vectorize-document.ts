@@ -20,7 +20,7 @@ export async function vectorizeDocument(analysisId: string, rawText: string) {
 
     // 2. Generate embeddings using AI SDK
     const { embeddings } = await embedMany({
-      model: google.textEmbeddingModel('text-embedding-004'),
+      model: google.textEmbeddingModel('embedding-001'),
       values: chunks,
     });
 

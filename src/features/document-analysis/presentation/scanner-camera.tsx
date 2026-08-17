@@ -135,13 +135,11 @@ export function ScannerCamera({
       .slice(1)
       .map((_, i) => setTimeout(() => setPhaseIdx(i + 1), (i + 1) * 3200));
     return () => timers.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]); // uploadPhases is stable per session (locale-derived)
 
   // Notify parent when scanning/uploading starts or stops
   useEffect(() => {
     onScanningChange?.(mode === 'uploading' || mode === 'loading');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   // -- Camera lifecycle ------------------------------------------------------
@@ -455,7 +453,7 @@ export function ScannerCamera({
           <div
             className={cn(
               'relative mx-auto w-full max-w-3xl cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-200',
-              'flex min-h-[400px] flex-col items-center justify-center gap-6 px-6 py-10 text-center sm:min-h-[500px]',
+              'flex min-h-[320px] flex-col items-center justify-center gap-5 px-4 py-6 text-center sm:min-h-[500px] sm:gap-6 sm:px-6 sm:py-10',
               isDragOver
                 ? 'scale-[1.01] border-brand-primary bg-brand-primary/10'
                 : 'border-brand-primary/30 bg-surface-1/50 hover:border-brand-primary/50 hover:bg-brand-primary/[0.02]',
@@ -543,7 +541,6 @@ export function ScannerCamera({
                 className="mt-1 flex w-full gap-3 px-4 sm:max-w-sm sm:px-0"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Browse Files */}
                 <button
                   type="button"
                   disabled={disabled}
@@ -557,13 +554,15 @@ export function ScannerCamera({
                       : 'cursor-pointer hover:border-brand-primary/60 hover:bg-brand-primary/10 active:scale-[0.97]',
                   )}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-primary/10">
                     <Upload className="h-5 w-5 text-brand-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-text-primary">Browse Files</p>
-                    <p className="mt-0.5 text-[11px] text-text-secondary">
-                      PDF, images, DOCX &amp; more
+                    <p className="mt-0.5 text-[11px] leading-tight text-text-secondary">
+                      PDF, images, DOCX
+                      <br />
+                      &amp; more
                     </p>
                   </div>
                 </button>
@@ -582,12 +581,14 @@ export function ScannerCamera({
                       : 'cursor-pointer hover:border-brand-primary/40 hover:bg-surface-1 active:scale-[0.97]',
                   )}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong/50 bg-surface-1">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/50 bg-surface-1">
                     <Camera className="h-5 w-5 text-text-secondary" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-text-primary">Use Camera</p>
-                    <p className="mt-0.5 text-[11px] text-text-secondary">Take a photo live</p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-text-secondary">
+                      Take a photo live
+                    </p>
                   </div>
                 </button>
               </div>

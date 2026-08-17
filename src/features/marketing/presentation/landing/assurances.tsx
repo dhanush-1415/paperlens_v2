@@ -5,7 +5,7 @@ import { Button, ScrollReveal } from '@/shared/ui';
 export function LandingAssurances() {
   return (
     <section className="relative w-full overflow-hidden border-b border-border-strong/30 bg-canvas py-24">
-      <div className="relative z-10 mx-auto w-[95%] px-6 md:w-[90%] lg:w-[80%]">
+      <div className="relative z-10 mx-auto w-full max-w-shell px-5 sm:px-6 lg:px-8">
         <ScrollReveal
           variant="fade-up"
           className="force-dark group relative grid grid-cols-1 items-center gap-12 overflow-hidden rounded-[2.5rem] border border-border-strong/50 bg-canvas p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] md:p-14 lg:grid-cols-5"

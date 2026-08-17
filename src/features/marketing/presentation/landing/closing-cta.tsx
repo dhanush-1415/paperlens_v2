@@ -13,7 +13,7 @@ export function LandingClosingCta({ ctaLabel, reassurance }: LandingClosingCtaPr
       {/* Background ambient light */}
       <div className="pointer-events-none absolute top-1/2 left-1/2 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle,rgba(var(--brand-primary-rgb),0.05)_0%,transparent_70%)]" />
 
-      <div className="relative z-10 mx-auto w-[95%] px-6 md:w-[90%] lg:w-[80%]">
+      <div className="relative z-10 mx-auto w-full max-w-shell px-5 sm:px-6 lg:px-8">
         <div className="group relative flex flex-col items-center gap-10 overflow-hidden rounded-[3rem] border border-border-strong/50 bg-surface-1/50 p-10 text-center shadow-[0_30px_100px_-20px_rgba(0,0,0,0.6)] backdrop-blur-3xl md:p-16 lg:p-20">
           {/* Internal premium glowing orbs */}
           <div className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-brand-primary/20 opacity-60 blur-[100px] transition-opacity duration-700 group-hover:opacity-100" />

@@ -74,7 +74,7 @@ export function LandingHero({ ctaLabel, reassurance, specimenId }: LandingHeroPr
       <div className="pointer-events-none absolute top-[-10%] right-[-10%] -z-10 h-[600px] w-[600px] rounded-full bg-brand-primary/5 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-[-15%] left-[-10%] -z-10 h-[500px] w-[500px] rounded-full bg-brand-secondary/5 blur-[100px]" />
 
-      <div className="mx-auto w-[95%] px-5 sm:px-6 md:w-[90%] lg:w-[80%] lg:px-8">
+      <div className="mx-auto w-full max-w-shell px-5 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
           {/* Left Column: Copywriting & Actions */}
           <div className="relative z-10 flex flex-col gap-6 text-left lg:col-span-7">

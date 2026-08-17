@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { cn } from '@/shared/ui/cn';
 import { ChevronRightIcon } from '@/shared/ui/icons';
 
 const ROUTE_NAMES: Record<string, string> = {

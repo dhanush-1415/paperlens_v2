@@ -15,13 +15,37 @@ export default async function AdminLogsPage() {
     orderBy: { analyzedAt: 'desc' },
   });
 
-  const MOCK_LOGS = recentDocs.map((doc) => ({
-    id: doc.id,
-    time: doc.analyzedAt.toLocaleString(),
-    user: doc.ownerId.slice(0, 8),
-    action: `Analyzed document: ${doc.title}`,
-    type: 'System',
+  let rawAuthLogs: any[] = [];
+  try {
+    rawAuthLogs = await prisma.$queryRaw`
+      SELECT id, payload->>'actor_id' as user_id, payload->>'action' as action, created_at
+      FROM auth.audit_log_entries 
+      ORDER BY created_at DESC 
+      LIMIT 25
+    `;
+  } catch (e) {
+    console.error('Could not fetch auth audit logs:', e);
+  }
+
+  const authLogs = rawAuthLogs.map((log) => ({
+    id: log.id,
+    time: new Date(log.created_at).toLocaleString(),
+    timeMs: new Date(log.created_at).getTime(),
+    user: String(log.user_id).slice(0, 8) + '...',
+    action: `User ${log.action === 'login' ? 'authenticated' : log.action === 'logout' ? 'signed out' : log.action}`,
+    type: 'Auth',
   }));
+
+  const scanLogs = recentDocs.map((doc) => ({
+    id: doc.id,
+    time: new Date(doc.analyzedAt).toLocaleString(),
+    timeMs: new Date(doc.analyzedAt).getTime(),
+    user: doc.ownerId.slice(0, 8) + '...',
+    action: `Analyzed document: ${doc.title}`,
+    type: 'Scan',
+  }));
+
+  const LIVE_LOGS = [...authLogs, ...scanLogs].sort((a, b) => b.timeMs - a.timeMs).slice(0, 50);
 
   const columns = [
     {
@@ -31,7 +55,11 @@ export default async function AdminLogsPage() {
     },
     { id: 'user', header: 'Actor', cell: (l: any) => <span className="font-bold">{l.user}</span> },
     { id: 'action', header: 'Action', cell: (l: any) => <span>{l.action}</span> },
-    { id: 'type', header: 'Category', cell: (l: any) => <Badge tone="neutral">{l.type}</Badge> },
+    {
+      id: 'type',
+      header: 'Category',
+      cell: (l: any) => <Badge tone={l.type === 'Auth' ? 'brand' : 'safe'}>{l.type}</Badge>,
+    },
   ];
 
   return (
@@ -46,7 +74,7 @@ export default async function AdminLogsPage() {
       </div>
 
       <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-6 shadow-sm">
-        <DataTable data={MOCK_LOGS} columns={columns} keyExtractor={(l) => l.id} />
+        <DataTable data={LIVE_LOGS} columns={columns} keyExtractor={(l) => l.id} />
       </div>
     </div>
   );

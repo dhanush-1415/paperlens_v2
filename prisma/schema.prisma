@@ -93,6 +93,7 @@ model DocumentAnalysis {
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
 
   contentChunks   DocumentContent[]
+  shares          DocumentShare[]
 
   @@map("document_analyses")
 }
@@ -200,4 +201,35 @@ model ExpertLead {
 
   @@index([userId])
   @@map("expert_leads")
+}
+
+model Webhook {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  url         String
+  secret      String?
+  events      String[] @default(["document.analyzed"]) // The events this webhook listens to
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@index([userId])
+  @@map("webhooks")
+}
+
+model DocumentShare {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token        String   @unique
+  analysisId   String   @map("analysis_id") @db.Uuid
+  includeFile  Boolean  @default(false) @map("include_file")
+  expiresAt    DateTime? @map("expires_at") @db.Timestamptz()
+  revoked      Boolean  @default(false)
+  
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  analysis     DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@map("document_shares")
 }

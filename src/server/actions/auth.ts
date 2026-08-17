@@ -133,6 +133,9 @@ const signUpSchema = z.object({
   password: z.string().min(8, { message: 'validation.minLength' }),
   displayName: z.string().optional(),
   redirectTo: z.string().optional(),
+  acceptedTerms: z.literal('on', {
+    errorMap: () => ({ message: 'You must accept the Terms and Privacy Policy to continue.' }),
+  }),
 });
 
 export const signUpAction = action(
@@ -252,6 +255,41 @@ export const signInWithGoogleAction = action(
 export async function signInWithGoogleFormAction(formData: FormData): Promise<void> {
   await signInWithGoogleAction(null, formData);
 }
+
+const RESET_SCOPE = 'auth.passwordReset';
+
+export const forgotPasswordAction = action(
+  'auth.passwordReset',
+  async (_previous: unknown, formData: FormData): Promise<{ success: boolean }> => {
+    const email = String(formData.get('email') ?? '')
+      .trim()
+      .toLowerCase();
+
+    if (!email) {
+      throw new AppError('VALIDATION_FAILED', { message: 'Email address is required' });
+    }
+
+    const container = getServerContainer();
+    const decision = await container.resolve(RATE_LIMITER).consume(RESET_SCOPE, email);
+
+    if (!decision.allowed) {
+      const nowMs = container.resolve(CLOCK)().getTime();
+      throw rateLimitError(Math.max(1, Math.ceil((decision.resetAt - nowMs) / 1_000)), RESET_SCOPE);
+    }
+
+    const attempt = await container.resolve(AUTH_PROVIDER).requestPasswordReset(email);
+
+    if (!attempt.ok) {
+      // Intentionally swallow "user not found" errors in production to prevent email enumeration,
+      // but log or handle internal errors
+      if (attempt.error.code !== 'INVALID_CREDENTIALS' && attempt.error.code !== 'NOT_FOUND') {
+        throw attempt.error;
+      }
+    }
+
+    return { success: true };
+  },
+);
 
 export async function checkEmailAvailabilityAction(email: string): Promise<{ available: boolean }> {
   if (!email) return { available: true };

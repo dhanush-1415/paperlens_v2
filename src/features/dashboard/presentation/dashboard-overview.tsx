@@ -502,7 +502,7 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
 
           {/* Quick Actions */}
           <Card className="flex flex-col overflow-hidden rounded-[2rem] border-border-subtle shadow-[0_4px_30px_-10px_rgba(0,0,0,0.1)]">
-            <div className="border-b border-border-subtle bg-surface-2/30 px-6 py-6">
+            <div className="border-b border-border-subtle bg-surface-2/30 px-5 py-5 sm:px-6 sm:py-6">
               <Heading level={2} size="md" className="font-extrabold tracking-tight">
                 Quick Actions
               </Heading>
@@ -510,63 +510,63 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
                 Common tasks and shortcuts
               </Text>
             </div>
-            <div className="flex flex-col gap-2 p-4">
+            <div className="flex flex-col gap-2 p-2 sm:p-4">
               <Link
                 href={ROUTES.scan}
-                className="group flex items-center gap-4 rounded-[1.25rem] border border-transparent bg-surface-1 p-4 transition-all hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md"
+                className="group flex items-center gap-3 rounded-[1.25rem] border border-transparent bg-surface-1 p-3 transition-all hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md sm:gap-4 sm:p-4"
               >
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary shadow-sm ring-1 ring-brand-primary/20 transition-transform group-hover:scale-110">
-                  <UploadCloudIcon className="size-6" />
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary shadow-sm ring-1 ring-brand-primary/20 transition-transform group-hover:scale-110 sm:size-12 sm:rounded-2xl">
+                  <UploadCloudIcon className="size-5 sm:size-6" />
                 </div>
-                <div className="flex-1">
-                  <Text className="text-[15px] font-bold text-text-primary transition-colors group-hover:text-brand-primary">
+                <div className="min-w-0 flex-1">
+                  <Text className="truncate text-[14px] font-bold text-text-primary transition-colors group-hover:text-brand-primary sm:text-[15px]">
                     Upload Document
                   </Text>
-                  <Text size="xs" tone="secondary" className="mt-0.5">
+                  <Text size="xs" tone="secondary" className="mt-0.5 truncate">
                     Parse a new contract
                   </Text>
                 </div>
-                <div className="bg-surface-3 flex size-8 -translate-x-4 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                <div className="bg-surface-3 flex hidden size-8 shrink-0 -translate-x-4 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:flex">
                   <ArrowRightIcon className="size-4 text-text-primary" />
                 </div>
               </Link>
 
               <Link
                 href={ROUTES.vault}
-                className="group flex items-center gap-4 rounded-[1.25rem] border border-transparent bg-surface-1 p-4 transition-all hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md"
+                className="group flex items-center gap-3 rounded-[1.25rem] border border-transparent bg-surface-1 p-3 transition-all hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md sm:gap-4 sm:p-4"
               >
-                <div className="bg-surface-3 flex size-12 shrink-0 items-center justify-center rounded-2xl text-text-primary shadow-sm ring-1 ring-border-strong/10 transition-transform group-hover:scale-110">
-                  <VaultIcon className="size-6" />
+                <div className="bg-surface-3 flex size-10 shrink-0 items-center justify-center rounded-xl text-text-primary shadow-sm ring-1 ring-border-strong/10 transition-transform group-hover:scale-110 sm:size-12 sm:rounded-2xl">
+                  <VaultIcon className="size-5 sm:size-6" />
                 </div>
-                <div className="flex-1">
-                  <Text className="text-[15px] font-bold text-text-primary transition-colors group-hover:text-brand-primary">
+                <div className="min-w-0 flex-1">
+                  <Text className="truncate text-[14px] font-bold text-text-primary transition-colors group-hover:text-brand-primary sm:text-[15px]">
                     Document Vault
                   </Text>
-                  <Text size="xs" tone="secondary" className="mt-0.5">
+                  <Text size="xs" tone="secondary" className="mt-0.5 truncate">
                     Access archived files
                   </Text>
                 </div>
-                <div className="bg-surface-3 flex size-8 -translate-x-4 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                <div className="bg-surface-3 flex hidden size-8 shrink-0 -translate-x-4 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:flex">
                   <ArrowRightIcon className="size-4 text-text-primary" />
                 </div>
               </Link>
 
               <Link
                 href={ROUTES.settings}
-                className="group flex items-center gap-4 rounded-[1.25rem] border border-transparent bg-surface-1 p-4 transition-all hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md"
+                className="group flex items-center gap-3 rounded-[1.25rem] border border-transparent bg-surface-1 p-3 transition-all hover:border-border-strong/20 hover:bg-surface-2 hover:shadow-md sm:gap-4 sm:p-4"
               >
-                <div className="bg-surface-3 flex size-12 shrink-0 items-center justify-center rounded-2xl text-text-primary shadow-sm ring-1 ring-border-strong/10 transition-transform group-hover:scale-110">
-                  <SettingsIcon className="size-6" />
+                <div className="bg-surface-3 flex size-10 shrink-0 items-center justify-center rounded-xl text-text-primary shadow-sm ring-1 ring-border-strong/10 transition-transform group-hover:scale-110 sm:size-12 sm:rounded-2xl">
+                  <SettingsIcon className="size-5 sm:size-6" />
                 </div>
-                <div className="flex-1">
-                  <Text className="text-[15px] font-bold text-text-primary transition-colors group-hover:text-brand-primary">
+                <div className="min-w-0 flex-1">
+                  <Text className="truncate text-[14px] font-bold text-text-primary transition-colors group-hover:text-brand-primary sm:text-[15px]">
                     Account Settings
                   </Text>
-                  <Text size="xs" tone="secondary" className="mt-0.5">
+                  <Text size="xs" tone="secondary" className="mt-0.5 truncate">
                     Manage your preferences
                   </Text>
                 </div>
-                <div className="bg-surface-3 flex size-8 -translate-x-4 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                <div className="bg-surface-3 flex hidden size-8 shrink-0 -translate-x-4 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:flex">
                   <ArrowRightIcon className="size-4 text-text-primary" />
                 </div>
               </Link>

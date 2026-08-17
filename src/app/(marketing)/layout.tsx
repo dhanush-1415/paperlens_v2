@@ -69,7 +69,7 @@ const tenant = resolveTenant(serverEnv.TENANT_ID);
  * is redeployed. For a copyright notice that is the correct trade, and it is the same trade
  * every static site makes.
  */
-// eslint-disable-next-line no-restricted-syntax -- see above: a build constant, not a clock read.
+
 const COPYRIGHT_YEAR = new Date().getFullYear();
 
 export default async function MarketingLayout({ children }: LayoutProps<'/'>) {

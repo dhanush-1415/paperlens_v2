@@ -71,7 +71,14 @@ safely('window.error', () => {
    * nobody hears about.
    */
   window.addEventListener('error', (event) => {
-    reporter.report(event.error ?? event.message, {
+    const errorObj = event.error ?? event.message;
+    const message = errorObj?.message || (typeof errorObj === 'string' ? errorObj : '');
+
+    if (message.includes('NEXT_REDIRECT') || message.includes('NEXT_NOT_FOUND')) {
+      return;
+    }
+
+    reporter.report(errorObj, {
       boundary: 'client-runtime',
       route: window.location.pathname,
       extra: { source: event.filename, line: event.lineno, column: event.colno },
@@ -81,6 +88,13 @@ safely('window.error', () => {
 
 safely('unhandledrejection', () => {
   window.addEventListener('unhandledrejection', (event) => {
+    // Next.js uses exceptions for control flow (redirect, notFound).
+    // These are not actual crashes and should not be reported to telemetry.
+    const message = event.reason?.message || '';
+    if (message.includes('NEXT_REDIRECT') || message.includes('NEXT_NOT_FOUND')) {
+      return;
+    }
+
     reporter.report(event.reason, {
       boundary: 'client-runtime',
       route: window.location.pathname,

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="20" fill="url(#grad)" />
+  
+  <!-- Document Shape -->
+  <path d="M40 25 L65 25 A 5 5 0 0 1 70 30 L70 70 A 5 5 0 0 1 65 75 L35 75 A 5 5 0 0 1 30 70 L30 35 Z" fill="white" />
+  
+  <!-- Folded Corner -->
+  <path d="M30 35 L40 35 L40 25 Z" fill="#e2e8f0" />
+
+  <!-- Magnifying Glass (Lens) -->
+  <circle cx="50" cy="50" r="10" fill="none" stroke="#3b82f6" stroke-width="4" />
+  <line x1="57" y1="57" x2="65" y2="65" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" />
+</svg>

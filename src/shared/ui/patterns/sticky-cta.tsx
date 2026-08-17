@@ -199,7 +199,7 @@ export function StickyCta({
           }}
           aria-label={dismissLabel}
           className={cn(
-            'absolute relative top-4 right-4 z-10 sm:static sm:top-auto sm:right-auto',
+            'absolute top-4 right-4 z-10 sm:static sm:top-auto sm:right-auto',
             'inline-flex size-8 shrink-0 items-center justify-center rounded-full sm:size-11',
             'text-text-tertiary transition-all duration-(--duration-micro)',
             'border border-transparent hover:scale-105 hover:border-border-strong/50 hover:bg-surface-2 hover:text-text-primary active:scale-95',

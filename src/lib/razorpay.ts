@@ -73,3 +73,9 @@ export function verifyRazorpayWebhook(body: string, signature: string): boolean 
   const expected = crypto.createHmac('sha256', secret).update(body).digest('hex');
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
+
+export async function getRazorpayInvoices(customerId: string) {
+  const rzp = getRazorpay();
+  const invoices = await rzp.invoices.all({ customer_id: customerId });
+  return invoices.items || [];
+}

@@ -35,7 +35,7 @@ import { Badge, Text, Tooltip, Drawer } from '@/shared/ui';
 import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 import type { UserRole } from '@/core/auth/types';
 import type { PlanTier } from '@/shared/constants/limits';
-import { PLANS, planOf } from '@/shared/constants/limits';
+import { planOf } from '@/shared/constants/limits';
 import { ROUTES } from '@/shared/constants/routes';
 import { useSidebarStore } from '@/shared/state/sidebar-store';
 import {
@@ -52,7 +52,6 @@ import {
   LogOutIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
-  TrendingUpIcon,
 } from '@/shared/ui/icons/dashboard-icons';
 
 /* ── Types ─────────────────────────────────────────────────────────────────────────── */
