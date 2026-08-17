@@ -9,8 +9,14 @@ import { AuthAnimation } from './auth-animation';
 import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 import { siteNavItems } from '@/features/marketing';
 import { getPublicSession } from '@/server/bootstrap';
+import { Suspense } from 'react';
+import { connection } from 'next/server';
 
 const tenant = resolveTenant(serverEnv.TENANT_ID);
+
+async function AuthDynamicShell({ children, t }: { children: React.ReactNode; t: any }) {
+  await connection();
+  const session = await getPublicSession();
 
 export default async function AuthLayout({ children }: LayoutProps<'/'>) {
   const scope = getRequestScope();
@@ -118,5 +124,16 @@ export default async function AuthLayout({ children }: LayoutProps<'/'>) {
         />
       </div>
     </AuthAnimation>
+  );
+}
+
+export default async function AuthLayout({ children }: any) {
+  const scope = getRequestScope();
+  const t = scope.resolve(TRANSLATOR);
+
+  return (
+    <Suspense fallback={null}>
+      <AuthDynamicShell t={t}>{children}</AuthDynamicShell>
+    </Suspense>
   );
 }

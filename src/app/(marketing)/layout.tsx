@@ -13,6 +13,8 @@ import { ROUTES } from '@/shared/constants';
 import { CookieConsent, SiteFooter, SiteHeader } from '@/shared/ui';
 import { StickyCta } from '@/shared/ui/patterns/sticky-cta';
 import ScrollProvider from '../scroll-provider';
+import { Suspense } from 'react';
+import { connection } from 'next/server';
 
 /**
  * The public shell — every page a signed-out visitor can reach.
@@ -72,13 +74,8 @@ const tenant = resolveTenant(serverEnv.TENANT_ID);
 
 const COPYRIGHT_YEAR = new Date().getFullYear();
 
-export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
-  const scope = getRequestScope();
-  const t = scope.resolve(TRANSLATOR);
-  const listGuides = scope.resolve(LIST_DOCUMENT_GUIDES);
-
-  const listed = await listGuides();
-  const guides = isOk(listed) ? listed.value : [];
+async function MarketingDynamicShell({ children, t, guides }: { children: React.ReactNode; t: any; guides: any }) {
+  await connection();
   const session = await getPublicSession();
 
   return (
@@ -146,5 +143,20 @@ export default async function MarketingLayout({ children }: LayoutProps<'/'>) {
         />
       </div>
     </ScrollProvider>
+  );
+}
+
+export default async function MarketingLayout({ children }: any) {
+  const scope = getRequestScope();
+  const t = scope.resolve(TRANSLATOR);
+  const listGuides = scope.resolve(LIST_DOCUMENT_GUIDES);
+
+  const listed = await listGuides();
+  const guides = isOk(listed) ? listed.value : [];
+
+  return (
+    <Suspense fallback={null}>
+      <MarketingDynamicShell t={t} guides={guides}>{children}</MarketingDynamicShell>
+    </Suspense>
   );
 }

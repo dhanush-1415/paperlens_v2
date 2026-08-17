@@ -96,11 +96,18 @@ function AppShellSkeleton() {
 
 async function DynamicShell({
   children,
-  themeLabels,
 }: {
   children: React.ReactNode;
-  themeLabels: any;
 }) {
+  await connection();
+  const t = getRequestScope().resolve(TRANSLATOR);
+  const themeLabels = {
+    label: t.t('theme.label'),
+    light: t.t('theme.light'),
+    dark: t.t('theme.dark'),
+    system: t.t('theme.system'),
+  };
+
   const session = await getPublicSession();
   const role = session?.role || 'user';
   const plan = session?.plan || 'free';
@@ -190,20 +197,10 @@ async function DynamicShell({
 
 import { connection } from 'next/server';
 
-export default async function AppLayout({ children }: LayoutProps<'/'>) {
-  await connection();
-  const t = getRequestScope().resolve(TRANSLATOR);
-
-  const themeLabels = {
-    label: t.t('theme.label'),
-    light: t.t('theme.light'),
-    dark: t.t('theme.dark'),
-    system: t.t('theme.system'),
-  };
-
+export default async function AppLayout({ children }: any) {
   return (
     <Suspense fallback={<AppShellSkeleton />}>
-      <DynamicShell themeLabels={themeLabels}>{children}</DynamicShell>
+      <DynamicShell>{children}</DynamicShell>
     </Suspense>
   );
 }
