@@ -27,7 +27,7 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
     // Register GSAP plugins
     gsap.registerPlugin(ScrollTrigger);
 
-    // Initialize Lenis scroll for 120fps ultra-smooth performance
+    // Initialize Lenis scroll for ultra-smooth performance
     const lenisInstance = new Lenis({
       lerp: 0.1, // Linear interpolation for buttery smooth scroll
       orientation: 'vertical',
@@ -39,10 +39,9 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
 
     setTimeout(() => setLenis(lenisInstance), 0);
 
-    // Synchronize Lenis scroll event with GSAP ScrollTrigger updates
-    lenisInstance.on('scroll', ScrollTrigger.update);
-
-    // Use native requestAnimationFrame for maximum 120fps performance
+    // Use native requestAnimationFrame for maximum performance
+    // We REMOVED the manual ScrollTrigger.update() call. Lenis drives native scroll, 
+    // so GSAP will automatically detect it without forcing expensive sync layouts!
     let rafId: number;
     function raf(time: number) {
       lenisInstance.raf(time);
