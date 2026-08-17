@@ -36,44 +36,44 @@ import { Text } from '../components/text';
 import { StatusBlock, type StatusBlockProps } from './status-block';
 
 export interface ErrorStateProps extends Pick<StatusBlockProps, 'size' | 'className'> {
- /** Short, human, and about the user's task — "We couldn't load your documents". */
- title?: ReactNode;
- /** What they can do. Avoid "try again later" unless it is genuinely true. */
- description?: ReactNode;
- /** Usually a retry `Button`, plus a secondary route out. */
- action?: ReactNode;
- /** `AppError.correlationId`. Omit only when the failure never reached a logger. */
- correlationId?: string;
- icon?: ReactNode;
+  /** Short, human, and about the user's task — "We couldn't load your documents". */
+  title?: ReactNode;
+  /** What they can do. Avoid "try again later" unless it is genuinely true. */
+  description?: ReactNode;
+  /** Usually a retry `Button`, plus a secondary route out. */
+  action?: ReactNode;
+  /** `AppError.correlationId`. Omit only when the failure never reached a logger. */
+  correlationId?: string;
+  icon?: ReactNode;
 }
 
 export function ErrorState({
- title = 'Something went wrong',
- description = 'The page could not be loaded. Retrying usually resolves it.',
- action,
- correlationId,
- icon,
- size,
- className,
+  title = 'Something went wrong',
+  description = 'The page could not be loaded. Retrying usually resolves it.',
+  action,
+  correlationId,
+  icon,
+  size,
+  className,
 }: ErrorStateProps) {
- return (
- <StatusBlock
- tone="critical"
- icon={icon ?? <AlertTriangleIcon className="size-5" />}
- title={title}
- description={description}
- actions={action}
- footer={
- correlationId ? (
- <Text as="p" size="xs" mono tone="tertiary">
- {/* `select-all` so one click selects the whole id — a user copying half a
+  return (
+    <StatusBlock
+      tone="critical"
+      icon={icon ?? <AlertTriangleIcon className="size-5" />}
+      title={title}
+      description={description}
+      actions={action}
+      footer={
+        correlationId ? (
+          <Text as="p" size="xs" mono tone="tertiary">
+            {/* `select-all` so one click selects the whole id — a user copying half a
  reference is worse than one who copies none, because it looks valid. */}
- Reference <span className="select-all">{correlationId}</span>
- </Text>
- ) : null
- }
- size={size}
- className={className}
- />
- );
+            Reference <span className="select-all">{correlationId}</span>
+          </Text>
+        ) : null
+      }
+      size={size}
+      className={className}
+    />
+  );
 }

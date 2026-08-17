@@ -142,60 +142,60 @@ const CRITICAL_CSS = `
 `;
 
 export default function GlobalError({
- error,
- unstable_retry,
+  error,
+  unstable_retry,
 }: {
- error: Error & { digest?: string };
- unstable_retry: () => void;
+  error: Error & { digest?: string };
+  unstable_retry: () => void;
 }) {
- return (
- /**
- * `suppressHydrationWarning` is absent here on purpose: no script mutates this document,
- * so a mismatch would be a genuine bug and should be reported rather than silenced.
- */
- <html lang="en">
- <head>
- {/* `metadata` and `generateMetadata` are unsupported in a Client Component, which an
+  return (
+    /**
+     * `suppressHydrationWarning` is absent here on purpose: no script mutates this document,
+     * so a mismatch would be a genuine bug and should be reported rather than silenced.
+     */
+    <html lang="en">
+      <head>
+        {/* `metadata` and `generateMetadata` are unsupported in a Client Component, which an
  error boundary always is. React's own <title> element is the supported path. */}
- <title>Something went wrong · PaperLens</title>
- <meta name="viewport" content="width=device-width, initial-scale=1" />
- <meta name="robots" content="noindex" />
- <style>{CRITICAL_CSS}</style>
- </head>
- <body>
- <main className="ge-card">
- <h1 className="ge-title">The application failed to load</h1>
- <p className="ge-body">
- This is on us, not on you — nothing you did caused it and nothing you uploaded was
- lost. Reloading usually clears it.
- </p>
+        <title>Something went wrong · PaperLens</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex" />
+        <style>{CRITICAL_CSS}</style>
+      </head>
+      <body>
+        <main className="ge-card">
+          <h1 className="ge-title">The application failed to load</h1>
+          <p className="ge-body">
+            This is on us, not on you — nothing you did caused it and nothing you uploaded was lost.
+            Reloading usually clears it.
+          </p>
 
- <div className="ge-actions">
- <button type="button" className="ge-button" onClick={unstable_retry}>
- Try again
- </button>
- {/*
- * A plain anchor, not `next/link`. The router is part of what may have failed,
- * and a full document load is the only navigation guaranteed to work from here.
- * The lint rule that wants `<Link>` is right everywhere else in the app and
- * wrong here for exactly that reason — a client-side transition would be handled
- * by the runtime this boundary exists to survive.
- */}
- {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
- <a className="ge-button ge-button--secondary" href="/">
- Reload the site
- </a>
- </div>
+          <div className="ge-actions">
+            <button type="button" className="ge-button" onClick={unstable_retry}>
+              Try again
+            </button>
+            {/*
+             * A plain anchor, not `next/link`. The router is part of what may have failed,
+             * and a full document load is the only navigation guaranteed to work from here.
+             * The lint rule that wants `<Link>` is right everywhere else in the app and
+             * wrong here for exactly that reason — a client-side transition would be handled
+             * by the runtime this boundary exists to survive.
+             */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a className="ge-button ge-button--secondary" href="/">
+              Reload the site
+            </a>
+          </div>
 
- {/*
- * The digest is React's hash of the server-side error. It is the only identifier
- * available at this boundary — the container that would have supplied a
- * correlation ID is, by definition, unavailable — and it is what support quotes
- * back to find the matching `onRequestError` log line.
- */}
- {error.digest ? <p className="ge-digest">Reference: {error.digest}</p> : null}
- </main>
- </body>
- </html>
- );
+          {/*
+           * The digest is React's hash of the server-side error. It is the only identifier
+           * available at this boundary — the container that would have supplied a
+           * correlation ID is, by definition, unavailable — and it is what support quotes
+           * back to find the matching `onRequestError` log line.
+           */}
+          {error.digest ? <p className="ge-digest">Reference: {error.digest}</p> : null}
+        </main>
+      </body>
+    </html>
+  );
 }

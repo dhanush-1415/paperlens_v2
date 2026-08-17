@@ -14,12 +14,12 @@
  */
 
 export const BREAKPOINTS = {
- sm: 640,
- md: 768,
- lg: 1024,
- xl: 1280,
- '2xl': 1536,
- '3xl': 1920,
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  '2xl': 1536,
+  '3xl': 1920,
 } as const;
 
 export type Breakpoint = keyof typeof BREAKPOINTS;
@@ -32,5 +32,5 @@ export type Breakpoint = keyof typeof BREAKPOINTS;
  * at exactly 1024 where neither branch applies.
  */
 export function mediaQuery(breakpoint: Breakpoint): string {
- return `(min-width: ${BREAKPOINTS[breakpoint]}px)`;
+  return `(min-width: ${BREAKPOINTS[breakpoint]}px)`;
 }

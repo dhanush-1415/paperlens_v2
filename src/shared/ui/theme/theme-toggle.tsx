@@ -29,66 +29,66 @@ import { useTheme } from './theme-provider';
 import type { ThemePreference } from './types';
 
 const ICONS: Record<ThemePreference, typeof SunIcon> = {
- light: SunIcon,
- dark: MoonIcon,
- system: SystemIcon,
+  light: SunIcon,
+  dark: MoonIcon,
+  system: SystemIcon,
 };
 
 export interface ThemeToggleProps {
- /**
- * Accessible name, e.g. `t('theme.label')`.
- *
- * Announces the control, not its state — the state is exposed through `aria-pressed`-free
- * live text below, because a three-state control is not a toggle button in the ARIA sense
- * and mislabelling it as one makes screen readers announce "pressed" for `'system'`.
- */
- label: string;
- /** Localized names for each preference, e.g. `{ light: t('theme.light'), … }`. */
- optionLabels: Record<ThemePreference, string>;
- className?: string;
+  /**
+   * Accessible name, e.g. `t('theme.label')`.
+   *
+   * Announces the control, not its state — the state is exposed through `aria-pressed`-free
+   * live text below, because a three-state control is not a toggle button in the ARIA sense
+   * and mislabelling it as one makes screen readers announce "pressed" for `'system'`.
+   */
+  label: string;
+  /** Localized names for each preference, e.g. `{ light: t('theme.light'), … }`. */
+  optionLabels: Record<ThemePreference, string>;
+  className?: string;
 }
 
 const neverChanges = () => () => {};
 
 export function ThemeToggle({ label, optionLabels, className }: ThemeToggleProps) {
- const { preference, toggle } = useTheme();
- 
- // Evaluate hydration state locally so it correctly identifies its own hydration pass 
- // even when streamed inside a Suspense boundary later than the root provider.
- const isHydrated = useSyncExternalStore(
- neverChanges,
- () => true,
- () => false,
- );
+  const { preference, toggle } = useTheme();
 
- // Force the initial server-side preference during hydration to match the server HTML
- const effectivePreference = isHydrated ? preference : 'system';
- const CurrentIcon = ICONS[effectivePreference];
+  // Evaluate hydration state locally so it correctly identifies its own hydration pass
+  // even when streamed inside a Suspense boundary later than the root provider.
+  const isHydrated = useSyncExternalStore(
+    neverChanges,
+    () => true,
+    () => false,
+  );
 
- return (
- <button
- type="button"
- onClick={toggle}
- disabled={!isHydrated}
- aria-label={`${label}: ${optionLabels[effectivePreference]}`}
- className={cn(
- // 44px minimum tap target (WCAG 2.5.8), even though the icon is 20px.
- 'inline-flex size-11 items-center justify-center rounded-control',
- 'text-text-secondary transition-colors duration-150 ease-brand',
- 'hover:bg-surface-2 hover:text-text-primary',
- 'disabled:pointer-events-none disabled:opacity-60',
- className,
- )}
- >
- <CurrentIcon className="size-5" />
- {/*
+  // Force the initial server-side preference during hydration to match the server HTML
+  const effectivePreference = isHydrated ? preference : 'system';
+  const CurrentIcon = ICONS[effectivePreference];
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      disabled={!isHydrated}
+      aria-label={`${label}: ${optionLabels[effectivePreference]}`}
+      className={cn(
+        // 44px minimum tap target (WCAG 2.5.8), even though the icon is 20px.
+        'inline-flex size-11 items-center justify-center rounded-control',
+        'text-text-secondary transition-colors duration-150 ease-brand',
+        'hover:bg-surface-2 hover:text-text-primary',
+        'disabled:pointer-events-none disabled:opacity-60',
+        className,
+      )}
+    >
+      <CurrentIcon className="size-5" />
+      {/*
  The state, announced but not drawn. Screen-reader users get "Theme: Dark" from the
  label; this live region is what tells them the click did something, since the only
  visible change is an icon swap.
  */}
- <span aria-live="polite" className="sr-only">
- {isHydrated ? optionLabels[preference] : ''}
- </span>
- </button>
- );
+      <span aria-live="polite" className="sr-only">
+        {isHydrated ? optionLabels[preference] : ''}
+      </span>
+    </button>
+  );
 }

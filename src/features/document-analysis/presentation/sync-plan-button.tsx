@@ -17,7 +17,7 @@ export function SyncPlanButton({ actions, documentTitle }: SyncPlanButtonProps) 
   if (!actions || actions.length === 0) return null;
 
   const handleCopyMarkdown = () => {
-    const md = `## Action Plan: ${documentTitle}\n\n` + actions.map(a => `- [ ] ${a}`).join('\n');
+    const md = `## Action Plan: ${documentTitle}\n\n` + actions.map((a) => `- [ ] ${a}`).join('\n');
     navigator.clipboard.writeText(md);
     setCopiedType('markdown');
     toast.success('Copied for Notion (Markdown)');
@@ -26,7 +26,8 @@ export function SyncPlanButton({ actions, documentTitle }: SyncPlanButtonProps) 
   };
 
   const handleExportCSV = () => {
-    const csv = `Task,Status\n` + actions.map(a => `"${a.replace(/"/g, '""')}","To Do"`).join('\n');
+    const csv =
+      `Task,Status\n` + actions.map((a) => `"${a.replace(/"/g, '""')}","To Do"`).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -43,10 +44,10 @@ export function SyncPlanButton({ actions, documentTitle }: SyncPlanButtonProps) 
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-150 cursor-pointer active:scale-95",
-          isOpen 
-            ? "bg-brand-primary text-white border-brand-primary shadow-sm" 
-            : "bg-surface-1 border-border-subtle text-text-secondary hover:text-text-primary hover:border-brand-primary/30"
+          'flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-95',
+          isOpen
+            ? 'border-brand-primary bg-brand-primary text-white shadow-sm'
+            : 'border-border-subtle bg-surface-1 text-text-secondary hover:border-brand-primary/30 hover:text-text-primary',
         )}
       >
         <Download className="h-3.5 w-3.5" />
@@ -54,20 +55,24 @@ export function SyncPlanButton({ actions, documentTitle }: SyncPlanButtonProps) 
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border-subtle bg-surface-2 p-1.5 shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
-          <p className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
+        <div className="animate-in fade-in slide-in-from-top-2 absolute top-full right-0 z-50 mt-2 w-48 rounded-xl border border-border-subtle bg-surface-2 p-1.5 shadow-lg">
+          <p className="px-2 py-1.5 text-[10px] font-bold tracking-widest text-text-tertiary uppercase">
             Export to
           </p>
           <button
             onClick={handleCopyMarkdown}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-xs font-medium text-text-secondary hover:bg-surface-3 hover:text-text-primary transition-colors"
+            className="hover:bg-surface-3 flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
-            {copiedType === 'markdown' ? <Check className="h-4 w-4 text-safe" /> : <Kanban className="h-4 w-4" />}
+            {copiedType === 'markdown' ? (
+              <Check className="text-safe h-4 w-4" />
+            ) : (
+              <Kanban className="h-4 w-4" />
+            )}
             Notion (Markdown)
           </button>
           <button
             onClick={handleExportCSV}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-xs font-medium text-text-secondary hover:bg-surface-3 hover:text-text-primary transition-colors"
+            className="hover:bg-surface-3 flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
             <FileSpreadsheet className="h-4 w-4" />
             Jira (CSV Import)

@@ -10,10 +10,10 @@
  * the object a bare `{ description }` in the emitted JavaScript.
  */
 export interface Token<T> {
- readonly key: symbol;
- readonly description: string;
- /** Phantom. Never assigned, never read. Do not access. */
- readonly __type?: T;
+  readonly key: symbol;
+  readonly description: string;
+  /** Phantom. Never assigned, never read. Do not access. */
+  readonly __type?: T;
 }
 
 /**
@@ -27,7 +27,7 @@ export interface Token<T> {
  * and in the container's registration dump, so it should read like a path, not a label.
  */
 export function token<T>(description: string): Token<T> {
- return { key: Symbol(description), description };
+  return { key: Symbol(description), description };
 }
 
 /** Extracts the service type a token resolves to. */

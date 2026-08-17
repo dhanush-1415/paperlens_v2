@@ -37,77 +37,75 @@ import { cn } from '@/shared/ui/cn';
 import { ChevronDownIcon } from '../icons';
 
 const accordionVariants = cva('', {
- variants: {
- variant: {
- /** Hairline-separated rows. For FAQs and long-form disclosure. */
- plain: 'divide-y divide-border-subtle border-y border-border-subtle',
- /** Individually bordered cards with a gap. For settings groups. */
- separated: 'flex flex-col gap-2',
- },
- },
- defaultVariants: { variant: 'plain' },
+  variants: {
+    variant: {
+      /** Hairline-separated rows. For FAQs and long-form disclosure. */
+      plain: 'divide-y divide-border-subtle border-y border-border-subtle',
+      /** Individually bordered cards with a gap. For settings groups. */
+      separated: 'flex flex-col gap-2',
+    },
+  },
+  defaultVariants: { variant: 'plain' },
 });
 
 export interface AccordionProps
- extends HTMLAttributes<HTMLDivElement>,
- VariantProps<typeof accordionVariants> {}
+  extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof accordionVariants> {}
 
 export function Accordion({ variant, className, ...props }: AccordionProps) {
- return <div className={cn(accordionVariants({ variant }), className)} {...props} />;
+  return <div className={cn(accordionVariants({ variant }), className)} {...props} />;
 }
 
 const itemVariants = cva('group overflow-hidden', {
- variants: {
- variant: {
- plain: '',
- separated: 'rounded-card border border-border-subtle bg-surface-1',
- },
- },
- defaultVariants: { variant: 'plain' },
+  variants: {
+    variant: {
+      plain: '',
+      separated: 'rounded-card border border-border-subtle bg-surface-1',
+    },
+  },
+  defaultVariants: { variant: 'plain' },
 });
 
 export interface AccordionItemProps
- extends Omit<HTMLAttributes<HTMLDetailsElement>, 'title'>,
- VariantProps<typeof itemVariants> {
- /** The always-visible row. A string in almost every case; a node when it needs a badge. */
- title: ReactNode;
- /**
- * Shared name. Items with the same value are mutually exclusive — the browser closes the
- * others when one opens. Must match the sibling items exactly; a typo silently produces an
- * independent section, which is why it should come from a constant and not a literal.
- */
- group?: string;
- defaultOpen?: boolean;
- children?: ReactNode;
+  extends Omit<HTMLAttributes<HTMLDetailsElement>, 'title'>, VariantProps<typeof itemVariants> {
+  /** The always-visible row. A string in almost every case; a node when it needs a badge. */
+  title: ReactNode;
+  /**
+   * Shared name. Items with the same value are mutually exclusive — the browser closes the
+   * others when one opens. Must match the sibling items exactly; a typo silently produces an
+   * independent section, which is why it should come from a constant and not a literal.
+   */
+  group?: string;
+  defaultOpen?: boolean;
+  children?: ReactNode;
 }
 
 export function AccordionItem({
- title,
- group,
- defaultOpen,
- variant,
- className,
- children,
- ...props
+  title,
+  group,
+  defaultOpen,
+  variant,
+  className,
+  children,
+  ...props
 }: AccordionItemProps) {
- return (
- <details
- name={group}
- open={defaultOpen}
- className={cn(
- itemVariants({ variant }),
- // The height transition. `interpolate-size` is set globally in `globals.css`; without
- // it `height: auto` is not an interpolable value and this rule is inert rather than
- // broken.
- '[&::details-content]:h-0 [&::details-content]:overflow-hidden',
- '[&::details-content]:transition-[height,content-visibility] [&::details-content]:transition-discrete',
- '[&::details-content]:duration-(--duration-standard) [&::details-content]:ease-brand',
- 'open:[&::details-content]:h-auto',
- className,
- )}
- {...props}
- >
- {/*
+  return (
+    <details
+      name={group}
+      open={defaultOpen}
+      className={cn(
+        itemVariants({ variant }),
+        // The height transition. `interpolate-size` is set globally in `globals.css`; without
+        // it `height: auto` is not an interpolable value and this rule is inert rather than
+        // broken.
+        '[&::details-content]:h-0 [&::details-content]:overflow-hidden',
+        '[&::details-content]:transition-[height,content-visibility] [&::details-content]:transition-discrete',
+        '[&::details-content]:duration-(--duration-standard) [&::details-content]:ease-brand',
+        'open:[&::details-content]:h-auto',
+        className,
+      )}
+      {...props}
+    >
+      {/*
  `list-none` and the `::-webkit-details-marker` reset remove the browser's default
  triangle, which cannot be styled and points the wrong way in half of them. The
  replacement chevron below rotates on open, giving the same affordance under our own
@@ -116,31 +114,31 @@ export function AccordionItem({
  `<summary>` is focusable and Enter/Space-activatable natively, and browsers expose it
  as a button with `aria-expanded` — none of which needs to be added here.
  */}
- <summary
- className={cn(
- 'flex cursor-pointer list-none items-center justify-between gap-4',
- 'px-4 py-4 text-sm font-medium text-text-primary select-none',
- 'transition-colors duration-(--duration-micro) ease-brand',
- 'hover:bg-surface-2',
- '[&::-webkit-details-marker]:hidden',
- )}
- >
- <span className="min-w-0">{title}</span>
- <ChevronDownIcon
- aria-hidden
- className={cn(
- 'size-4 shrink-0 text-text-tertiary',
- 'transition-transform duration-(--duration-standard) ease-brand',
- 'group-open:rotate-180',
- )}
- />
- </summary>
- {/* The padding lives on an inner element rather than on `::details-content`, because a
+      <summary
+        className={cn(
+          'flex cursor-pointer list-none items-center justify-between gap-4',
+          'px-4 py-4 text-sm font-medium text-text-primary select-none',
+          'transition-colors duration-(--duration-micro) ease-brand',
+          'hover:bg-surface-2',
+          '[&::-webkit-details-marker]:hidden',
+        )}
+      >
+        <span className="min-w-0">{title}</span>
+        <ChevronDownIcon
+          aria-hidden
+          className={cn(
+            'size-4 shrink-0 text-text-tertiary',
+            'transition-transform duration-(--duration-standard) ease-brand',
+            'group-open:rotate-180',
+          )}
+        />
+      </summary>
+      {/* The padding lives on an inner element rather than on `::details-content`, because a
  transition from `height: 0` on a box that also has padding animates from 32px, not
  from nothing, and the section visibly jumps at the start of every open. */}
- <div className="px-4 pb-4 text-sm text-text-secondary">{children}</div>
- </details>
- );
+      <div className="px-4 pb-4 text-sm text-text-secondary">{children}</div>
+    </details>
+  );
 }
 
 export { accordionVariants, itemVariants as accordionItemVariants };

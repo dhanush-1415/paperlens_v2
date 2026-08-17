@@ -35,7 +35,7 @@ import { Badge, Text, Tooltip, Drawer } from '@/shared/ui';
 import { PaperLensLogo } from '@/shared/ui/paperlens-logo';
 import type { UserRole } from '@/core/auth/types';
 import type { PlanTier } from '@/shared/constants/limits';
-import { PLANS, planOf } from '@/shared/constants/limits';
+import { planOf } from '@/shared/constants/limits';
 import { ROUTES } from '@/shared/constants/routes';
 import { useSidebarStore } from '@/shared/state/sidebar-store';
 import {
@@ -52,7 +52,6 @@ import {
   LogOutIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
-  TrendingUpIcon,
 } from '@/shared/ui/icons/dashboard-icons';
 
 /* ── Types ─────────────────────────────────────────────────────────────────────────── */
@@ -119,40 +118,46 @@ function SidebarNavItem({
     <Link
       href={item.href}
       className={cn(
-        'group/item flex items-center my-1 relative overflow-hidden',
+        'group/item relative my-1 flex items-center overflow-hidden',
         'transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]',
         isCollapsed
-          ? 'w-12 h-12 justify-center p-0 rounded-2xl mx-auto gap-0'
-          : 'w-full rounded-2xl px-4 py-3 gap-3',
+          ? 'mx-auto h-12 w-12 justify-center gap-0 rounded-2xl p-0'
+          : 'w-full gap-3 rounded-2xl px-4 py-3',
         isActive
           ? 'bg-brand-primary/10 text-brand-primary shadow-sm shadow-brand-primary/5'
-          : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary hover:-translate-y-0.5',
+          : 'text-text-secondary hover:-translate-y-0.5 hover:bg-surface-2 hover:text-text-primary',
         isCollapsed && 'hover:-translate-y-0 hover:scale-105',
-        isActive && isCollapsed && 'bg-brand-primary/10 shadow-none'
+        isActive && isCollapsed && 'bg-brand-primary/10 shadow-none',
       )}
     >
       <item.icon
         className={cn(
-          'shrink-0 transition-transform duration-300 ease-brand relative z-10',
+          'relative z-10 shrink-0 transition-transform duration-300 ease-brand',
           isCollapsed ? 'size-[22px]' : 'size-5',
-          isActive ? 'text-brand-primary' : 'text-text-tertiary group-hover/item:text-text-secondary',
+          isActive
+            ? 'text-brand-primary'
+            : 'text-text-tertiary group-hover/item:text-text-secondary',
           !isCollapsed && 'group-hover/item:scale-110',
         )}
       />
       <div
         className={cn(
-          "flex items-center overflow-hidden transition-all duration-300",
-          isCollapsed ? "opacity-0 w-0" : "flex-1 opacity-100 w-auto"
+          'flex items-center overflow-hidden transition-all duration-300',
+          isCollapsed ? 'w-0 opacity-0' : 'w-auto flex-1 opacity-100',
         )}
       >
-        <span className={cn(
-          "truncate relative z-10", 
-          isActive ? "font-bold tracking-tight" : "font-semibold text-[14px]"
-        )}>
+        <span
+          className={cn(
+            'relative z-10 truncate',
+            isActive ? 'font-bold tracking-tight' : 'text-[14px] font-semibold',
+          )}
+        >
           {item.label}
         </span>
         {item.badge && (
-          <Badge tone="brand" className="text-2xs shadow-sm relative z-10 ml-auto mr-1">{item.badge}</Badge>
+          <Badge tone="brand" className="relative z-10 mr-1 ml-auto text-2xs shadow-sm">
+            {item.badge}
+          </Badge>
         )}
       </div>
     </Link>
@@ -160,7 +165,7 @@ function SidebarNavItem({
 
   if (isCollapsed) {
     return (
-      <li className="relative flex items-center justify-center w-full" title={item.label}>
+      <li className="relative flex w-full items-center justify-center" title={item.label}>
         {linkContent}
       </li>
     );
@@ -185,19 +190,24 @@ function PlanBadge({
   const usagePercent = Math.min(100, (scansUsed / Math.max(1, planDef.quotas.scansPerMonth)) * 100);
 
   return (
-    <div className="rounded-2xl border border-brand-primary/15 bg-gradient-to-br from-surface-1 to-brand-primary/5 p-4 shadow-lg shadow-brand-primary/5 relative overflow-hidden shrink-0">
-      <div className="absolute top-0 right-0 w-16 h-16 bg-brand-primary/10 rounded-full blur-2xl -mr-8 -mt-8" />
-      <Text size="xs" tone="secondary" className="font-semibold uppercase tracking-wider text-brand-primary">
+    <div className="relative shrink-0 overflow-hidden rounded-2xl border border-brand-primary/15 bg-gradient-to-br from-surface-1 to-brand-primary/5 p-4 shadow-lg shadow-brand-primary/5">
+      <div className="absolute top-0 right-0 -mt-8 -mr-8 h-16 w-16 rounded-full bg-brand-primary/10 blur-2xl" />
+      <Text
+        size="xs"
+        tone="secondary"
+        className="font-semibold tracking-wider text-brand-primary uppercase"
+      >
         {planDef.displayName} Plan
       </Text>
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-border-subtle">
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2 ring-1 ring-border-subtle ring-inset">
         <div
           className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary shadow-[0_0_10px_rgba(var(--brand-primary),0.8)] transition-all duration-500 ease-brand"
           style={{ width: `${usagePercent}%` }}
         />
       </div>
       <Text size="xs" tone="tertiary" className="mt-2 font-medium">
-        <span className="text-text-primary">{scansUsed}</span> / {planDef.quotas.scansPerMonth} scans used
+        <span className="text-text-primary">{scansUsed}</span> / {planDef.quotas.scansPerMonth}{' '}
+        scans used
       </Text>
     </div>
   );
@@ -246,45 +256,41 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
    * the item's href followed by a `/`. The prefix match handles nested pages like
    * `/vault/folder/abc` highlighting the "Document Vault" item.
    */
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   /** Filter sections and items by role. */
   const visibleSections = NAV_SECTIONS.filter(
     (section) => !section.roles || section.roles.includes(role),
   ).map((section) => ({
     ...section,
-    items: section.items.filter(
-      (item) => !item.roles || item.roles.includes(role),
-    ),
+    items: section.items.filter((item) => !item.roles || item.roles.includes(role)),
   }));
 
   const isMobileOpen = useSidebarStore((s) => s.isMobileOpen);
 
   const renderNav = (isCollapsedMode: boolean, isMobile: boolean = false) => (
     <nav
-      className={cn(
-        "flex-1 overflow-x-hidden w-full",
-        !isMobile && "overflow-y-auto min-h-0"
-      )}
+      className={cn('w-full flex-1 overflow-x-hidden', !isMobile && 'min-h-0 overflow-y-auto')}
       aria-label="Dashboard navigation"
     >
-      <div className={cn(
-        "px-3 py-4 flex flex-col w-full", 
-        isCollapsedMode ? "items-center" : "items-stretch"
-      )}>
+      <div
+        className={cn(
+          'flex w-full flex-col px-3 py-4',
+          isCollapsedMode ? 'items-center' : 'items-stretch',
+        )}
+      >
         {visibleSections.map((section) => (
-          <div key={section.title} className="mb-6 last:mb-0 w-full flex flex-col items-center">
+          <div key={section.title} className="mb-6 flex w-full flex-col items-center last:mb-0">
             {!isCollapsedMode && (
               <Text
                 size="xs"
                 tone="tertiary"
-                className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-widest self-start"
+                className="mb-2 self-start px-3 text-[11px] font-semibold tracking-widest uppercase"
               >
                 {section.title}
               </Text>
             )}
-            <ul className={cn("flex flex-col gap-1.5 w-full", isCollapsedMode && "items-center")}>
+            <ul className={cn('flex w-full flex-col gap-1.5', isCollapsedMode && 'items-center')}>
               {section.items.map((item) => (
                 <SidebarNavItem
                   key={item.href}
@@ -301,18 +307,18 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
   );
 
   const renderFooter = (isCollapsedMode: boolean) => (
-    <div className={cn("shrink-0 flex flex-col gap-4 w-full", isCollapsedMode && "items-center")}>
+    <div className={cn('flex w-full shrink-0 flex-col gap-4', isCollapsedMode && 'items-center')}>
       <PlanBadge plan={plan} scansUsed={scansUsed} isCollapsed={isCollapsedMode} />
 
-      <form action={signOutAction} className="w-full flex justify-center">
+      <form action={signOutAction} className="flex w-full justify-center">
         {isCollapsedMode ? (
           <Tooltip content="Secure Logout" placement="end">
             <button
               type="submit"
               className={cn(
-                'flex w-12 h-12 items-center justify-center rounded-2xl',
+                'flex h-12 w-12 items-center justify-center rounded-2xl',
                 'text-text-secondary transition-all duration-300 ease-brand',
-                'hover:bg-surface-2 hover:text-text-primary hover:-translate-y-0.5',
+                'hover:-translate-y-0.5 hover:bg-surface-2 hover:text-text-primary',
               )}
             >
               <LogOutIcon className="size-[22px]" />
@@ -323,9 +329,9 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
             type="submit"
             className={cn(
               'group flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3',
-              'text-sm font-bold text-text-secondary bg-surface-2/50',
+              'bg-surface-2/50 text-sm font-bold text-text-secondary',
               'transition-all duration-300 ease-brand',
-              'hover:bg-surface-2 hover:text-text-primary hover:-translate-y-0.5 hover:shadow-sm',
+              'hover:-translate-y-0.5 hover:bg-surface-2 hover:text-text-primary hover:shadow-sm',
             )}
           >
             <LogOutIcon className="size-4 transition-transform group-hover:-translate-x-1" />
@@ -340,8 +346,8 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
     <>
       <aside
         className={cn(
-          'hidden md:flex flex-col sticky top-0 h-screen z-50 shrink-0',
-          'border-e border-brand-primary/10 bg-surface-1/95 backdrop-blur-xl shadow-2xl shadow-brand-primary/5',
+          'sticky top-0 z-50 hidden h-screen shrink-0 flex-col md:flex',
+          'border-e border-brand-primary/10 bg-surface-1/95 shadow-2xl shadow-brand-primary/5 backdrop-blur-xl',
           'transition-[width] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]',
           isCollapsed ? 'w-[80px]' : 'w-[280px]',
         )}
@@ -349,22 +355,24 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
         {/* ── Header: logo + collapse toggle ──────────────────────────────────────── */}
         <div
           className={cn(
-            'flex flex-col shrink-0 border-b border-border-subtle pb-4 pt-5 overflow-hidden',
-            isCollapsed ? 'px-0 items-center justify-center' : 'px-5',
+            'flex shrink-0 flex-col overflow-hidden border-b border-border-subtle pt-5 pb-4',
+            isCollapsed ? 'items-center justify-center px-0' : 'px-5',
           )}
         >
-          <div className={cn(
-            "flex w-full transition-all duration-300",
-            isCollapsed ? "flex-col items-center gap-4" : "flex-row items-center justify-between"
-          )}>
+          <div
+            className={cn(
+              'flex w-full transition-all duration-300',
+              isCollapsed ? 'flex-col items-center gap-4' : 'flex-row items-center justify-between',
+            )}
+          >
             <Link
               href={ROUTES.welcome}
               className={cn(
-                "flex items-center transition-transform duration-300 hover:scale-[1.02]",
-                isCollapsed ? "w-full justify-center gap-0" : "gap-3"
+                'flex items-center transition-transform duration-300 hover:scale-[1.02]',
+                isCollapsed ? 'w-full justify-center gap-0' : 'gap-3',
               )}
             >
-              <PaperLensLogo size={isCollapsed ? "md" : "lg"} showText={!isCollapsed} />
+              <PaperLensLogo size={isCollapsed ? 'md' : 'lg'} showText={!isCollapsed} />
             </Link>
 
             <button
@@ -372,10 +380,10 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
               onClick={toggle}
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               className={cn(
-                'inline-flex shrink-0 items-center justify-center rounded-xl p-2.5 mx-auto',
+                'mx-auto inline-flex shrink-0 items-center justify-center rounded-xl p-2.5',
                 'text-text-tertiary transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]',
-                'hover:bg-surface-2 hover:text-text-primary hover:scale-105',
-                isCollapsed ? 'bg-surface-2/50 text-text-primary' : ''
+                'hover:scale-105 hover:bg-surface-2 hover:text-text-primary',
+                isCollapsed ? 'bg-surface-2/50 text-text-primary' : '',
               )}
             >
               {isCollapsed ? (
@@ -387,16 +395,18 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
           </div>
 
           {/* Portal Badge (Visible only when expanded) */}
-          <div className={cn(
-            "overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-            isCollapsed ? "opacity-0 h-0 mt-0" : "opacity-100 h-auto mt-6"
-          )}>
-            <div className="flex items-center justify-center gap-2 rounded-lg bg-safe-bg/30 px-3 py-2 text-safe">
+          <div
+            className={cn(
+              'overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]',
+              isCollapsed ? 'mt-0 h-0 opacity-0' : 'mt-6 h-auto opacity-100',
+            )}
+          >
+            <div className="bg-safe-bg/30 text-safe flex items-center justify-center gap-2 rounded-lg px-3 py-2">
               <span className="relative flex h-2 w-2 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-safe opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-safe"></span>
+                <span className="bg-safe absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
+                <span className="bg-safe relative inline-flex h-2 w-2 rounded-full"></span>
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+              <span className="text-[10px] font-bold tracking-widest whitespace-nowrap uppercase">
                 Workspace Active
               </span>
             </div>
@@ -404,7 +414,7 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
         </div>
 
         {renderNav(isCollapsed, false)}
-        <div className="border-t border-border-subtle p-5 shrink-0">
+        <div className="shrink-0 border-t border-border-subtle p-5">
           {renderFooter(isCollapsed)}
         </div>
       </aside>
@@ -417,9 +427,7 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
         footer={renderFooter(false)}
         className="w-[280px]"
       >
-        <div className="flex flex-col bg-surface-1 -mx-5 -my-5 pb-5">
-          {renderNav(false, true)}
-        </div>
+        <div className="-mx-5 -my-5 flex flex-col bg-surface-1 pb-5">{renderNav(false, true)}</div>
       </Drawer>
     </>
   );

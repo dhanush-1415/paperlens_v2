@@ -6,7 +6,7 @@
  */
 
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
-export const FROM    = 'PaperLens <hello@paperlens.co>';
+export const FROM = 'PaperLens <hello@paperlens.co>';
 
 /**
  * Inline logo block for dark/gradient header backgrounds.

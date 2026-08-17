@@ -39,14 +39,16 @@ export const useSidebarStore = createStore<SidebarState>(
     isCollapsed: false,
     userCollapsedPreference: false,
     isMobileOpen: false,
-    toggle: () => set((s) => {
-      const newState = !s.isCollapsed;
-      return { isCollapsed: newState, userCollapsedPreference: newState };
-    }),
-    setCollapsed: (collapsed, isRouteOverride = false) => set((s) => ({
-      isCollapsed: collapsed,
-      userCollapsedPreference: isRouteOverride ? s.userCollapsedPreference : collapsed,
-    })),
+    toggle: () =>
+      set((s) => {
+        const newState = !s.isCollapsed;
+        return { isCollapsed: newState, userCollapsedPreference: newState };
+      }),
+    setCollapsed: (collapsed, isRouteOverride = false) =>
+      set((s) => ({
+        isCollapsed: collapsed,
+        userCollapsedPreference: isRouteOverride ? s.userCollapsedPreference : collapsed,
+      })),
     openMobile: () => set({ isMobileOpen: true }),
     closeMobile: () => set({ isMobileOpen: false }),
   }),
@@ -55,10 +57,10 @@ export const useSidebarStore = createStore<SidebarState>(
     persist: {
       key: STORAGE_KEYS.sidebarCollapsed,
       version: 2,
-      partialize: (s) => ({ 
+      partialize: (s) => ({
         userCollapsedPreference: s.userCollapsedPreference,
         // We still save isCollapsed to prevent hydration mismatch before effect runs
-        isCollapsed: s.userCollapsedPreference 
+        isCollapsed: s.userCollapsedPreference,
       }),
     },
   },

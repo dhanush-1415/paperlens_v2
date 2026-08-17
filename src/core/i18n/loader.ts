@@ -18,30 +18,28 @@ import type { Dictionary, DictionaryLoader } from './types';
  * bytes in the main chunk.
  */
 export function createBundledDictionaryLoader(): DictionaryLoader {
- return {
- name: 'bundled',
- async load(locale: Locale): Promise<Partial<Dictionary>> {
- if (locale === DEFAULT_LOCALE) return en;
+  return {
+    name: 'bundled',
+    async load(locale: Locale): Promise<Partial<Dictionary>> {
+      if (locale === DEFAULT_LOCALE) return en;
 
- // Only reachable once a second locale exists. The `catch` is what keeps a missing
- // translation file from turning into a blank page: fall back to English and carry on.
- try {
- const loaded: unknown = await import(`./dictionaries/${locale}.ts`);
- const dictionary = (loaded as Record<string, unknown>)[locale];
- return (dictionary as Partial<Dictionary> | undefined) ?? {};
- } catch {
- return {};
- }
- },
- };
+      // Only reachable once a second locale exists. The `catch` is what keeps a missing
+      // translation file from turning into a blank page: fall back to English and carry on.
+      try {
+        const loaded: unknown = await import(`./dictionaries/${locale}.ts`);
+        const dictionary = (loaded as Record<string, unknown>)[locale];
+        return (dictionary as Partial<Dictionary> | undefined) ?? {};
+      } catch {
+        return {};
+      }
+    },
+  };
 }
 
 /** Serves a fixed set of strings. The test double. */
-export function createStaticDictionaryLoader(
- messages: Partial<Dictionary> = en,
-): DictionaryLoader {
- return {
- name: 'static',
- load: () => Promise.resolve(messages),
- };
+export function createStaticDictionaryLoader(messages: Partial<Dictionary> = en): DictionaryLoader {
+  return {
+    name: 'static',
+    load: () => Promise.resolve(messages),
+  };
 }

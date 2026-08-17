@@ -34,39 +34,39 @@ import { Spinner } from '../components/spinner';
 import { Text } from '../components/text';
 
 export interface LoadingStateProps {
- /**
- * What is happening, as a verb — "Analysing document", not "Loading". Required: a status
- * region with no text announces nothing, and a bare spinner tells a screen-reader user
- * that the page is finished.
- */
- label: string;
- /** Optional second line for anything slow enough to need reassurance. */
- description?: ReactNode;
- /** `md` fills a page; `sm` fits a card or an inline region. */
- size?: 'sm' | 'md';
- className?: string;
+  /**
+   * What is happening, as a verb — "Analysing document", not "Loading". Required: a status
+   * region with no text announces nothing, and a bare spinner tells a screen-reader user
+   * that the page is finished.
+   */
+  label: string;
+  /** Optional second line for anything slow enough to need reassurance. */
+  description?: ReactNode;
+  /** `md` fills a page; `sm` fits a card or an inline region. */
+  size?: 'sm' | 'md';
+  className?: string;
 }
 
 export function LoadingState({ label, description, size = 'md', className }: LoadingStateProps) {
- return (
- <div
- role="status"
- aria-live="polite"
- className={cn(
- 'flex flex-col items-center justify-center gap-3 text-center',
- size === 'md' ? 'px-6 py-16' : 'px-4 py-10',
- className,
- )}
- >
- <Spinner className={size === 'md' ? 'size-6' : 'size-5'} />
- <Text as="p" size="sm">
- {label}
- </Text>
- {description ? (
- <Text as="p" size="xs" tone="tertiary" measure>
- {description}
- </Text>
- ) : null}
- </div>
- );
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 text-center',
+        size === 'md' ? 'px-6 py-16' : 'px-4 py-10',
+        className,
+      )}
+    >
+      <Spinner className={size === 'md' ? 'size-6' : 'size-5'} />
+      <Text as="p" size="sm">
+        {label}
+      </Text>
+      {description ? (
+        <Text as="p" size="xs" tone="tertiary" measure>
+          {description}
+        </Text>
+      ) : null}
+    </div>
+  );
 }

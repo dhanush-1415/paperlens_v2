@@ -23,12 +23,12 @@ import type { NetworkMonitor, NetworkStatus } from './types';
 const NetworkMonitorContext = createContext<NetworkMonitor | null>(null);
 
 export interface NetworkProviderProps {
- monitor: NetworkMonitor;
- children: ReactNode;
+  monitor: NetworkMonitor;
+  children: ReactNode;
 }
 
 export function NetworkProvider({ monitor, children }: NetworkProviderProps) {
- return <NetworkMonitorContext value={monitor}>{children}</NetworkMonitorContext>;
+  return <NetworkMonitorContext value={monitor}>{children}</NetworkMonitorContext>;
 }
 
 /**
@@ -38,36 +38,36 @@ export function NetworkProvider({ monitor, children }: NetworkProviderProps) {
  * an offline banner that never appears and nobody notices for a release.
  */
 export function useNetworkMonitor(): NetworkMonitor {
- const monitor = useContext(NetworkMonitorContext);
- if (!monitor) {
- throw new Error('useNetworkMonitor must be used inside <NetworkProvider>.');
- }
- return monitor;
+  const monitor = useContext(NetworkMonitorContext);
+  if (!monitor) {
+    throw new Error('useNetworkMonitor must be used inside <NetworkProvider>.');
+  }
+  return monitor;
 }
 
 export function useNetworkStatus(): NetworkStatus {
- const monitor = useNetworkMonitor();
+  const monitor = useNetworkMonitor();
 
- return useSyncExternalStore(
- monitor.subscribe,
- monitor.getStatus,
- // The server snapshot must be a stable reference across calls, hence the frozen
- // constant. Returning a fresh object here throws in development.
- () => SERVER_NETWORK_STATUS,
- );
+  return useSyncExternalStore(
+    monitor.subscribe,
+    monitor.getStatus,
+    // The server snapshot must be a stable reference across calls, hence the frozen
+    // constant. Returning a fresh object here throws in development.
+    () => SERVER_NETWORK_STATUS,
+  );
 }
 
 /** The common case: "is the browser offline right now?" */
 export function useIsOffline(): boolean {
- return useNetworkStatus().connection === 'offline';
+  return useNetworkStatus().connection === 'offline';
 }
 
 /** True when the UI should drop decorative work — slow link, save-data, or offline. */
 export function useIsDegraded(): boolean {
- return isDegraded(useNetworkStatus());
+  return isDegraded(useNetworkStatus());
 }
 
 /** Gate prefetching, autoplay and other optional traffic on this. */
 export function useAllowsNonEssentialTraffic(): boolean {
- return allowsNonEssentialTraffic(useNetworkStatus());
+  return allowsNonEssentialTraffic(useNetworkStatus());
 }

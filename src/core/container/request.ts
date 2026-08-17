@@ -18,11 +18,11 @@ import type { Container } from './container';
  * Cached data sources take their inputs as arguments; that is the whole contract.
  */
 export function createRequestScopeAccessor(resolveRoot: () => Container): () => Container {
- /**
- * The root is passed as a thunk, not a value. A `Container` argument would have to be
- * built at module-evaluation time by whichever module calls this — defeating the lazy
- * singleton the composition root goes to some trouble to be, and validating the
- * environment during the build rather than at boot.
- */
- return cache(() => resolveRoot().createScope('request'));
+  /**
+   * The root is passed as a thunk, not a value. A `Container` argument would have to be
+   * built at module-evaluation time by whichever module calls this — defeating the lazy
+   * singleton the composition root goes to some trouble to be, and validating the
+   * environment during the build rather than at boot.
+   */
+  return cache(() => resolveRoot().createScope('request'));
 }

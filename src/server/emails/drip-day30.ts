@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
-const resend  = new Resend(process.env.RESEND_API_KEY || 're_123');
-const FROM    = 'PaperLens <hello@paperlens.co>';
-const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123');
+const FROM = 'PaperLens <hello@paperlens.co>';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://paperlens.co';
 
 /**
  * Day 30 drip — re-engagement / win-back for users who have been inactive.
@@ -15,8 +15,8 @@ export async function sendDripDay30(email: string, name?: string | null): Promis
 
   try {
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
+      from: FROM,
+      to: email,
       subject: `${firstName}, your PaperLens account is waiting.`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:0;background:#ffffff;color:#0f172a;">
@@ -51,14 +51,18 @@ export async function sendDripDay30(email: string, name?: string | null): Promis
               <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 ${[
                   'Your vault is intact — every old scan is still there.',
-                  'Your free uploads haven\'t expired.',
+                  "Your free uploads haven't expired.",
                   'You can scan a new document right now, in 10 seconds.',
-                ].map(item => `
+                ]
+                  .map(
+                    (item) => `
                   <tr>
                     <td style="padding:4px 8px 4px 0;vertical-align:top;width:20px;color:#d97706;font-size:14px;">✓</td>
                     <td style="padding:4px 0;font-size:13px;color:#475569;line-height:1.5;">${item}</td>
                   </tr>
-                `).join('')}
+                `,
+                  )
+                  .join('')}
               </table>
             </div>
 

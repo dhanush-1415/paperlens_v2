@@ -10,4 +10,10 @@ export function initLemonSqueezy() {
   });
 }
 
-export { createCheckout, getSubscription, listSubscriptions, cancelSubscription, listOrders } from '@lemonsqueezy/lemonsqueezy.js';
+export {
+  createCheckout,
+  getSubscription,
+  listSubscriptions,
+  cancelSubscription,
+  listOrders,
+} from '@lemonsqueezy/lemonsqueezy.js';

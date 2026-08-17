@@ -18,51 +18,51 @@ import { err, isErr, ok, type Result } from '@/core/result/result';
 import { PAGINATION } from '@/shared/constants/limits';
 
 import {
- type DocumentAnalysis,
- type DocumentAnalysisRepository,
- type DocumentAnalysisSummary,
+  type DocumentAnalysis,
+  type DocumentAnalysisRepository,
+  type DocumentAnalysisSummary,
 } from '../domain';
 
 export interface DocumentReadDeps {
- readonly repository: DocumentAnalysisRepository;
+  readonly repository: DocumentAnalysisRepository;
 }
 
 export type GetDocumentAnalysis = (
- id: string,
- ownerId: string,
+  id: string,
+  ownerId: string,
 ) => Promise<Result<DocumentAnalysis, AppError>>;
 
 export function createGetDocumentAnalysis(deps: DocumentReadDeps): GetDocumentAnalysis {
- return async function getDocumentAnalysis(id, ownerId) {
- const found = await deps.repository.findById(id, ownerId);
- if (isErr(found)) return found;
+  return async function getDocumentAnalysis(id, ownerId) {
+    const found = await deps.repository.findById(id, ownerId);
+    if (isErr(found)) return found;
 
- /**
- * "Does not exist" and "exists but is not yours" produce the same error, and that is the
- * security-relevant part. Distinguishing them turns the route into an oracle: an attacker
- * enumerating ids learns which ones are real from the difference between 404 and 403. The
- * repository already scopes by owner, so this branch cannot tell the two apart either —
- * which is the design working, not a limitation.
- */
- if (found.value === null) return err(notFoundError('document', id));
+    /**
+     * "Does not exist" and "exists but is not yours" produce the same error, and that is the
+     * security-relevant part. Distinguishing them turns the route into an oracle: an attacker
+     * enumerating ids learns which ones are real from the difference between 404 and 403. The
+     * repository already scopes by owner, so this branch cannot tell the two apart either —
+     * which is the design working, not a limitation.
+     */
+    if (found.value === null) return err(notFoundError('document', id));
 
- return ok(found.value);
- };
+    return ok(found.value);
+  };
 }
 
 export type ListRecentAnalyses = (
- ownerId: string,
- limit?: number,
+  ownerId: string,
+  limit?: number,
 ) => Promise<Result<readonly DocumentAnalysisSummary[], AppError>>;
 
 export function createListRecentAnalyses(deps: DocumentReadDeps): ListRecentAnalyses {
- return function listRecentAnalyses(ownerId, limit = PAGINATION.defaultPageSize) {
- /**
- * Clamped rather than trusted. `limit` reaches here from a query string often enough that
- * treating it as a number the caller chose is how a page becomes a denial-of-service
- * primitive: `?limit=1000000` is one character of typing and a full table scan.
- */
- const safeLimit = Math.max(1, Math.min(limit, PAGINATION.maxPageSize));
- return deps.repository.listRecent(ownerId, safeLimit);
- };
+  return function listRecentAnalyses(ownerId, limit = PAGINATION.defaultPageSize) {
+    /**
+     * Clamped rather than trusted. `limit` reaches here from a query string often enough that
+     * treating it as a number the caller chose is how a page becomes a denial-of-service
+     * primitive: `?limit=1000000` is one character of typing and a full table scan.
+     */
+    const safeLimit = Math.max(1, Math.min(limit, PAGINATION.maxPageSize));
+    return deps.repository.listRecent(ownerId, safeLimit);
+  };
 }

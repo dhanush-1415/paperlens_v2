@@ -10,14 +10,14 @@ export async function sendSubscriptionExpiredEmail(
   email: string,
   name?: string | null,
 ): Promise<void> {
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
-  const fromEmail = process.env.RESEND_FROM_EMAIL   ?? 'PaperLens <hello@paperlens.co>';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
   const firstName = name?.split(' ')[0] ?? 'there';
 
   try {
     const { error } = await resend.emails.send({
-      from:    fromEmail,
-      to:      email,
+      from: fromEmail,
+      to: email,
       subject: 'Your PaperLens Pro subscription has expired',
       html: `
 <!DOCTYPE html>
@@ -106,18 +106,20 @@ export async function sendSubscriptionRenewingEmail(
   renewalDate: string,
   name?: string | null,
 ): Promise<void> {
-  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
-  const fromEmail = process.env.RESEND_FROM_EMAIL   ?? 'PaperLens <hello@paperlens.co>';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.paperlens.co';
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'PaperLens <hello@paperlens.co>';
   const firstName = name?.split(' ')[0] ?? 'there';
 
   const formatted = new Date(renewalDate).toLocaleDateString('en-US', {
-    month: 'long', day: 'numeric', year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
 
   try {
     const { error } = await resend.emails.send({
-      from:    fromEmail,
-      to:      email,
+      from: fromEmail,
+      to: email,
       subject: `Your PaperLens Pro renews on ${formatted}`,
       html: `
 <!DOCTYPE html>

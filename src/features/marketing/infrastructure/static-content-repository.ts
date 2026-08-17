@@ -31,95 +31,95 @@ import { internalError, type AppError } from '@/core/errors/app-error';
 import { ok, type Result } from '@/core/result/result';
 
 import {
- toGuideSummary,
- type ContentRepository,
- type DocumentGuide,
- type GuideSummary,
- type LegalDocument,
- type LegalDocumentSlug,
- type PricingPlan,
+  toGuideSummary,
+  type ContentRepository,
+  type DocumentGuide,
+  type GuideSummary,
+  type LegalDocument,
+  type LegalDocumentSlug,
+  type PricingPlan,
 } from '../domain';
 import { DOCUMENT_GUIDES } from './guides.data';
 import { LEGAL_DOCUMENTS } from './legal.data';
 import { PRICING_PLAN } from './pricing.data';
 
 export interface StaticContentRepositoryDeps {
- /** Injected so a test can supply three guides instead of twenty-five. */
- readonly guides?: readonly DocumentGuide[];
- readonly pricing?: PricingPlan;
- readonly legal?: Readonly<Record<LegalDocumentSlug, LegalDocument>>;
+  /** Injected so a test can supply three guides instead of twenty-five. */
+  readonly guides?: readonly DocumentGuide[];
+  readonly pricing?: PricingPlan;
+  readonly legal?: Readonly<Record<LegalDocumentSlug, LegalDocument>>;
 }
 
 function indexBySlug(guides: readonly DocumentGuide[]): ReadonlyMap<string, DocumentGuide> {
- const bySlug = new Map<string, DocumentGuide>();
- for (const guide of guides) {
- if (bySlug.has(guide.slug)) {
- throw internalError(`Duplicate guide slug: ${guide.slug}`);
- }
- bySlug.set(guide.slug, guide);
- }
- return bySlug;
+  const bySlug = new Map<string, DocumentGuide>();
+  for (const guide of guides) {
+    if (bySlug.has(guide.slug)) {
+      throw internalError(`Duplicate guide slug: ${guide.slug}`);
+    }
+    bySlug.set(guide.slug, guide);
+  }
+  return bySlug;
 }
 
 function assertOneHighlightedTier(pricing: PricingPlan): void {
- const highlighted = pricing.tiers.filter((tier) => tier.highlighted);
- if (highlighted.length !== 1) {
- /**
- * Two highlighted tiers is visually identical to none — the "most popular" ribbon only
- * means something if it is scarce. Checked here rather than trusted from `pricing.data.ts`
- * because the mistake is made while editing that file and noticed, if at all, in
- * production.
- */
- throw internalError(`Pricing must highlight exactly one tier, found ${highlighted.length}.`);
- }
+  const highlighted = pricing.tiers.filter((tier) => tier.highlighted);
+  if (highlighted.length !== 1) {
+    /**
+     * Two highlighted tiers is visually identical to none — the "most popular" ribbon only
+     * means something if it is scarce. Checked here rather than trusted from `pricing.data.ts`
+     * because the mistake is made while editing that file and noticed, if at all, in
+     * production.
+     */
+    throw internalError(`Pricing must highlight exactly one tier, found ${highlighted.length}.`);
+  }
 }
 
 export function createStaticContentRepository(
- deps: StaticContentRepositoryDeps = {},
+  deps: StaticContentRepositoryDeps = {},
 ): ContentRepository {
- const guides = deps.guides ?? DOCUMENT_GUIDES;
- const pricing = deps.pricing ?? PRICING_PLAN;
- const legal = deps.legal ?? LEGAL_DOCUMENTS;
+  const guides = deps.guides ?? DOCUMENT_GUIDES;
+  const pricing = deps.pricing ?? PRICING_PLAN;
+  const legal = deps.legal ?? LEGAL_DOCUMENTS;
 
- const bySlug = indexBySlug(guides);
- assertOneHighlightedTier(pricing);
+  const bySlug = indexBySlug(guides);
+  assertOneHighlightedTier(pricing);
 
- /**
- * Summaries are projected once, not per call.
- *
- * The hub page, the footer's cross-links and `/for/[slug]`'s "related guides" rail all ask
- * for this list, and under PPR each of those is a separate render. Mapping 25 objects three
- * times per build is not expensive — but the array is immutable and identical every time, so
- * recomputing it is pure waste and, more usefully, a stable reference means React can bail
- * out of re-rendering a memoised list.
- */
- const summaries: readonly GuideSummary[] = guides.map(toGuideSummary);
- const slugs: readonly string[] = guides.map((guide) => guide.slug);
+  /**
+   * Summaries are projected once, not per call.
+   *
+   * The hub page, the footer's cross-links and `/for/[slug]`'s "related guides" rail all ask
+   * for this list, and under PPR each of those is a separate render. Mapping 25 objects three
+   * times per build is not expensive — but the array is immutable and identical every time, so
+   * recomputing it is pure waste and, more usefully, a stable reference means React can bail
+   * out of re-rendering a memoised list.
+   */
+  const summaries: readonly GuideSummary[] = guides.map(toGuideSummary);
+  const slugs: readonly string[] = guides.map((guide) => guide.slug);
 
- return {
- listGuides(): Promise<Result<readonly GuideSummary[], AppError>> {
- return Promise.resolve(ok(summaries));
- },
+  return {
+    listGuides(): Promise<Result<readonly GuideSummary[], AppError>> {
+      return Promise.resolve(ok(summaries));
+    },
 
- getGuide(slug): Promise<Result<DocumentGuide | null, AppError>> {
- return Promise.resolve(ok(bySlug.get(slug) ?? null));
- },
+    getGuide(slug): Promise<Result<DocumentGuide | null, AppError>> {
+      return Promise.resolve(ok(bySlug.get(slug) ?? null));
+    },
 
- listGuideSlugs(): Promise<Result<readonly string[], AppError>> {
- return Promise.resolve(ok(slugs));
- },
+    listGuideSlugs(): Promise<Result<readonly string[], AppError>> {
+      return Promise.resolve(ok(slugs));
+    },
 
- getPricing(): Promise<Result<PricingPlan, AppError>> {
- return Promise.resolve(ok(pricing));
- },
+    getPricing(): Promise<Result<PricingPlan, AppError>> {
+      return Promise.resolve(ok(pricing));
+    },
 
- getLegalDocument(slug): Promise<Result<LegalDocument, AppError>> {
- /**
- * No `?? null` and no not-found branch: the record is total over the slug union, so the
- * only way this can miss is a corpus that failed to compile. `noUncheckedIndexedAccess`
- * does not weaken a `Record<Union, T>` lookup, so this is a genuine `LegalDocument`.
- */
- return Promise.resolve(ok(legal[slug]));
- },
- };
+    getLegalDocument(slug): Promise<Result<LegalDocument, AppError>> {
+      /**
+       * No `?? null` and no not-found branch: the record is total over the slug union, so the
+       * only way this can miss is a corpus that failed to compile. `noUncheckedIndexedAccess`
+       * does not weaken a `Record<Union, T>` lookup, so this is a genuine `LegalDocument`.
+       */
+      return Promise.resolve(ok(legal[slug]));
+    },
+  };
 }

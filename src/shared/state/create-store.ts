@@ -41,32 +41,32 @@ import { isDevelopment } from '@/config/runtime';
 import { createNoopStorageDriver, type StorageDriver } from '@/core/storage';
 
 export interface PersistConfig<TState> {
- /** Storage key. Must come from `STORAGE_KEYS` — never a literal. */
- key: string;
- /**
- * Bump when the persisted shape changes. Zustand discards mismatched versions rather
- * than rehydrating last release's shape into this release's reducers.
- */
- version: number;
- /**
- * Which slice of the store is persisted.
- *
- * Required, not optional, because the safe default does not exist: persisting everything
- * writes derived values, loading flags and in-flight state to disk, and a user who
- * refreshes mid-request comes back to a store that thinks it is still loading forever.
- */
- partialize: (state: TState) => Partial<TState>;
- /**
- * Where it is persisted. Injected so tests get memory and SSR gets a no-op.
- * `app/providers.tsx` supplies the container's `LOCAL_STORAGE_DRIVER`.
- */
- driver?: StorageDriver;
+  /** Storage key. Must come from `STORAGE_KEYS` — never a literal. */
+  key: string;
+  /**
+   * Bump when the persisted shape changes. Zustand discards mismatched versions rather
+   * than rehydrating last release's shape into this release's reducers.
+   */
+  version: number;
+  /**
+   * Which slice of the store is persisted.
+   *
+   * Required, not optional, because the safe default does not exist: persisting everything
+   * writes derived values, loading flags and in-flight state to disk, and a user who
+   * refreshes mid-request comes back to a store that thinks it is still loading forever.
+   */
+  partialize: (state: TState) => Partial<TState>;
+  /**
+   * Where it is persisted. Injected so tests get memory and SSR gets a no-op.
+   * `app/providers.tsx` supplies the container's `LOCAL_STORAGE_DRIVER`.
+   */
+  driver?: StorageDriver;
 }
 
 export interface CreateStoreOptions<TState> {
- /** Shown in Redux DevTools and in error messages. `'toast'`, `'command-palette'`. */
- name: string;
- persist?: PersistConfig<TState>;
+  /** Shown in Redux DevTools and in error messages. `'toast'`, `'command-palette'`. */
+  name: string;
+  persist?: PersistConfig<TState>;
 }
 
 /**
@@ -78,15 +78,15 @@ export interface CreateStoreOptions<TState> {
  * reintroduce all three problems in exactly one place — which is how they always come back.
  */
 function toStateStorage(driver: StorageDriver): StateStorage {
- return {
- getItem: (name) => driver.getItem(name),
- setItem: (name, value) => {
- driver.setItem(name, value);
- },
- removeItem: (name) => {
- driver.removeItem(name);
- },
- };
+  return {
+    getItem: (name) => driver.getItem(name),
+    setItem: (name, value) => {
+      driver.setItem(name, value);
+    },
+    removeItem: (name) => {
+      driver.removeItem(name);
+    },
+  };
 }
 
 /**
@@ -105,40 +105,40 @@ function toStateStorage(driver: StorageDriver): StateStorage {
  * component on every unrelated change, which throws away the main reason to use Zustand.
  */
 export function createStore<TState>(
- initializer: StateCreator<TState, [], []>,
- options: CreateStoreOptions<TState>,
+  initializer: StateCreator<TState, [], []>,
+  options: CreateStoreOptions<TState>,
 ): UseBoundStore<StoreApi<TState>> {
- const { name, persist: persistConfig } = options;
+  const { name, persist: persistConfig } = options;
 
- /**
- * `devtools` is applied only in development.
- *
- * It is not merely inert in production — it serializes every action payload to look for
- * the extension. On a store that updates on scroll that is measurable, and it is pure
- * cost for a tool nobody can open.
- */
- const withDevtools = (creator: StateCreator<TState, [], []>): StateCreator<TState, [], []> =>
- isDevelopment
- ? (devtools(creator, { name, enabled: true }) as StateCreator<TState, [], []>)
- : creator;
+  /**
+   * `devtools` is applied only in development.
+   *
+   * It is not merely inert in production — it serializes every action payload to look for
+   * the extension. On a store that updates on scroll that is measurable, and it is pure
+   * cost for a tool nobody can open.
+   */
+  const withDevtools = (creator: StateCreator<TState, [], []>): StateCreator<TState, [], []> =>
+    isDevelopment
+      ? (devtools(creator, { name, enabled: true }) as StateCreator<TState, [], []>)
+      : creator;
 
- if (!persistConfig) {
- return create<TState>()(withDevtools(initializer));
- }
+  if (!persistConfig) {
+    return create<TState>()(withDevtools(initializer));
+  }
 
- const { key, version, partialize, driver } = persistConfig;
+  const { key, version, partialize, driver } = persistConfig;
 
- return create<TState>()(
- withDevtools(
- persist(initializer, {
- name: key,
- version,
- partialize: partialize as (state: TState) => TState,
- // `createNoopStorageDriver` rather than a browser default: this module is imported
- // during SSR, and a driver that reaches for `localStorage` at module scope would
- // throw before the request is even routed.
- storage: createJSONStorage(() => toStateStorage(driver ?? createNoopStorageDriver())),
- }) as unknown as StateCreator<TState, [], []>,
- ),
- );
+  return create<TState>()(
+    withDevtools(
+      persist(initializer, {
+        name: key,
+        version,
+        partialize: partialize as (state: TState) => TState,
+        // `createNoopStorageDriver` rather than a browser default: this module is imported
+        // during SSR, and a driver that reaches for `localStorage` at module scope would
+        // throw before the request is even routed.
+        storage: createJSONStorage(() => toStateStorage(driver ?? createNoopStorageDriver())),
+      }) as unknown as StateCreator<TState, [], []>,
+    ),
+  );
 }

@@ -14,25 +14,25 @@
 export { createDefaultFlags, createFlags, type FlagsOptions } from './flags';
 
 export {
- FLAGS,
- FLAG_BY_KEY,
- expiredFlags,
- type BooleanFlagName,
- type FlagDefinition,
- type FlagKind,
- type FlagName,
- type FlagValue,
- type FlagValueOf,
+  FLAGS,
+  FLAG_BY_KEY,
+  expiredFlags,
+  type BooleanFlagName,
+  type FlagDefinition,
+  type FlagKind,
+  type FlagName,
+  type FlagValue,
+  type FlagValueOf,
 } from './registry';
 
 export {
- createMemoryFlagProvider,
- createNoopFlagProvider,
- createOverrideFlagProvider,
- createRemoteFlagProvider,
- createStaticFlagProvider,
- type MemoryFlagProvider,
- type RemoteFlagProviderOptions,
+  createMemoryFlagProvider,
+  createNoopFlagProvider,
+  createOverrideFlagProvider,
+  createRemoteFlagProvider,
+  createStaticFlagProvider,
+  type MemoryFlagProvider,
+  type RemoteFlagProviderOptions,
 } from './providers';
 
 export type { FlagContext, FlagProvider, Flags } from './types';

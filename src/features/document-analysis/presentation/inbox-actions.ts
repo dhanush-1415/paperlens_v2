@@ -4,7 +4,10 @@ import { requireSession } from '@/server/bootstrap';
 import { prisma } from '@/server/db/prisma';
 import { generateInboxToken, formatInboxAddress } from '@/shared/utils/inbox';
 
-interface InboxResult { address?: string; error?: string }
+interface InboxResult {
+  address?: string;
+  error?: string;
+}
 
 /**
  * Return the user's email-in forwarding address, creating a token on first use.
@@ -14,7 +17,7 @@ export async function getOrCreateInboxAddressAction(): Promise<InboxResult> {
 
   const profile = await prisma.profile.findUnique({
     where: { id: session.userId },
-    select: { inboxToken: true }
+    select: { inboxToken: true },
   });
 
   if (profile?.inboxToken) return { address: formatInboxAddress(profile.inboxToken) };
@@ -26,7 +29,7 @@ export async function getOrCreateInboxAddressAction(): Promise<InboxResult> {
       await prisma.profile.upsert({
         where: { id: session.userId },
         update: { inboxToken: token },
-        create: { id: session.userId, inboxToken: token }
+        create: { id: session.userId, inboxToken: token },
       });
       return { address: formatInboxAddress(token) };
     } catch (error) {
@@ -46,7 +49,7 @@ export async function regenerateInboxAddressAction(): Promise<InboxResult> {
   try {
     await prisma.profile.update({
       where: { id: session.userId },
-      data: { inboxToken: token }
+      data: { inboxToken: token },
     });
     return { address: formatInboxAddress(token) };
   } catch (error) {

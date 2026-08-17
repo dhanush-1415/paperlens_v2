@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     }
 
     let analysisIdsToFetch: string[] | null = null;
-    
+
     // Only perform semantic search if the query is descriptive enough
     if (query.split(' ').length > 2 || query.length > 10) {
       try {
@@ -26,9 +26,9 @@ export async function GET(req: Request) {
           model: google.textEmbeddingModel('embedding-001'),
           value: query,
         });
-        
+
         const vectorLiteral = `[${embedding.join(',')}]`;
-        
+
         // Find top 10 chunks matching the query
         const semanticResults = await prisma.$queryRaw<Array<{ analysis_id: string }>>`
           SELECT analysis_id
@@ -36,9 +36,9 @@ export async function GET(req: Request) {
           ORDER BY embedding <=> ${vectorLiteral}::vector
           LIMIT 10
         `;
-        
+
         if (semanticResults.length > 0) {
-          analysisIdsToFetch = [...new Set(semanticResults.map(r => r.analysis_id))];
+          analysisIdsToFetch = [...new Set(semanticResults.map((r) => r.analysis_id))];
         }
       } catch (err) {
         console.error('Semantic search failed, falling back to text search:', err);
@@ -46,16 +46,16 @@ export async function GET(req: Request) {
     }
 
     // Step 2: Fetch documents
-    const whereClause: any = { 
-      ownerId: session.userId, 
-      deletedAt: null 
+    const whereClause: any = {
+      ownerId: session.userId,
+      deletedAt: null,
     };
 
     if (analysisIdsToFetch) {
       // If we have semantic hits, we combine them with a title fallback
       whereClause.OR = [
         { id: { in: analysisIdsToFetch } },
-        { title: { contains: query, mode: 'insensitive' } }
+        { title: { contains: query, mode: 'insensitive' } },
       ];
     } else {
       // Just title text search
@@ -65,14 +65,14 @@ export async function GET(req: Request) {
     const analyses = await prisma.documentAnalysis.findMany({
       where: whereClause,
       orderBy: { analyzedAt: 'desc' },
-      take: 20
+      take: 20,
     });
 
-    const mappedDocuments = analyses.map(a => {
+    const mappedDocuments = analyses.map((a) => {
       const allFlags = Array.isArray(a.flags) ? a.flags : [];
       const risk = scoreOf(allFlags as any).level;
       const resolved = (a.resolvedFlagIds || []).length >= allFlags.length;
-      
+
       return {
         id: a.id,
         folderId: a.folderId,
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
         resolved,
         deadlineDate: a.deadlineDate?.toISOString() || null,
         date: a.analyzedAt ? new Date(a.analyzedAt).toISOString() : new Date().toISOString(),
-        size: 'Text Only'
+        size: 'Text Only',
       };
     });
 

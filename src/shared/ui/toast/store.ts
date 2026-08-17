@@ -45,55 +45,55 @@ const MAX_VISIBLE = 4;
  * of that ticket.
  */
 const DURATION_BY_TONE = {
- neutral: 5000,
- brand: 5000,
- info: 5000,
- safe: 4000,
- caution: 7000,
- critical: null,
+  neutral: 5000,
+  brand: 5000,
+  info: 5000,
+  safe: 4000,
+  caution: 7000,
+  critical: null,
 } as const satisfies Record<Tone, number | null>;
 
 export interface ToastAction {
- label: string;
- onClick: () => void;
+  label: string;
+  onClick: () => void;
 }
 
 export interface Toast {
- id: string;
- tone: Tone;
- /** One line. The outcome, in the user's words — "Analysis failed", not "500". */
- title: string;
- /** Optional second line: what to do about it, or a detail worth having. */
- description?: string;
- /**
- * At most one action.
- *
- * A plain `{ label, onClick }` rather than a `ReactNode`, so the store holds data instead
- * of markup — which keeps it inspectable in devtools, testable without rendering, and
- * incapable of accumulating arbitrary component trees that outlive their own page.
- *
- * One, not many: a toast is a notification, not a dialog. If the user has a real choice to
- * make, that is a `Dialog`.
- */
- action?: ToastAction;
- /** `null` means it stays until dismissed. Defaults from the tone. */
- duration: number | null;
+  id: string;
+  tone: Tone;
+  /** One line. The outcome, in the user's words — "Analysis failed", not "500". */
+  title: string;
+  /** Optional second line: what to do about it, or a detail worth having. */
+  description?: string;
+  /**
+   * At most one action.
+   *
+   * A plain `{ label, onClick }` rather than a `ReactNode`, so the store holds data instead
+   * of markup — which keeps it inspectable in devtools, testable without rendering, and
+   * incapable of accumulating arbitrary component trees that outlive their own page.
+   *
+   * One, not many: a toast is a notification, not a dialog. If the user has a real choice to
+   * make, that is a `Dialog`.
+   */
+  action?: ToastAction;
+  /** `null` means it stays until dismissed. Defaults from the tone. */
+  duration: number | null;
 }
 
 export type ToastInput = Omit<Toast, 'id' | 'duration' | 'tone'> & {
- tone?: Tone;
- duration?: number | null;
+  tone?: Tone;
+  duration?: number | null;
 };
 
 interface ToastState {
- toasts: Toast[];
- push: (input: ToastInput) => string;
- dismiss: (id: string) => void;
- clear: () => void;
- /** Suspend every auto-dismiss. Called by `Toaster` on hover and focus — see below. */
- pauseAll: () => void;
- /** Resume auto-dismiss for everything still on screen. */
- resumeAll: () => void;
+  toasts: Toast[];
+  push: (input: ToastInput) => string;
+  dismiss: (id: string) => void;
+  clear: () => void;
+  /** Suspend every auto-dismiss. Called by `Toaster` on hover and focus — see below. */
+  pauseAll: () => void;
+  /** Resume auto-dismiss for everything still on screen. */
+  resumeAll: () => void;
 }
 
 /**
@@ -117,79 +117,79 @@ const timers = new Map<string, ReturnType<typeof setTimeout>>();
 let paused = false;
 
 function cancelTimer(id: string): void {
- const timer = timers.get(id);
- if (timer === undefined) return;
- clearTimeout(timer);
- timers.delete(id);
+  const timer = timers.get(id);
+  if (timer === undefined) return;
+  clearTimeout(timer);
+  timers.delete(id);
 }
 
 export const useToastStore = createStore<ToastState>(
- (set, get) => {
- const schedule = (toast: Toast): void => {
- if (toast.duration === null || paused || timers.has(toast.id)) return;
- timers.set(
- toast.id,
- setTimeout(() => get().dismiss(toast.id), toast.duration),
- );
- };
+  (set, get) => {
+    const schedule = (toast: Toast): void => {
+      if (toast.duration === null || paused || timers.has(toast.id)) return;
+      timers.set(
+        toast.id,
+        setTimeout(() => get().dismiss(toast.id), toast.duration),
+      );
+    };
 
- return {
- toasts: [],
+    return {
+      toasts: [],
 
- push: (input) => {
- const id = uuid();
- const tone: Tone = input.tone ?? 'neutral';
- const toast: Toast = {
- ...input,
- id,
- tone,
- duration: input.duration === undefined ? DURATION_BY_TONE[tone] : input.duration,
- };
+      push: (input) => {
+        const id = uuid();
+        const tone: Tone = input.tone ?? 'neutral';
+        const toast: Toast = {
+          ...input,
+          id,
+          tone,
+          duration: input.duration === undefined ? DURATION_BY_TONE[tone] : input.duration,
+        };
 
- set((state) => {
- const next = [...state.toasts, toast];
- // Anything pushed out of the window gets its timer cancelled here rather than being
- // left to fire against a toast that no longer exists.
- const dropped = next.slice(0, Math.max(0, next.length - MAX_VISIBLE));
- for (const stale of dropped) cancelTimer(stale.id);
- return { toasts: next.slice(-MAX_VISIBLE) };
- });
+        set((state) => {
+          const next = [...state.toasts, toast];
+          // Anything pushed out of the window gets its timer cancelled here rather than being
+          // left to fire against a toast that no longer exists.
+          const dropped = next.slice(0, Math.max(0, next.length - MAX_VISIBLE));
+          for (const stale of dropped) cancelTimer(stale.id);
+          return { toasts: next.slice(-MAX_VISIBLE) };
+        });
 
- schedule(toast);
- return id;
- },
+        schedule(toast);
+        return id;
+      },
 
- dismiss: (id) => {
- cancelTimer(id);
- set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) }));
- },
+      dismiss: (id) => {
+        cancelTimer(id);
+        set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) }));
+      },
 
- clear: () => {
- for (const id of [...timers.keys()]) cancelTimer(id);
- set({ toasts: [] });
- },
+      clear: () => {
+        for (const id of [...timers.keys()]) cancelTimer(id);
+        set({ toasts: [] });
+      },
 
- pauseAll: () => {
- paused = true;
- for (const id of [...timers.keys()]) cancelTimer(id);
- },
+      pauseAll: () => {
+        paused = true;
+        for (const id of [...timers.keys()]) cancelTimer(id);
+      },
 
- /**
- * Restarts each countdown from the top rather than resuming a remainder.
- *
- * Resuming precisely would mean recording a start timestamp per toast and doing
- * arithmetic on every pause — real bookkeeping to make an auto-dismiss expire *sooner*,
- * which is the wrong direction to optimise. A user who just took their pointer off the
- * stack gets the full reading time again, which is the generous reading of WCAG 2.2.1
- * and costs nothing.
- */
- resumeAll: () => {
- paused = false;
- for (const toast of get().toasts) schedule(toast);
- },
- };
- },
- { name: 'toast' },
+      /**
+       * Restarts each countdown from the top rather than resuming a remainder.
+       *
+       * Resuming precisely would mean recording a start timestamp per toast and doing
+       * arithmetic on every pause — real bookkeeping to make an auto-dismiss expire *sooner*,
+       * which is the wrong direction to optimise. A user who just took their pointer off the
+       * stack gets the full reading time again, which is the generous reading of WCAG 2.2.1
+       * and costs nothing.
+       */
+      resumeAll: () => {
+        paused = false;
+        for (const toast of get().toasts) schedule(toast);
+      },
+    };
+  },
+  { name: 'toast' },
 );
 
 /**
@@ -208,21 +208,21 @@ export const useToastStore = createStore<ToastState>(
 type ToastOptions = Omit<ToastInput, 'title' | 'tone'>;
 
 function emit(tone: Tone) {
- return (title: string, options?: ToastOptions): string =>
- useToastStore.getState().push({ ...options, title, tone });
+  return (title: string, options?: ToastOptions): string =>
+    useToastStore.getState().push({ ...options, title, tone });
 }
 
 export const toast = {
- /** The operation completed and the user should know. */
- success: emit('safe'),
- /** It failed. Never auto-dismisses — see `DURATION_BY_TONE`. */
- error: emit('critical'),
- /** It worked, with a caveat the user needs: a quota nearly spent, a partial result. */
- warning: emit('caution'),
- /** Neutral information. Prefer rendering it on the page if it is not time-sensitive. */
- info: emit('info'),
- /** No semantic level at all — a plain acknowledgement. */
- message: emit('neutral'),
- dismiss: (id: string) => useToastStore.getState().dismiss(id),
- clear: () => useToastStore.getState().clear(),
+  /** The operation completed and the user should know. */
+  success: emit('safe'),
+  /** It failed. Never auto-dismisses — see `DURATION_BY_TONE`. */
+  error: emit('critical'),
+  /** It worked, with a caveat the user needs: a quota nearly spent, a partial result. */
+  warning: emit('caution'),
+  /** Neutral information. Prefer rendering it on the page if it is not time-sensitive. */
+  info: emit('info'),
+  /** No semantic level at all — a plain acknowledgement. */
+  message: emit('neutral'),
+  dismiss: (id: string) => useToastStore.getState().dismiss(id),
+  clear: () => useToastStore.getState().clear(),
 } as const;

@@ -61,7 +61,7 @@ function toEntity(record: any): DocumentAnalysis {
     summary: record.summary,
     actionPlan: record.actionPlan || [],
     urgency: record.urgency,
-    rawText: record.rawText || "",
+    rawText: record.rawText || '',
     fileUrl: record.fileUrl,
     mimeType: record.mimeType,
     entities: (record.entities as any) || [],
@@ -74,14 +74,14 @@ function toEntity(record: any): DocumentAnalysis {
   };
 
   /**
- * The runtime backstop for the DTO boundary (requirement 15).
- *
- * `taintEntity` marks this object so React throws if it is ever passed to a Client
- * Component — with the message below, at the point of the mistake, instead of quietly
- * shipping `ownerId` and the full clause text to the browser. The sanctioned path is
- * `toAnalysisDto`, which reads fields off this object and builds a new one; reading fields
- * is allowed, passing the reference is not.
- */
+   * The runtime backstop for the DTO boundary (requirement 15).
+   *
+   * `taintEntity` marks this object so React throws if it is ever passed to a Client
+   * Component — with the message below, at the point of the mistake, instead of quietly
+   * shipping `ownerId` and the full clause text to the browser. The sanctioned path is
+   * `toAnalysisDto`, which reads fields off this object and builds a new one; reading fields
+   * is allowed, passing the reference is not.
+   */
   return taintEntity(
     analysis,
     'DocumentAnalysis is a server entity — pass toAnalysisDto(analysis) to Client Components',
@@ -100,7 +100,7 @@ export function createDocumentAnalysisRepository(
     async save(draft) {
       return attempt(async () => {
         const id = uuid();
-        
+
         const record = await prisma.documentAnalysis.create({
           data: {
             id,
@@ -123,7 +123,7 @@ export function createDocumentAnalysisRepository(
             timeline: (draft.timeline || []) as any,
             deadlineDate: draft.deadlineDate ? new Date(draft.deadlineDate) : null,
             analyzedAt: new Date(draft.analyzedAt),
-            flags: draft.flags.map(f => ({
+            flags: draft.flags.map((f) => ({
               id: f.id,
               category: f.category,
               level: f.level,
@@ -132,9 +132,9 @@ export function createDocumentAnalysisRepository(
               explanation: f.explanation,
               recommendation: f.recommendation,
               charStart: f.charStart,
-              charEnd: f.charEnd
-            })) as any
-          }
+              charEnd: f.charEnd,
+            })) as any,
+          },
         });
 
         return toEntity(record);
@@ -144,7 +144,7 @@ export function createDocumentAnalysisRepository(
     async findById(id, ownerId) {
       return attempt(async () => {
         const record = await prisma.documentAnalysis.findFirst({
-          where: { id, ownerId, deletedAt: null }
+          where: { id, ownerId, deletedAt: null },
         });
         return record === null ? null : toEntity(record);
       });
@@ -155,14 +155,14 @@ export function createDocumentAnalysisRepository(
         const records = await prisma.documentAnalysis.findMany({
           where: { ownerId, deletedAt: null },
           orderBy: { analyzedAt: 'desc' },
-          take: limit
+          take: limit,
         });
         /**
- * Summaries are built from entities rather than from rows directly. One mapping, one
- * place it can be wrong. The cost is constructing flag objects that are immediately
- * discarded — irrelevant at a page size of twenty, and the moment it stops being
- * irrelevant the fix is a projection query, which is a change to the data source.
- */
+         * Summaries are built from entities rather than from rows directly. One mapping, one
+         * place it can be wrong. The cost is constructing flag objects that are immediately
+         * discarded — irrelevant at a page size of twenty, and the moment it stops being
+         * irrelevant the fix is a projection query, which is a change to the data source.
+         */
         return records.map((record) => toSummary(toEntity(record)));
       });
     },
@@ -171,7 +171,7 @@ export function createDocumentAnalysisRepository(
       return attempt(async () => {
         await prisma.documentAnalysis.updateMany({
           where: { id, ownerId },
-          data: { deletedAt: new Date() }
+          data: { deletedAt: new Date() },
         });
       });
     },

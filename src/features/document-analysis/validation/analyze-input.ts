@@ -31,15 +31,15 @@ import { DOCUMENT_TYPES } from '../domain';
  * gets copy-edited in a schema file, where no writer will ever look for it.
  */
 export const analyzeDocumentSchema = z.object({
- text: documentTextSchema,
- /**
- * `z.enum` over the domain's own tuple, so the schema cannot fall out of step with the
- * union it validates. Adding a document type to the domain automatically widens this; the
- * label record in `constants.ts` then fails to compile until the new type is named, which
- * is exactly the order those two changes should happen in.
- */
- documentType: z.enum(DOCUMENT_TYPES, { message: 'validation.required' }),
- title: optionalTextSchema(120),
+  text: documentTextSchema,
+  /**
+   * `z.enum` over the domain's own tuple, so the schema cannot fall out of step with the
+   * union it validates. Adding a document type to the domain automatically widens this; the
+   * label record in `constants.ts` then fails to compile until the new type is named, which
+   * is exactly the order those two changes should happen in.
+   */
+  documentType: z.enum(DOCUMENT_TYPES, { message: 'validation.required' }),
+  title: optionalTextSchema(120),
 });
 
 export type AnalyzeDocumentFormValues = z.infer<typeof analyzeDocumentSchema>;
@@ -53,7 +53,7 @@ export type AnalyzeDocumentFormValues = z.infer<typeof analyzeDocumentSchema>;
  * agreement structural.
  */
 export const ANALYZE_FIELDS = {
- text: 'text',
- documentType: 'documentType',
- title: 'title',
+  text: 'text',
+  documentType: 'documentType',
+  title: 'title',
 } as const satisfies Record<keyof AnalyzeDocumentFormValues, string>;

@@ -12,49 +12,49 @@ import { afterEach, beforeAll, vi } from 'vitest';
  */
 
 beforeAll(() => {
- // jsdom implements neither, and the design system's responsive + motion primitives
- // read both. Default to "no preference, desktop width".
- if (!window.matchMedia) {
- Object.defineProperty(window, 'matchMedia', {
- writable: true,
- value: (query: string) => ({
- matches: false,
- media: query,
- onchange: null,
- addEventListener: vi.fn(),
- removeEventListener: vi.fn(),
- addListener: vi.fn(),
- removeListener: vi.fn(),
- dispatchEvent: vi.fn(),
- }),
- });
- }
+  // jsdom implements neither, and the design system's responsive + motion primitives
+  // read both. Default to "no preference, desktop width".
+  if (!window.matchMedia) {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }),
+    });
+  }
 
- if (!globalThis.ResizeObserver) {
- globalThis.ResizeObserver = class {
- observe() {}
- unobserve() {}
- disconnect() {}
- } as unknown as typeof ResizeObserver;
- }
+  if (!globalThis.ResizeObserver) {
+    globalThis.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+  }
 
- if (!globalThis.IntersectionObserver) {
- globalThis.IntersectionObserver = class {
- readonly root = null;
- readonly rootMargin = '';
- readonly thresholds: ReadonlyArray<number> = [];
- observe() {}
- unobserve() {}
- disconnect() {}
- takeRecords(): IntersectionObserverEntry[] {
- return [];
- }
- } as unknown as typeof IntersectionObserver;
- }
+  if (!globalThis.IntersectionObserver) {
+    globalThis.IntersectionObserver = class {
+      readonly root = null;
+      readonly rootMargin = '';
+      readonly thresholds: ReadonlyArray<number> = [];
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords(): IntersectionObserverEntry[] {
+        return [];
+      }
+    } as unknown as typeof IntersectionObserver;
+  }
 });
 
 afterEach(() => {
- cleanup();
- window.localStorage.clear();
- window.sessionStorage.clear();
+  cleanup();
+  window.localStorage.clear();
+  window.sessionStorage.clear();
 });

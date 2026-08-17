@@ -19,22 +19,22 @@ import { getRequestScope } from '@/server/bootstrap';
  * component so this file stays routing.
  */
 export const metadata: Metadata = {
- title: 'Document guides',
- description:
- 'Plain-English guides to the notices, contracts and letters people are most often asked to sign — what each one means, what it typically costs, and what to do next.',
- alternates: { canonical: '/use-cases' },
+  title: 'Document guides',
+  description:
+    'Plain-English guides to the notices, contracts and letters people are most often asked to sign — what each one means, what it typically costs, and what to do next.',
+  alternates: { canonical: '/use-cases' },
 };
 
 export default async function UseCasesPage() {
- const listGuidesByCategory = getRequestScope().resolve(LIST_GUIDES_BY_CATEGORY);
- const groups = unwrapOrThrow(await listGuidesByCategory());
+  const listGuidesByCategory = getRequestScope().resolve(LIST_GUIDES_BY_CATEGORY);
+  const groups = unwrapOrThrow(await listGuidesByCategory());
 
- return (
- <GuideHub
- groups={groups}
- eyebrow="Document guides"
- heading="Know what you are signing, before you sign it"
- lede="Every guide covers one kind of document: what it actually says, the clauses that cost people money, and the deadline you are working against. Written for the moment the envelope is already open."
- />
- );
+  return (
+    <GuideHub
+      groups={groups}
+      eyebrow="Document guides"
+      heading="Know what you are signing, before you sign it"
+      lede="Every guide covers one kind of document: what it actually says, the clauses that cost people money, and the deadline you are working against. Written for the moment the envelope is already open."
+    />
+  );
 }

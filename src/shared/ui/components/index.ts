@@ -36,13 +36,13 @@ export { Button, buttonVariants } from './button';
 export type { ButtonProps } from './button';
 
 export {
- Card,
- CardContent,
- CardDescription,
- CardFooter,
- CardHeader,
- CardTitle,
- cardVariants,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  cardVariants,
 } from './card';
 export type { CardProps, CardTitleProps } from './card';
 

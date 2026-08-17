@@ -38,24 +38,24 @@ import { useMemo, type ReactNode } from 'react';
 
 import { appConfig, clientEnv, isDevelopment, isServer } from '@/config';
 import {
- createAnalytics,
- createConsentStore,
- createLoggerAnalyticsProvider,
- createNoopAnalyticsProvider,
- type AnalyticsProvider,
+  createAnalytics,
+  createConsentStore,
+  createLoggerAnalyticsProvider,
+  createNoopAnalyticsProvider,
+  type AnalyticsProvider,
 } from '@/core/analytics';
 import {
- ANALYTICS,
- CLOCK,
- Container,
- ERROR_REPORTER,
- FLAGS_SERVICE,
- HTTP_CLIENT,
- LOCAL_STORAGE_DRIVER,
- LOGGER,
- NETWORK_MONITOR,
- SESSION_STORAGE_DRIVER,
- TRANSLATOR,
+  ANALYTICS,
+  CLOCK,
+  Container,
+  ERROR_REPORTER,
+  FLAGS_SERVICE,
+  HTTP_CLIENT,
+  LOCAL_STORAGE_DRIVER,
+  LOGGER,
+  NETWORK_MONITOR,
+  SESSION_STORAGE_DRIVER,
+  TRANSLATOR,
 } from '@/core/container';
 import { ContainerProvider } from '@/core/container/context';
 import { createFlags, createOverrideFlagProvider, createStaticFlagProvider } from '@/core/flags';
@@ -72,7 +72,6 @@ import { ThemeProvider, Toaster } from '@/shared/ui';
 
 import type { FlagName, FlagValue } from '@/core/flags';
 
-
 /**
  * Read a cookie the browser is allowed to read.
  *
@@ -82,156 +81,156 @@ import type { FlagName, FlagValue } from '@/core/flags';
  * function cannot see it, which is exactly right.
  */
 function readCookie(name: string): string | undefined {
- if (isServer) return undefined;
+  if (isServer) return undefined;
 
- const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
- return match ? decodeURIComponent(match[1] as string) : undefined;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1] as string) : undefined;
 }
 
 function buildClientContainer(): Container {
- const container = new Container('client');
+  const container = new Container('client');
 
- container.registerValue(CLOCK, systemClock);
+  container.registerValue(CLOCK, systemClock);
 
- container.register(LOGGER, (c) =>
- createLogger({
- scope: 'client',
- /**
- * Warnings and errors only in production. Not for noise: every `console.log` in a
- * production bundle is a string that ships, is retained by whatever extension the
- * user has installed, and occasionally contains a document excerpt. The level is the
- * cheapest privacy control there is.
- */
- level: isDevelopment ? 'debug' : 'warn',
- // Colour off: the browser console applies its own styling per level, and ANSI escape
- // codes render as literal garbage there.
- transports: [createConsoleTransport({ colour: false })],
- bindings: { environment: appConfig.environment, commit: appConfig.commitSha },
- now: c.resolve(CLOCK),
- }),
- );
+  container.register(LOGGER, (c) =>
+    createLogger({
+      scope: 'client',
+      /**
+       * Warnings and errors only in production. Not for noise: every `console.log` in a
+       * production bundle is a string that ships, is retained by whatever extension the
+       * user has installed, and occasionally contains a document excerpt. The level is the
+       * cheapest privacy control there is.
+       */
+      level: isDevelopment ? 'debug' : 'warn',
+      // Colour off: the browser console applies its own styling per level, and ANSI escape
+      // codes render as literal garbage there.
+      transports: [createConsoleTransport({ colour: false })],
+      bindings: { environment: appConfig.environment, commit: appConfig.commitSha },
+      now: c.resolve(CLOCK),
+    }),
+  );
 
- container.register(ERROR_REPORTER, (c) => createLoggerErrorReporter(c.resolve(LOGGER)));
+  container.register(ERROR_REPORTER, (c) => createLoggerErrorReporter(c.resolve(LOGGER)));
 
- container.register(LOCAL_STORAGE_DRIVER, () => createLocalStorageDriver());
- container.register(SESSION_STORAGE_DRIVER, () => createSessionStorageDriver());
+  container.register(LOCAL_STORAGE_DRIVER, () => createLocalStorageDriver());
+  container.register(SESSION_STORAGE_DRIVER, () => createSessionStorageDriver());
 
- container.register(ANALYTICS, (c) => {
- const logger = c.resolve(LOGGER);
- const now = epochMillis(c.resolve(CLOCK));
+  container.register(ANALYTICS, (c) => {
+    const logger = c.resolve(LOGGER);
+    const now = epochMillis(c.resolve(CLOCK));
 
- /**
- * No vendor is wired, by design: adding one is an adapter here, not an SDK call in a
- * component. `NEXT_PUBLIC_ANALYTICS_ENABLED` is the master switch, and it is off by
- * default so a fork of this repo does not start emitting events to a stranger's
- * project.
- */
- const providers: AnalyticsProvider[] = clientEnv.NEXT_PUBLIC_ANALYTICS_ENABLED
- ? [createLoggerAnalyticsProvider(logger)]
- : [createNoopAnalyticsProvider()];
+    /**
+     * No vendor is wired, by design: adding one is an adapter here, not an SDK call in a
+     * component. `NEXT_PUBLIC_ANALYTICS_ENABLED` is the master switch, and it is off by
+     * default so a fork of this repo does not start emitting events to a stranger's
+     * project.
+     */
+    const providers: AnalyticsProvider[] = clientEnv.NEXT_PUBLIC_ANALYTICS_ENABLED
+      ? [createLoggerAnalyticsProvider(logger)]
+      : [createNoopAnalyticsProvider()];
 
- /**
- * Consent is read from storage and defaults to **undecided** (requirements 15, 16).
- *
- * The inverse of the server, and deliberately: server-side events carry no browser
- * identity, client-side ones do. Until the user decides, events are buffered rather
- * than sent — so the analytics call sites are written once, unconditionally, and
- * consent is enforced in one place instead of in every component that tracks.
- *
- * ### Why the stored state is passed through unchanged
- *
- * It reads as though a missing decision should become `denyAll(now())`, and that was the
- * first version. It is wrong twice.
- *
- * Behaviourally, `denied` and `unknown` are not the same state to `createAnalytics`:
- * `denied` *drops* events, `unknown` *buffers* them until the banner is answered. Coercing
- * an undecided visitor to `denied` therefore threw away exactly the events the buffer
- * exists to keep — including the one fired on the page where they then accepted. The
- * storage entry already falls back to `DEFAULT_CONSENT`, which is `unknown`.
- *
- * Mechanically, it also stamped a `decidedAt` for a decision nobody made — and that
- * timestamp was a clock read during render. Under `cacheComponents` a clock read while
- * prerendering is a non-deterministic operation, so every route whose tree resolved this
- * token during SSR (the marketing layout does, through the consent banner) abandoned its
- * prerender and shipped a client-rendered shell instead — no headings, no copy, no
- * structured data in the HTML. An analytics default silently cost the public site its
- * server-rendered content.
- */
- const stored = createConsentStore(c.resolve(LOCAL_STORAGE_DRIVER)).get();
+    /**
+     * Consent is read from storage and defaults to **undecided** (requirements 15, 16).
+     *
+     * The inverse of the server, and deliberately: server-side events carry no browser
+     * identity, client-side ones do. Until the user decides, events are buffered rather
+     * than sent — so the analytics call sites are written once, unconditionally, and
+     * consent is enforced in one place instead of in every component that tracks.
+     *
+     * ### Why the stored state is passed through unchanged
+     *
+     * It reads as though a missing decision should become `denyAll(now())`, and that was the
+     * first version. It is wrong twice.
+     *
+     * Behaviourally, `denied` and `unknown` are not the same state to `createAnalytics`:
+     * `denied` *drops* events, `unknown` *buffers* them until the banner is answered. Coercing
+     * an undecided visitor to `denied` therefore threw away exactly the events the buffer
+     * exists to keep — including the one fired on the page where they then accepted. The
+     * storage entry already falls back to `DEFAULT_CONSENT`, which is `unknown`.
+     *
+     * Mechanically, it also stamped a `decidedAt` for a decision nobody made — and that
+     * timestamp was a clock read during render. Under `cacheComponents` a clock read while
+     * prerendering is a non-deterministic operation, so every route whose tree resolved this
+     * token during SSR (the marketing layout does, through the consent banner) abandoned its
+     * prerender and shipped a client-rendered shell instead — no headings, no copy, no
+     * structured data in the HTML. An analytics default silently cost the public site its
+     * server-rendered content.
+     */
+    const stored = createConsentStore(c.resolve(LOCAL_STORAGE_DRIVER)).get();
 
- return createAnalytics({
- providers,
- logger,
- initialConsent: stored,
- superProperties: {
- environment: appConfig.environment,
- release: appConfig.commitSha,
- surface: 'client',
- },
- now,
- });
- });
+    return createAnalytics({
+      providers,
+      logger,
+      initialConsent: stored,
+      superProperties: {
+        environment: appConfig.environment,
+        release: appConfig.commitSha,
+        surface: 'client',
+      },
+      now,
+    });
+  });
 
- container.register(NETWORK_MONITOR, (c) =>
- /**
- * Safe to construct during the SSR pass of this component: the monitor feature-detects
- * at construction and returns `SERVER_NETWORK_STATUS` with no listeners attached when
- * there is no `window`.
- */
- createBrowserNetworkMonitor({ now: epochMillis(c.resolve(CLOCK)) }),
- );
+  container.register(NETWORK_MONITOR, (c) =>
+    /**
+     * Safe to construct during the SSR pass of this component: the monitor feature-detects
+     * at construction and returns `SERVER_NETWORK_STATUS` with no listeners attached when
+     * there is no `window`.
+     */
+    createBrowserNetworkMonitor({ now: epochMillis(c.resolve(CLOCK)) }),
+  );
 
- container.register(HTTP_CLIENT, (c) => {
- const logger = c.resolve(LOGGER).child('http');
+  container.register(HTTP_CLIENT, (c) => {
+    const logger = c.resolve(LOGGER).child('http');
 
- return createHttpClient({
- /**
- * Same-origin only from the browser. A client-side request to a third party would
- * either leak the user's IP and referrer to it or fail CORS; anything that genuinely
- * needs an upstream goes through a Route Handler, where the egress allowlist applies.
- */
- baseUrl: clientEnv.NEXT_PUBLIC_APP_URL,
- interceptors: [
- loggingInterceptor(logger),
- // Double-submit CSRF: the token is echoed from a readable cookie into a header that
- // a cross-site form post cannot set.
- csrfInterceptor(() => readCookie(COOKIE_NAMES.csrf)),
- ],
- logger,
- now: epochMillis(c.resolve(CLOCK)),
- });
- });
+    return createHttpClient({
+      /**
+       * Same-origin only from the browser. A client-side request to a third party would
+       * either leak the user's IP and referrer to it or fail CORS; anything that genuinely
+       * needs an upstream goes through a Route Handler, where the egress allowlist applies.
+       */
+      baseUrl: clientEnv.NEXT_PUBLIC_APP_URL,
+      interceptors: [
+        loggingInterceptor(logger),
+        // Double-submit CSRF: the token is echoed from a readable cookie into a header that
+        // a cross-site form post cannot set.
+        csrfInterceptor(() => readCookie(COOKIE_NAMES.csrf)),
+      ],
+      logger,
+      now: epochMillis(c.resolve(CLOCK)),
+    });
+  });
 
- container.register(FLAGS_SERVICE, (c) => {
- const analytics = c.resolve(ANALYTICS);
+  container.register(FLAGS_SERVICE, (c) => {
+    const analytics = c.resolve(ANALYTICS);
 
- return createFlags({
- /**
- * Order is precedence. The override provider — a developer's local toggles, ignored
- * entirely in production builds — is consulted before the static defaults, so a flag
- * can be flipped in devtools without a rebuild.
- */
- providers: [
- createOverrideFlagProvider(c.resolve(LOCAL_STORAGE_DRIVER)),
- createStaticFlagProvider({}),
- ],
- context: { environment: appConfig.environment },
- logger: c.resolve(LOGGER).child('flags'),
- onEvaluate: (name: FlagName, value: FlagValue) => {
- analytics.track('feature_flag.evaluated', { flag: name, value: String(value) });
- },
- });
- });
+    return createFlags({
+      /**
+       * Order is precedence. The override provider — a developer's local toggles, ignored
+       * entirely in production builds — is consulted before the static defaults, so a flag
+       * can be flipped in devtools without a rebuild.
+       */
+      providers: [
+        createOverrideFlagProvider(c.resolve(LOCAL_STORAGE_DRIVER)),
+        createStaticFlagProvider({}),
+      ],
+      context: { environment: appConfig.environment },
+      logger: c.resolve(LOGGER).child('flags'),
+      onEvaluate: (name: FlagName, value: FlagValue) => {
+        analytics.track('feature_flag.evaluated', { flag: name, value: String(value) });
+      },
+    });
+  });
 
- container.register(TRANSLATOR, (c) =>
- createTranslator({
- locale: DEFAULT_LOCALE,
- messages: en,
- logger: c.resolve(LOGGER).child('i18n'),
- }),
- );
+  container.register(TRANSLATOR, (c) =>
+    createTranslator({
+      locale: DEFAULT_LOCALE,
+      messages: en,
+      logger: c.resolve(LOGGER).child('i18n'),
+    }),
+  );
 
- return container;
+  return container;
 }
 
 /**
@@ -247,14 +246,14 @@ function buildClientContainer(): Container {
 let browserContainer: Container | null = null;
 
 function getClientContainer(): Container {
- if (isServer) return buildClientContainer();
+  if (isServer) return buildClientContainer();
 
- browserContainer ??= buildClientContainer();
- return browserContainer;
+  browserContainer ??= buildClientContainer();
+  return browserContainer;
 }
 
 export interface ProvidersProps {
- children: ReactNode;
+  children: ReactNode;
 }
 
 /**
@@ -266,26 +265,26 @@ export interface ProvidersProps {
  * difference between a recoverable error page and a bare white screen.
  */
 export function Providers({ children }: ProvidersProps) {
- const container = useMemo(() => getClientContainer(), []);
+  const container = useMemo(() => getClientContainer(), []);
 
- return (
- <ContainerProvider container={container}>
- <NetworkProvider monitor={container.resolve(NETWORK_MONITOR)}>
- {/*
- * The driver is injected rather than imported so the provider stays testable: a
- * test renders it with `createMemoryStorageDriver()` and asserts persistence
- * without touching a real `localStorage` or leaking state between test files.
- */}
- <ThemeProvider driver={container.resolve(LOCAL_STORAGE_DRIVER)}>
- {children}
- {/*
- * One toast viewport for the whole app, mounted last so its fixed-position
- * container paints above everything. `toast()` is called from anywhere; nothing
- * else ever renders a `<Toaster />`.
- */}
- <Toaster />
- </ThemeProvider>
- </NetworkProvider>
- </ContainerProvider>
- );
+  return (
+    <ContainerProvider container={container}>
+      <NetworkProvider monitor={container.resolve(NETWORK_MONITOR)}>
+        {/*
+         * The driver is injected rather than imported so the provider stays testable: a
+         * test renders it with `createMemoryStorageDriver()` and asserts persistence
+         * without touching a real `localStorage` or leaking state between test files.
+         */}
+        <ThemeProvider driver={container.resolve(LOCAL_STORAGE_DRIVER)}>
+          {children}
+          {/*
+           * One toast viewport for the whole app, mounted last so its fixed-position
+           * container paints above everything. `toast()` is called from anywhere; nothing
+           * else ever renders a `<Toaster />`.
+           */}
+          <Toaster />
+        </ThemeProvider>
+      </NetworkProvider>
+    </ContainerProvider>
+  );
 }

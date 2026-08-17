@@ -50,79 +50,79 @@ const FOOTER_GUIDE_COUNT = 5;
  * sequence rather than by importance to us is why "Pricing" is third and not first.
  */
 export function siteNavItems(t: Translator): readonly SiteNavItem[] {
- return [
- { href: ROUTES.howItWorks, label: t.t('nav.howItWorks') },
- { href: ROUTES.useCases, label: t.t('nav.useCases') },
- { href: ROUTES.pricing, label: t.t('nav.pricing') },
- { href: ROUTES.security, label: t.t('nav.security') },
- ];
+  return [
+    { href: ROUTES.howItWorks, label: t.t('nav.howItWorks') },
+    { href: ROUTES.useCases, label: t.t('nav.useCases') },
+    { href: ROUTES.pricing, label: t.t('nav.pricing') },
+    { href: ROUTES.security, label: t.t('nav.security') },
+  ];
 }
 
 export interface SiteFooterContentDeps {
- readonly t: Translator;
- /** The full corpus. The footer takes the first few; it does not choose them. */
- readonly guides: readonly GuideSummary[];
- /** How many guides in total, for the "all guides" label. Usually `guides.length`. */
- readonly guideCount: number;
+  readonly t: Translator;
+  /** The full corpus. The footer takes the first few; it does not choose them. */
+  readonly guides: readonly GuideSummary[];
+  /** How many guides in total, for the "all guides" label. Usually `guides.length`. */
+  readonly guideCount: number;
 }
 
 export function siteFooterGroups({
- t,
- guides,
- guideCount,
+  t,
+  guides,
+  guideCount,
 }: SiteFooterContentDeps): readonly FooterGroup[] {
- const guideLinks: readonly FooterLink[] = [
- ...guides.slice(0, FOOTER_GUIDE_COUNT).map((guide) => ({
- /**
- * The cast is the one `typedRoutes` cannot check and does not need to.
- *
- * `Route` is a union of literal patterns, so it verifies strings the compiler can see.
- * A slug read from the corpus is not one of those. What guarantees this URL resolves is
- * `generateStaticParams` on `/for/[slug]`, which is fed by the same corpus — the guide
- * and its route come from one list, so a link here cannot outlive its page.
- */
- href: ROUTES.guide(guide.slug) as Route,
- label: guide.heading,
- })),
- { href: ROUTES.useCases, label: t.t('footer.allGuides', { count: guideCount }) },
- ];
+  const guideLinks: readonly FooterLink[] = [
+    ...guides.slice(0, FOOTER_GUIDE_COUNT).map((guide) => ({
+      /**
+       * The cast is the one `typedRoutes` cannot check and does not need to.
+       *
+       * `Route` is a union of literal patterns, so it verifies strings the compiler can see.
+       * A slug read from the corpus is not one of those. What guarantees this URL resolves is
+       * `generateStaticParams` on `/for/[slug]`, which is fed by the same corpus — the guide
+       * and its route come from one list, so a link here cannot outlive its page.
+       */
+      href: ROUTES.guide(guide.slug) as Route,
+      label: guide.heading,
+    })),
+    { href: ROUTES.useCases, label: t.t('footer.allGuides', { count: guideCount }) },
+  ];
 
- return [
- {
- title: t.t('footer.product'),
- links: [
- { href: ROUTES.howItWorks, label: t.t('nav.howItWorks') },
- { href: ROUTES.pricing, label: t.t('nav.pricing') },
- { href: ROUTES.security, label: t.t('nav.security') },
- { href: ROUTES.supportedFormats as Route, label: 'Supported Formats' },
-				{ href: ROUTES.about, label: 'About Us' },
-			],
-		},
-		{
-			title: 'Support',
-			links: [
-				{ href: ROUTES.faq, label: 'FAQ' },
-				{ href: ROUTES.support, label: 'Help & Support' },
-				{ href: ROUTES.contact as Route, label: 'Contact Us' },
- ],
- },
- {
- title: t.t('footer.getStarted'),
- links: [
- { href: ROUTES.scan, label: t.t('cta.analyze') },
- { href: ROUTES.login, label: t.t('common.signIn') },
- { href: ROUTES.useCases, label: t.t('nav.useCases') },
- ],
- },
- {
- title: t.t('footer.legal'),
- links: [
- { href: ROUTES.terms, label: t.t('footer.terms') },
- { href: ROUTES.privacy, label: t.t('footer.privacy') },
- { href: ROUTES.cookies, label: t.t('footer.cookies') },
- ],
- },
- ];
+  return [
+    {
+      title: t.t('footer.product'),
+      links: [
+        { href: ROUTES.howItWorks, label: t.t('nav.howItWorks') },
+        { href: ROUTES.pricing, label: t.t('nav.pricing') },
+        { href: ROUTES.security, label: t.t('nav.security') },
+        { href: ROUTES.supportedFormats as Route, label: 'Supported Formats' },
+        { href: ROUTES.about, label: 'About Us' },
+      ],
+    },
+    {
+      title: 'Support',
+      links: [
+        { href: ROUTES.faq, label: 'FAQ' },
+        { href: ROUTES.support, label: 'Help & Support' },
+        { href: ROUTES.contact as Route, label: 'Contact Us' },
+      ],
+    },
+    {
+      title: t.t('footer.getStarted'),
+      links: [
+        { href: ROUTES.scan, label: t.t('cta.analyze') },
+        { href: ROUTES.login, label: t.t('common.signIn') },
+        { href: ROUTES.useCases, label: t.t('nav.useCases') },
+      ],
+    },
+    {
+      title: t.t('footer.legal'),
+      links: [
+        { href: ROUTES.terms, label: t.t('footer.terms') },
+        { href: ROUTES.privacy, label: t.t('footer.privacy') },
+        { href: ROUTES.cookies, label: t.t('footer.cookies') },
+      ],
+    },
+  ];
 }
 
 /**
@@ -134,9 +134,9 @@ export function siteFooterGroups({
  * different ways. Duplicating three links is cheaper than being wrong for one of them.
  */
 export function siteLegalLinks(t: Translator): readonly FooterLink[] {
- return [
- { href: ROUTES.terms, label: t.t('footer.terms') },
- { href: ROUTES.privacy, label: t.t('footer.privacy') },
- { href: ROUTES.cookies, label: t.t('footer.cookies') },
- ];
+  return [
+    { href: ROUTES.terms, label: t.t('footer.terms') },
+    { href: ROUTES.privacy, label: t.t('footer.privacy') },
+    { href: ROUTES.cookies, label: t.t('footer.cookies') },
+  ];
 }

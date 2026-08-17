@@ -33,14 +33,14 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1, 
+      wheelMultiplier: 1,
       touchMultiplier: 2,
     });
 
     setTimeout(() => setLenis(lenisInstance), 0);
 
     // Use native requestAnimationFrame for maximum performance
-    // We REMOVED the manual ScrollTrigger.update() call. Lenis drives native scroll, 
+    // We REMOVED the manual ScrollTrigger.update() call. Lenis drives native scroll,
     // so GSAP will automatically detect it without forcing expensive sync layouts!
     let rafId: number;
     function raf(time: number) {

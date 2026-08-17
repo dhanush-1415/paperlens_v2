@@ -20,57 +20,57 @@
 const segment = (value: string): string => encodeURIComponent(value);
 
 export const ENDPOINTS = {
- auth: {
- session: '/auth/session',
- signIn: '/auth/sign-in',
- signOut: '/auth/sign-out',
- signUp: '/auth/sign-up',
- refresh: '/auth/refresh',
- requestPasswordReset: '/auth/password-reset',
- confirmPasswordReset: '/auth/password-reset/confirm',
- verifyEmail: '/auth/verify-email',
- },
+  auth: {
+    session: '/auth/session',
+    signIn: '/auth/sign-in',
+    signOut: '/auth/sign-out',
+    signUp: '/auth/sign-up',
+    refresh: '/auth/refresh',
+    requestPasswordReset: '/auth/password-reset',
+    confirmPasswordReset: '/auth/password-reset/confirm',
+    verifyEmail: '/auth/verify-email',
+  },
 
- account: {
- profile: '/account/profile',
- preferences: '/account/preferences',
- usage: '/account/usage',
- plan: '/account/plan',
- deleteAccount: '/account',
- },
+  account: {
+    profile: '/account/profile',
+    preferences: '/account/preferences',
+    usage: '/account/usage',
+    plan: '/account/plan',
+    deleteAccount: '/account',
+  },
 
- documents: {
- list: '/documents',
- create: '/documents',
- byId: (id: string) => `/documents/${segment(id)}`,
- analyze: (id: string) => `/documents/${segment(id)}/analyze`,
- reanalyze: (id: string) => `/documents/${segment(id)}/reanalyze`,
- findings: (id: string) => `/documents/${segment(id)}/findings`,
- chat: (id: string) => `/documents/${segment(id)}/chat`,
- export: (id: string) => `/documents/${segment(id)}/export`,
- },
+  documents: {
+    list: '/documents',
+    create: '/documents',
+    byId: (id: string) => `/documents/${segment(id)}`,
+    analyze: (id: string) => `/documents/${segment(id)}/analyze`,
+    reanalyze: (id: string) => `/documents/${segment(id)}/reanalyze`,
+    findings: (id: string) => `/documents/${segment(id)}/findings`,
+    chat: (id: string) => `/documents/${segment(id)}/chat`,
+    export: (id: string) => `/documents/${segment(id)}/export`,
+  },
 
- vault: {
- folders: '/vault/folders',
- folder: (folderId: string) => `/vault/folders/${segment(folderId)}`,
- move: '/vault/move',
- },
+  vault: {
+    folders: '/vault/folders',
+    folder: (folderId: string) => `/vault/folders/${segment(folderId)}`,
+    move: '/vault/move',
+  },
 
- sharing: {
- create: '/shares',
- byToken: (token: string) => `/shares/${segment(token)}`,
- revoke: (token: string) => `/shares/${segment(token)}`,
- },
+  sharing: {
+    create: '/shares',
+    byToken: (token: string) => `/shares/${segment(token)}`,
+    revoke: (token: string) => `/shares/${segment(token)}`,
+  },
 
- content: {
- posts: '/content/posts',
- post: (slug: string) => `/content/posts/${segment(slug)}`,
- useCases: '/content/use-cases',
- useCase: (slug: string) => `/content/use-cases/${segment(slug)}`,
- },
+  content: {
+    posts: '/content/posts',
+    post: (slug: string) => `/content/posts/${segment(slug)}`,
+    useCases: '/content/use-cases',
+    useCase: (slug: string) => `/content/use-cases/${segment(slug)}`,
+  },
 
- support: {
- contact: '/support/contact',
- newsletter: '/support/newsletter',
- },
+  support: {
+    contact: '/support/contact',
+    newsletter: '/support/newsletter',
+  },
 } as const;

@@ -3,9 +3,9 @@ import { cache } from 'react';
 
 import { unwrapOrThrow } from '@/core/result/result';
 import {
- GET_LEGAL_DOCUMENT,
- LegalDocumentView,
- type LegalDocumentSlug,
+  GET_LEGAL_DOCUMENT,
+  LegalDocumentView,
+  type LegalDocumentSlug,
 } from '@/features/marketing';
 import { getRequestScope } from '@/server/bootstrap';
 
@@ -43,8 +43,8 @@ import { getRequestScope } from '@/server/bootstrap';
  * difference between one and two network calls once this is a CMS.
  */
 const readLegalDocument = cache(async (slug: LegalDocumentSlug) => {
- const getLegalDocument = getRequestScope().resolve(GET_LEGAL_DOCUMENT);
- return unwrapOrThrow(await getLegalDocument(slug));
+  const getLegalDocument = getRequestScope().resolve(GET_LEGAL_DOCUMENT);
+  return unwrapOrThrow(await getLegalDocument(slug));
 });
 
 /**
@@ -55,22 +55,22 @@ const readLegalDocument = cache(async (slug: LegalDocumentSlug) => {
  * can find without asking sales for a link.
  */
 export async function legalMetadata(slug: LegalDocumentSlug): Promise<Metadata> {
- const document = await readLegalDocument(slug);
+  const document = await readLegalDocument(slug);
 
- return {
- title: document.title,
- description: document.description,
- alternates: { canonical: `/${slug}` },
- openGraph: {
- type: 'article',
- title: document.title,
- description: document.description,
- url: `/${slug}`,
- },
- };
+  return {
+    title: document.title,
+    description: document.description,
+    alternates: { canonical: `/${slug}` },
+    openGraph: {
+      type: 'article',
+      title: document.title,
+      description: document.description,
+      url: `/${slug}`,
+    },
+  };
 }
 
 export async function LegalPage({ slug }: { slug: LegalDocumentSlug }) {
- const document = await readLegalDocument(slug);
- return <LegalDocumentView document={document} />;
+  const document = await readLegalDocument(slug);
+  return <LegalDocumentView document={document} />;
 }

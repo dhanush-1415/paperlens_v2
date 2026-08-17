@@ -65,123 +65,129 @@ import { useScrolledPast, useScrolledDown } from '../primitives/use-scroll';
 const subscribeNever = () => () => {};
 
 export interface StickyCtaProps {
- /** The offer. Short — this is read at a glance while scrolling. */
- message: string;
- ctaLabel: string;
- ctaHref: Route;
- dismissLabel: string;
- /**
- * Distinguishes one campaign's dismissal from another's, so replacing the message does not
- * inherit the old one's dismissals. Part of the storage key.
- */
- campaignId: string;
- /** Fraction of the page scrolled before it appears. `0.6` by default. */
- threshold?: number;
- className?: string;
+  /** The offer. Short — this is read at a glance while scrolling. */
+  message: string;
+  ctaLabel: string;
+  ctaHref: Route;
+  dismissLabel: string;
+  /**
+   * Distinguishes one campaign's dismissal from another's, so replacing the message does not
+   * inherit the old one's dismissals. Part of the storage key.
+   */
+  campaignId: string;
+  /** Fraction of the page scrolled before it appears. `0.6` by default. */
+  threshold?: number;
+  className?: string;
 }
 
 export function StickyCta({
- message,
- ctaLabel,
- ctaHref,
- dismissLabel,
- campaignId,
- threshold = 0.6,
- className,
+  message,
+  ctaLabel,
+  ctaHref,
+  dismissLabel,
+  campaignId,
+  threshold = 0.6,
+  className,
 }: StickyCtaProps) {
- const driver = useService(SESSION_STORAGE_DRIVER);
- const storageKey = `pl:sticky-cta:${campaignId}`;
+  const driver = useService(SESSION_STORAGE_DRIVER);
+  const storageKey = `pl:sticky-cta:${campaignId}`;
 
- const isPastThreshold = useScrolledPast(threshold);
- const isScrolledDown = useScrolledDown(10);
+  const isPastThreshold = useScrolledPast(threshold);
+  const isScrolledDown = useScrolledDown(10);
 
- /**
- * Dismissed until storage says otherwise — note the server snapshot is `true`.
- *
- * The inverse would render the bar for one frame on every page load before the read
- * resolves: a flash of a component the user has already closed, which is the most annoying
- * possible version of this control. Erring towards "hidden" costs nothing, because the bar
- * is gated on a scroll threshold anyway and cannot be needed on the first frame.
- */
- const wasDismissed = useSyncExternalStore(
- subscribeNever,
- useCallback(() => driver.getItem(storageKey) === '1', [driver, storageKey]),
- () => true,
- );
+  /**
+   * Dismissed until storage says otherwise — note the server snapshot is `true`.
+   *
+   * The inverse would render the bar for one frame on every page load before the read
+   * resolves: a flash of a component the user has already closed, which is the most annoying
+   * possible version of this control. Erring towards "hidden" costs nothing, because the bar
+   * is gated on a scroll threshold anyway and cannot be needed on the first frame.
+   */
+  const wasDismissed = useSyncExternalStore(
+    subscribeNever,
+    useCallback(() => driver.getItem(storageKey) === '1', [driver, storageKey]),
+    () => true,
+  );
 
- /**
- * The dismissal that happened in this render tree, tracked separately.
- *
- * Writing to `sessionStorage` does not notify `useSyncExternalStore` — there is no event to
- * fire, and inventing one would mean a module-level emitter for a value only this component
- * reads. React state is the honest way to say "the user just clicked close".
- */
- const [wasJustDismissed, setJustDismissed] = useState(false);
+  /**
+   * The dismissal that happened in this render tree, tracked separately.
+   *
+   * Writing to `sessionStorage` does not notify `useSyncExternalStore` — there is no event to
+   * fire, and inventing one would mean a module-level emitter for a value only this component
+   * reads. React state is the honest way to say "the user just clicked close".
+   */
+  const [wasJustDismissed, setJustDismissed] = useState(false);
 
- /**
- * Re-arm the CTA if the user scrolls all the way back to the top.
- *
- * The problem with permanent dismissal is that it assumes the user is completely
- * uninterested. Often, they just wanted to read the page without obstruction. If they
- * scroll all the way back to the hero section, it signals a reset of their reading intent.
- * By clearing the dismissal state, the CTA will reappear naturally when they scroll back down.
- */
- useEffect(() => {
-   if (!isScrolledDown) {
-     // eslint-disable-next-line react-hooks/set-state-in-effect
-     if (wasJustDismissed) setJustDismissed(false);
-     
-     // Only access driver if we know it was previously dismissed (avoid unnecessary writes)
-     if (driver.getItem(storageKey) === '1') {
-       driver.removeItem(storageKey);
-     }
-   }
- }, [isScrolledDown, wasJustDismissed, driver, storageKey]);
+  /**
+   * Re-arm the CTA if the user scrolls all the way back to the top.
+   *
+   * The problem with permanent dismissal is that it assumes the user is completely
+   * uninterested. Often, they just wanted to read the page without obstruction. If they
+   * scroll all the way back to the hero section, it signals a reset of their reading intent.
+   * By clearing the dismissal state, the CTA will reappear naturally when they scroll back down.
+   */
+  useEffect(() => {
+    if (!isScrolledDown) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (wasJustDismissed) setJustDismissed(false);
 
- if (wasDismissed || wasJustDismissed || !isPastThreshold) return null;
+      // Only access driver if we know it was previously dismissed (avoid unnecessary writes)
+      if (driver.getItem(storageKey) === '1') {
+        driver.removeItem(storageKey);
+      }
+    }
+  }, [isScrolledDown, wasJustDismissed, driver, storageKey]);
 
- return (
- <div
- role="region"
- aria-label={message}
- className={cn(
- 'fixed inset-x-0 bottom-0 z-40 p-4 sm:p-6',
- 'pb-[max(1rem,env(safe-area-inset-bottom))]',
- /**
- * The entrance, in CSS, with no JavaScript and no animation library.
- *
- * `starting:` compiles to `@starting-style`, which gives the browser a "before" value
- * to transition *from* on first render. The usual alternative is a `useState` flag
- * flipped inside a `requestAnimationFrame` — an extra render, an extra effect, and a
- * bug the first time someone reorders the hooks. Reduced motion is already handled
- * globally in `globals.css`, which collapses every transition to 0.01ms.
- */
- 'transition-[opacity,translate] duration-(--duration-entrance) ease-brand',
- 'starting:translate-y-4 starting:opacity-0',
- className,
- )}
- >
+  if (wasDismissed || wasJustDismissed || !isPastThreshold) return null;
+
+  return (
+    <div
+      role="region"
+      aria-label={message}
+      className={cn(
+        'fixed inset-x-0 bottom-0 z-40 p-4 sm:p-6',
+        'pb-[max(1rem,env(safe-area-inset-bottom))]',
+        /**
+         * The entrance, in CSS, with no JavaScript and no animation library.
+         *
+         * `starting:` compiles to `@starting-style`, which gives the browser a "before" value
+         * to transition *from* on first render. The usual alternative is a `useState` flag
+         * flipped inside a `requestAnimationFrame` — an extra render, an extra effect, and a
+         * bug the first time someone reorders the hooks. Reduced motion is already handled
+         * globally in `globals.css`, which collapses every transition to 0.01ms.
+         */
+        'transition-[opacity,translate] duration-(--duration-entrance) ease-brand',
+        'starting:translate-y-4 starting:opacity-0',
+        className,
+      )}
+    >
       <div
         className={cn(
-          'mx-auto flex flex-col sm:flex-row w-full max-w-4xl items-start sm:items-center gap-4 sm:gap-6 rounded-[1.5rem] sm:rounded-[2.5rem] border border-border-strong/50',
-          'bg-surface-1/90 p-5 sm:py-3 sm:pr-3 sm:pl-8 relative overflow-hidden',
+          'mx-auto flex w-full max-w-4xl flex-col items-start gap-4 rounded-[1.5rem] border border-border-strong/50 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[2.5rem]',
+          'relative overflow-hidden bg-surface-1/90 p-5 sm:py-3 sm:pr-3 sm:pl-8',
           'shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_80px_-20px_rgba(0,0,0,0.7)]',
           'supports-[backdrop-filter]:bg-surface-1/60 supports-[backdrop-filter]:backdrop-blur-3xl',
         )}
       >
         {/* Premium styling: Inner ring and ambient glow */}
-        <div className="absolute inset-0 rounded-[1.5rem] sm:rounded-[2.5rem] ring-1 ring-inset ring-white/40 dark:ring-white/10 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/10 via-transparent to-brand-accent/5 opacity-80 dark:opacity-100 pointer-events-none" />
-        
-        <div className="flex-1 pr-8 sm:pr-0 relative z-10">
-          <p className="text-[15px] sm:text-base font-extrabold text-text-primary leading-snug tracking-tight">
+        <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] ring-1 ring-white/40 ring-inset sm:rounded-[2.5rem] dark:ring-white/10" />
+        <div className="to-brand-accent/5 pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-primary/10 via-transparent opacity-80 dark:opacity-100" />
+
+        <div className="relative z-10 flex-1 pr-8 sm:pr-0">
+          <p className="text-[15px] leading-snug font-extrabold tracking-tight text-text-primary sm:text-base">
             {message}
           </p>
         </div>
 
-        <div className="flex w-full sm:w-auto items-center shrink-0 relative z-10">
-          <Button asChild variant="premium" className="w-full sm:w-auto font-bold hover:shadow-brand-primary/40">
-            <Link href={ctaHref} className="whitespace-nowrap">{ctaLabel}</Link>
+        <div className="relative z-10 flex w-full shrink-0 items-center sm:w-auto">
+          <Button
+            asChild
+            variant="premium"
+            className="w-full font-bold hover:shadow-brand-primary/40 sm:w-auto"
+          >
+            <Link href={ctaHref} className="whitespace-nowrap">
+              {ctaLabel}
+            </Link>
           </Button>
         </div>
 
@@ -193,15 +199,15 @@ export function StickyCta({
           }}
           aria-label={dismissLabel}
           className={cn(
-            'absolute top-4 right-4 sm:static sm:top-auto sm:right-auto relative z-10',
-            'inline-flex size-8 sm:size-11 shrink-0 items-center justify-center rounded-full',
+            'absolute top-4 right-4 z-10 sm:static sm:top-auto sm:right-auto',
+            'inline-flex size-8 shrink-0 items-center justify-center rounded-full sm:size-11',
             'text-text-tertiary transition-all duration-(--duration-micro)',
-            'hover:bg-surface-2 hover:text-text-primary hover:scale-105 active:scale-95 border border-transparent hover:border-border-strong/50'
+            'border border-transparent hover:scale-105 hover:border-border-strong/50 hover:bg-surface-2 hover:text-text-primary active:scale-95',
           )}
         >
           <CloseIcon className="size-4" />
         </button>
       </div>
- </div>
- );
+    </div>
+  );
 }

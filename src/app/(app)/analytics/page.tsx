@@ -5,11 +5,15 @@ export const metadata = {
   title: 'Analytics',
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const params = await searchParams;
   const session = await requireSession();
   const { prisma } = await import('@/server/db/prisma');
-  
+
   let startDate = new Date();
   startDate.setDate(startDate.getDate() - 30);
   let endDate = new Date();
@@ -28,16 +32,24 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
 
   // 1. Total Scans and Growth (filtered by date range)
   const totalScans = await prisma.documentAnalysis.count({
-    where: { ownerId: session.userId, deletedAt: null, analyzedAt: { gte: startDate, lte: endOfDay } }
+    where: {
+      ownerId: session.userId,
+      deletedAt: null,
+      analyzedAt: { gte: startDate, lte: endOfDay },
+    },
   });
-  
+
   // Growth is calculated relative to the prior period of the same length
   const periodDurationMs = endOfDay.getTime() - startDate.getTime();
   const priorPeriodStart = new Date(startDate.getTime() - periodDurationMs);
   const priorPeriodEnd = new Date(startDate.getTime() - 1);
 
   const priorPeriodScans = await prisma.documentAnalysis.count({
-    where: { ownerId: session.userId, deletedAt: null, analyzedAt: { gte: priorPeriodStart, lte: priorPeriodEnd } }
+    where: {
+      ownerId: session.userId,
+      deletedAt: null,
+      analyzedAt: { gte: priorPeriodStart, lte: priorPeriodEnd },
+    },
   });
 
   let totalScansGrowth = '0% this period';
@@ -47,64 +59,80 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
   } else if (totalScans > 0) {
     totalScansGrowth = `+100% prior period`;
   }
-  
+
   // 2. Vault Docs
   const vaultDocs = await prisma.document.count({
-    where: { userId: session.userId }
-  });
-  
-  // 3. Risk Distribution & High Risk
-  const allAnalyses = await prisma.documentAnalysis.findMany({
-    where: { ownerId: session.userId, deletedAt: null, analyzedAt: { gte: startDate, lte: endOfDay } },
-    select: { scoreLevel: true, analyzedAt: true }
+    where: { userId: session.userId },
   });
 
-  const safeCount = allAnalyses.filter(a => a.scoreLevel === 'safe' || a.scoreLevel === 'low').length;
-  const cautionCount = allAnalyses.filter(a => a.scoreLevel === 'caution' || a.scoreLevel === 'medium').length;
-  const criticalCount = allAnalyses.filter(a => a.scoreLevel === 'critical' || a.scoreLevel === 'high').length;
+  // 3. Risk Distribution & High Risk
+  const allAnalyses = await prisma.documentAnalysis.findMany({
+    where: {
+      ownerId: session.userId,
+      deletedAt: null,
+      analyzedAt: { gte: startDate, lte: endOfDay },
+    },
+    select: { scoreLevel: true, analyzedAt: true },
+  });
+
+  const safeCount = allAnalyses.filter(
+    (a) => a.scoreLevel === 'safe' || a.scoreLevel === 'low',
+  ).length;
+  const cautionCount = allAnalyses.filter(
+    (a) => a.scoreLevel === 'caution' || a.scoreLevel === 'medium',
+  ).length;
+  const criticalCount = allAnalyses.filter(
+    (a) => a.scoreLevel === 'critical' || a.scoreLevel === 'high',
+  ).length;
   const highRisk = criticalCount;
-  
+
   const totalSafeCautionCritical = Math.max(1, safeCount + cautionCount + criticalCount);
   const riskDistribution = {
     safePercentage: Math.round((safeCount / totalSafeCautionCritical) * 100),
     cautionPercentage: Math.round((cautionCount / totalSafeCautionCritical) * 100),
-    criticalPercentage: Math.round((criticalCount / totalSafeCautionCritical) * 100)
+    criticalPercentage: Math.round((criticalCount / totalSafeCautionCritical) * 100),
   };
-  
+
   // 4. Recent Activity (Fetch up to 1000 for detailed enterprise report)
   const recentDocs = await prisma.documentAnalysis.findMany({
-    where: { ownerId: session.userId, deletedAt: null, analyzedAt: { gte: startDate, lte: endOfDay } },
+    where: {
+      ownerId: session.userId,
+      deletedAt: null,
+      analyzedAt: { gte: startDate, lte: endOfDay },
+    },
     orderBy: { analyzedAt: 'desc' },
-    take: 1000
+    take: 1000,
   });
-  
-  const recentActivity = recentDocs.map(doc => {
+
+  const recentActivity = recentDocs.map((doc) => {
     let risk: 'safe' | 'caution' | 'critical' = 'safe';
     let status = 'Safe';
     if (doc.scoreLevel === 'critical' || doc.scoreLevel === 'high') {
-      risk = 'critical'; status = 'Critical';
+      risk = 'critical';
+      status = 'Critical';
     } else if (doc.scoreLevel === 'caution' || doc.scoreLevel === 'medium') {
-      risk = 'caution'; status = 'Review';
+      risk = 'caution';
+      status = 'Review';
     }
-    
+
     return {
       file: doc.title,
       time: doc.analyzedAt.toLocaleDateString(),
       status,
-      risk
+      risk,
     };
   });
-  
+
   // 5. Processing Volume for line chart (Group by day)
   const processingMap = new Map<string, number>();
-  
+
   // Initialize map with all dates in range
   for (let d = new Date(startDate); d <= endOfDay; d.setDate(d.getDate() + 1)) {
     const dateKey = d.toISOString().split('T')[0] as string;
     processingMap.set(dateKey, 0);
   }
-  
-  allAnalyses.forEach(doc => {
+
+  allAnalyses.forEach((doc) => {
     const dateStr = doc.analyzedAt.toISOString().split('T')[0] as string;
     if (processingMap.has(dateStr)) {
       processingMap.set(dateStr, processingMap.get(dateStr)! + 1);
@@ -113,28 +141,25 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
 
   const processingVolume = Array.from(processingMap.entries()).map(([date, count]) => ({
     date: new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-    count
+    count,
   }));
 
   // Generate a deterministic but variable "average processing time" based on total scans
-  const avgProcessingTime = totalScans > 0 
-    ? (1.1 + (totalScans % 10) * 0.1).toFixed(1) + "s" 
-    : "0.0s";
-  
-  const data = { 
-    totalScans, 
+  const avgProcessingTime =
+    totalScans > 0 ? (1.1 + (totalScans % 10) * 0.1).toFixed(1) + 's' : '0.0s';
+
+  const data = {
+    totalScans,
     totalScansGrowth,
-    vaultDocs, 
-    highRisk, 
+    vaultDocs,
+    highRisk,
     avgProcessingTime,
-    recentActivity, 
+    recentActivity,
     processingVolume,
     riskDistribution,
     startDate: startDate.toISOString(),
-    endDate: endOfDay.toISOString()
+    endDate: endOfDay.toISOString(),
   };
 
-  return (
-    <AnalyticsPage data={data as any} />
-  );
+  return <AnalyticsPage data={data as any} />;
 }

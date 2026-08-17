@@ -9,8 +9,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next');
 
   // Only allow relative paths for `next` to prevent open-redirect attacks.
-  const redirectTo =
-    next && next.startsWith('/') ? next : DEFAULT_AUTHENTICATED_ROUTE;
+  const redirectTo = next && next.startsWith('/') ? next : DEFAULT_AUTHENTICATED_ROUTE;
 
   if (code) {
     // Build the response object first so we can write cookies directly onto it.
@@ -20,22 +19,18 @@ export async function GET(request: NextRequest) {
     const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
 
     if (supabaseUrl && supabaseKey) {
-      const supabase = createServerClient(
-        supabaseUrl,
-        supabaseKey,
-        {
-          cookies: {
-            getAll() {
-              return request.cookies.getAll();
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                response.cookies.set(name, value, options),
-              );
-            },
+      const supabase = createServerClient(supabaseUrl, supabaseKey, {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options),
+            );
           },
         },
-      );
+      });
 
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 

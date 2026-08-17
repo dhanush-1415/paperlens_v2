@@ -50,172 +50,172 @@ import { Text } from './text';
  * `useNativeDialog` for why the visible panel has to be a separate child.
  */
 const dialogVariants = cva(
- [
- 'group m-0 h-dvh max-h-dvh w-dvw max-w-dvw bg-transparent p-0',
- /*
- * `hidden open:grid`, and not a bare `grid`.
- *
- * The UA stylesheet hides a closed dialog with `dialog:not([open]) { display: none }`,
- * but cascade origin outranks specificity: any author `display` wins over it outright.
- * A host that declares `grid` unconditionally is therefore a `fixed inset-0` transparent
- * sheet sitting over the entire viewport at all times, swallowing every click on the page
- * behind it. It is invisible, so nothing about it looks wrong — the page simply stops
- * responding, on every route that mounts a dialog.
- *
- * `overlay` is in the transition list because it is the property that keeps the element in
- * the top layer while it animates out, and `display` is there with `transition-discrete`
- * so the closed state is deferred to the end of that animation instead of cutting it on
- * the first frame. Both belong here rather than on the panel: the dialog is the element
- * the browser promotes, and the panel is just its child.
- */
- 'fixed inset-0 hidden place-items-center open:grid',
- 'transition-[display,overlay] transition-discrete duration-(--duration-standard)',
- // The backdrop, and its own fade. `::backdrop` inherits custom properties from its
- // originating element, so the theme-reactive `--overlay-scrim` resolves correctly here.
- 'backdrop:bg-(--overlay-scrim)',
- 'backdrop:opacity-0 open:backdrop:opacity-100 starting:open:backdrop:opacity-0',
- 'backdrop:transition-opacity backdrop:duration-(--duration-standard) backdrop:ease-brand',
- ],
- {
- variants: {
- // Padding on the host, so the panel never touches the viewport edge on a phone while
- // the backdrop still covers everything.
- inset: {
- true: 'p-4 sm:p-6',
- false: '',
- },
- },
- defaultVariants: { inset: true },
- },
+  [
+    'group m-0 h-dvh max-h-dvh w-dvw max-w-dvw bg-transparent p-0',
+    /*
+     * `hidden open:grid`, and not a bare `grid`.
+     *
+     * The UA stylesheet hides a closed dialog with `dialog:not([open]) { display: none }`,
+     * but cascade origin outranks specificity: any author `display` wins over it outright.
+     * A host that declares `grid` unconditionally is therefore a `fixed inset-0` transparent
+     * sheet sitting over the entire viewport at all times, swallowing every click on the page
+     * behind it. It is invisible, so nothing about it looks wrong — the page simply stops
+     * responding, on every route that mounts a dialog.
+     *
+     * `overlay` is in the transition list because it is the property that keeps the element in
+     * the top layer while it animates out, and `display` is there with `transition-discrete`
+     * so the closed state is deferred to the end of that animation instead of cutting it on
+     * the first frame. Both belong here rather than on the panel: the dialog is the element
+     * the browser promotes, and the panel is just its child.
+     */
+    'fixed inset-0 hidden place-items-center open:grid',
+    'transition-[display,overlay] transition-discrete duration-(--duration-standard)',
+    // The backdrop, and its own fade. `::backdrop` inherits custom properties from its
+    // originating element, so the theme-reactive `--overlay-scrim` resolves correctly here.
+    'backdrop:bg-(--overlay-scrim)',
+    'backdrop:opacity-0 open:backdrop:opacity-100 starting:open:backdrop:opacity-0',
+    'backdrop:transition-opacity backdrop:duration-(--duration-standard) backdrop:ease-brand',
+  ],
+  {
+    variants: {
+      // Padding on the host, so the panel never touches the viewport edge on a phone while
+      // the backdrop still covers everything.
+      inset: {
+        true: 'p-4 sm:p-6',
+        false: '',
+      },
+    },
+    defaultVariants: { inset: true },
+  },
 );
 
 const panelVariants = cva(
- [
- 'flex w-full flex-col overflow-hidden text-left',
- 'rounded-modal border border-border-subtle bg-surface-overlay',
- 'shadow-card inset-shadow-highlight',
- 'max-h-[min(48rem,calc(100dvh-4rem))]',
- /*
- * Enter/exit, driven by `group-open:` and not `open:`.
- *
- * `open:` compiles to `&:is([open], :popover-open, :open)` — a test on *this* element. The
- * panel is a plain `<div>` and never carries `[open]`, so an `open:` class here matches
- * nothing and the panel stays at its closed keyframe forever: opened, scaled down and
- * fully transparent. `group-open:` tests the `<dialog>` ancestor, which is the element the
- * browser actually toggles.
- */
- 'transition-[opacity,translate,scale] duration-(--duration-standard) ease-brand',
- 'translate-y-2 scale-[0.98] opacity-0',
- 'group-open:translate-y-0 group-open:scale-100 group-open:opacity-100',
- 'starting:group-open:translate-y-2 starting:group-open:scale-[0.98] starting:group-open:opacity-0',
- ],
- {
- variants: {
- size: {
- sm: 'max-w-sm',
- md: 'max-w-lg',
- lg: 'max-w-2xl',
- xl: 'max-w-4xl',
- },
- },
- defaultVariants: { size: 'md' },
- },
+  [
+    'flex w-full flex-col overflow-hidden text-left',
+    'rounded-modal border border-border-subtle bg-surface-overlay',
+    'shadow-card inset-shadow-highlight',
+    'max-h-[min(48rem,calc(100dvh-4rem))]',
+    /*
+     * Enter/exit, driven by `group-open:` and not `open:`.
+     *
+     * `open:` compiles to `&:is([open], :popover-open, :open)` — a test on *this* element. The
+     * panel is a plain `<div>` and never carries `[open]`, so an `open:` class here matches
+     * nothing and the panel stays at its closed keyframe forever: opened, scaled down and
+     * fully transparent. `group-open:` tests the `<dialog>` ancestor, which is the element the
+     * browser actually toggles.
+     */
+    'transition-[opacity,translate,scale] duration-(--duration-standard) ease-brand',
+    'translate-y-2 scale-[0.98] opacity-0',
+    'group-open:translate-y-0 group-open:scale-100 group-open:opacity-100',
+    'starting:group-open:translate-y-2 starting:group-open:scale-[0.98] starting:group-open:opacity-0',
+  ],
+  {
+    variants: {
+      size: {
+        sm: 'max-w-sm',
+        md: 'max-w-lg',
+        lg: 'max-w-2xl',
+        xl: 'max-w-4xl',
+      },
+    },
+    defaultVariants: { size: 'md' },
+  },
 );
 
 export interface DialogProps extends VariantProps<typeof panelVariants> {
- open: boolean;
- /** Called on every close path. The owner flips `open` to `false` in response. */
- onClose: () => void;
- /** The accessible name. Required — see the file header. */
- title: string;
- /** Optional supporting line, wired to `aria-describedby`. */
- description?: string;
- /** The actions row. Primary action last, matching platform convention on the web. */
- footer?: ReactNode;
- children?: ReactNode;
- /**
- * Off for a destructive confirm or a form with unsaved input, where a misplaced click
- * should not discard work. Esc still closes; that is a deliberate keystroke.
- */
- dismissOnBackdropClick?: boolean;
- className?: string;
+  open: boolean;
+  /** Called on every close path. The owner flips `open` to `false` in response. */
+  onClose: () => void;
+  /** The accessible name. Required — see the file header. */
+  title: string;
+  /** Optional supporting line, wired to `aria-describedby`. */
+  description?: string;
+  /** The actions row. Primary action last, matching platform convention on the web. */
+  footer?: ReactNode;
+  children?: ReactNode;
+  /**
+   * Off for a destructive confirm or a form with unsaved input, where a misplaced click
+   * should not discard work. Esc still closes; that is a deliberate keystroke.
+   */
+  dismissOnBackdropClick?: boolean;
+  className?: string;
 }
 
 export function Dialog({
- open,
- onClose,
- title,
- description,
- footer,
- children,
- size,
- dismissOnBackdropClick = true,
- className,
+  open,
+  onClose,
+  title,
+  description,
+  footer,
+  children,
+  size,
+  dismissOnBackdropClick = true,
+  className,
 }: DialogProps) {
- const { ref, onClick } = useNativeDialog({ open, onClose, dismissOnBackdropClick });
+  const { ref, onClick } = useNativeDialog({ open, onClose, dismissOnBackdropClick });
 
- // Derived from `title` rather than `useId` so the ids are stable across a re-render that
- // changes the title, and readable in the accessibility inspector.
- const titleId = 'dialog-title';
- const descriptionId = 'dialog-description';
+  // Derived from `title` rather than `useId` so the ids are stable across a re-render that
+  // changes the title, and readable in the accessibility inspector.
+  const titleId = 'dialog-title';
+  const descriptionId = 'dialog-description';
 
- return (
- <dialog
- ref={ref}
- onClick={onClick}
- aria-labelledby={titleId}
- aria-describedby={description ? descriptionId : undefined}
- className={cn(dialogVariants())}
- >
- {/* `onClick` stops here so a click inside the panel is never mistaken for the backdrop
+  return (
+    <dialog
+      ref={ref}
+      onClick={onClick}
+      aria-labelledby={titleId}
+      aria-describedby={description ? descriptionId : undefined}
+      className={cn(dialogVariants())}
+    >
+      {/* `onClick` stops here so a click inside the panel is never mistaken for the backdrop
  by an ancestor handler. The dialog's own handler already checks `event.target`, but
  this makes the boundary explicit for anything added later. */}
- <div className={cn(panelVariants({ size }), className)}>
- <header className="flex items-start gap-4 px-6 pt-6 pb-4">
- <div className="min-w-0 flex-1">
- <Heading level={2} size="md" id={titleId}>
- {title}
- </Heading>
- {description ? (
- <Text id={descriptionId} size="sm" className="mt-1">
- {description}
- </Text>
- ) : null}
- </div>
- {/*
+      <div className={cn(panelVariants({ size }), className)}>
+        <header className="flex items-start gap-4 px-6 pt-6 pb-4">
+          <div className="min-w-0 flex-1">
+            <Heading level={2} size="md" id={titleId}>
+              {title}
+            </Heading>
+            {description ? (
+              <Text id={descriptionId} size="sm" className="mt-1">
+                {description}
+              </Text>
+            ) : null}
+          </div>
+          {/*
  A real close button, not just Esc. Esc is invisible, unavailable on touch, and
  the first thing a keyboard-only user tries is Tab — which lands here.
  */}
- <Button
- type="button"
- variant="ghost"
- size="sm"
- iconOnly
- aria-label="Close dialog"
- onClick={onClose}
- className="-me-2 -mt-2 shrink-0"
- >
- <CloseIcon className="size-4" />
- </Button>
- </header>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            iconOnly
+            aria-label="Close dialog"
+            onClick={onClose}
+            className="-me-2 -mt-2 shrink-0"
+          >
+            <CloseIcon className="size-4" />
+          </Button>
+        </header>
 
- {/*
+        {/*
  The only scrolling region. `overscroll-contain` stops a flick at the bottom of a
  long dialog from chaining to the page behind it — which `overflow: hidden` on
  `<html>` mostly prevents, but not on iOS.
  */}
- <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6">{children}</div>
 
- {footer ? (
- <footer className="flex flex-col-reverse gap-2 border-t border-border-subtle px-6 py-4 sm:flex-row sm:justify-end">
- {footer}
- </footer>
- ) : (
- <div className="pb-6" />
- )}
- </div>
- </dialog>
- );
+        {footer ? (
+          <footer className="flex flex-col-reverse gap-2 border-t border-border-subtle px-6 py-4 sm:flex-row sm:justify-end">
+            {footer}
+          </footer>
+        ) : (
+          <div className="pb-6" />
+        )}
+      </div>
+    </dialog>
+  );
 }
 
 export { dialogVariants, panelVariants };

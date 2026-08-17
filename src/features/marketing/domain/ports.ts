@@ -29,35 +29,35 @@ import { type LegalDocument, type LegalDocumentSlug } from './legal';
 import { type PricingPlan } from './pricing';
 
 export interface ContentRepository {
- /** Every guide, in the order the hub page should present them. */
- listGuides(): Promise<Result<readonly GuideSummary[], AppError>>;
+  /** Every guide, in the order the hub page should present them. */
+  listGuides(): Promise<Result<readonly GuideSummary[], AppError>>;
 
- /**
- * One guide, or `null` when the slug does not name one.
- *
- * `null` inside `ok` rather than an `err`: see the note above. The route maps `ok(null)` to
- * `notFound()` and any `err` to the error boundary, and those are genuinely different pages.
- */
- getGuide(slug: string): Promise<Result<DocumentGuide | null, AppError>>;
+  /**
+   * One guide, or `null` when the slug does not name one.
+   *
+   * `null` inside `ok` rather than an `err`: see the note above. The route maps `ok(null)` to
+   * `notFound()` and any `err` to the error boundary, and those are genuinely different pages.
+   */
+  getGuide(slug: string): Promise<Result<DocumentGuide | null, AppError>>;
 
- /**
- * Every slug, for `generateStaticParams`.
- *
- * Separate from `listGuides` because it runs at build time for all 25 routes and needs
- * nothing but the identifiers — a CMS adapter can answer it with a projection instead of
- * fetching every body.
- */
- listGuideSlugs(): Promise<Result<readonly string[], AppError>>;
+  /**
+   * Every slug, for `generateStaticParams`.
+   *
+   * Separate from `listGuides` because it runs at build time for all 25 routes and needs
+   * nothing but the identifiers — a CMS adapter can answer it with a projection instead of
+   * fetching every body.
+   */
+  listGuideSlugs(): Promise<Result<readonly string[], AppError>>;
 
- getPricing(): Promise<Result<PricingPlan, AppError>>;
+  getPricing(): Promise<Result<PricingPlan, AppError>>;
 
- /**
- * One legal document.
- *
- * The slug is the closed union rather than a string, so there is no not-found case: the
- * three documents exist for as long as the product does, and a route that could 404 its own
- * terms of service is a route with a bug in it. That is the difference between this and
- * `getGuide` — a guide corpus is editorial and open-ended; a legal corpus is not.
- */
- getLegalDocument(slug: LegalDocumentSlug): Promise<Result<LegalDocument, AppError>>;
+  /**
+   * One legal document.
+   *
+   * The slug is the closed union rather than a string, so there is no not-found case: the
+   * three documents exist for as long as the product does, and a route that could 404 its own
+   * terms of service is a route with a bug in it. That is the difference between this and
+   * `getGuide` — a guide corpus is editorial and open-ended; a legal corpus is not.
+   */
+  getLegalDocument(slug: LegalDocumentSlug): Promise<Result<LegalDocument, AppError>>;
 }

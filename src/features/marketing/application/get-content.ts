@@ -22,32 +22,32 @@ import { type AppError } from '@/core/errors/app-error';
 import { isErr, ok, type Result } from '@/core/result/result';
 
 import {
- type ContentRepository,
- type DocumentGuide,
- type GuideCategory,
- type GuideSummary,
- type LegalDocument,
- type LegalDocumentSlug,
- type PricingPlan,
+  type ContentRepository,
+  type DocumentGuide,
+  type GuideCategory,
+  type GuideSummary,
+  type LegalDocument,
+  type LegalDocumentSlug,
+  type PricingPlan,
 } from '../domain';
 
 export interface ContentDeps {
- readonly repository: ContentRepository;
+  readonly repository: ContentRepository;
 }
 
 export type ListDocumentGuides = () => Promise<Result<readonly GuideSummary[], AppError>>;
 
 export function createListDocumentGuides(deps: ContentDeps): ListDocumentGuides {
- return function listDocumentGuides() {
- return deps.repository.listGuides();
- };
+  return function listDocumentGuides() {
+    return deps.repository.listGuides();
+  };
 }
 
 /** A category and the guides filed under it, ready to render as one section of the hub page. */
 export interface GuideGroup {
- readonly category: GuideCategory;
- readonly label: string;
- readonly guides: readonly GuideSummary[];
+  readonly category: GuideCategory;
+  readonly label: string;
+  readonly guides: readonly GuideSummary[];
 }
 
 export type ListGuidesByCategory = () => Promise<Result<readonly GuideGroup[], AppError>>;
@@ -62,75 +62,75 @@ export type ListGuidesByCategory = () => Promise<Result<readonly GuideGroup[], A
  * sort here would silently override it.
  */
 export function createListGuidesByCategory(deps: ContentDeps): ListGuidesByCategory {
- return async function listGuidesByCategory() {
- const listed = await deps.repository.listGuides();
- if (isErr(listed)) return listed;
+  return async function listGuidesByCategory() {
+    const listed = await deps.repository.listGuides();
+    if (isErr(listed)) return listed;
 
- const order: GuideCategory[] = [];
- const buckets = new Map<GuideCategory, { label: string; guides: GuideSummary[] }>();
+    const order: GuideCategory[] = [];
+    const buckets = new Map<GuideCategory, { label: string; guides: GuideSummary[] }>();
 
- for (const guide of listed.value) {
- let bucket = buckets.get(guide.category);
- if (bucket === undefined) {
- bucket = { label: guide.categoryLabel, guides: [] };
- buckets.set(guide.category, bucket);
- order.push(guide.category);
- }
- bucket.guides.push(guide);
- }
+    for (const guide of listed.value) {
+      let bucket = buckets.get(guide.category);
+      if (bucket === undefined) {
+        bucket = { label: guide.categoryLabel, guides: [] };
+        buckets.set(guide.category, bucket);
+        order.push(guide.category);
+      }
+      bucket.guides.push(guide);
+    }
 
- const groups = order.map((category) => {
- // `order` is built from `buckets`' own keys, so this cannot miss — but
- // `noUncheckedIndexedAccess` is right to make us say so rather than assert it away.
- const bucket = buckets.get(category);
- return {
- category,
- label: bucket?.label ?? category,
- guides: bucket?.guides ?? [],
- };
- });
+    const groups = order.map((category) => {
+      // `order` is built from `buckets`' own keys, so this cannot miss — but
+      // `noUncheckedIndexedAccess` is right to make us say so rather than assert it away.
+      const bucket = buckets.get(category);
+      return {
+        category,
+        label: bucket?.label ?? category,
+        guides: bucket?.guides ?? [],
+      };
+    });
 
- return ok(groups);
- };
+    return ok(groups);
+  };
 }
 
 export type GetDocumentGuide = (slug: string) => Promise<Result<DocumentGuide | null, AppError>>;
 
 export function createGetDocumentGuide(deps: ContentDeps): GetDocumentGuide {
- return function getDocumentGuide(slug) {
- /**
- * Normalised before the lookup, not after.
- *
- * A slug arrives from a URL segment, and URLs get typed, pasted with a trailing space and
- * capitalised by autocorrect on mobile. Every one of those should reach the guide rather
- * than a 404, and doing it here means each adapter does not have to remember to.
- */
- return deps.repository.getGuide(slug.trim().toLowerCase());
- };
+  return function getDocumentGuide(slug) {
+    /**
+     * Normalised before the lookup, not after.
+     *
+     * A slug arrives from a URL segment, and URLs get typed, pasted with a trailing space and
+     * capitalised by autocorrect on mobile. Every one of those should reach the guide rather
+     * than a 404, and doing it here means each adapter does not have to remember to.
+     */
+    return deps.repository.getGuide(slug.trim().toLowerCase());
+  };
 }
 
 export type ListGuideSlugs = () => Promise<Result<readonly string[], AppError>>;
 
 export function createListGuideSlugs(deps: ContentDeps): ListGuideSlugs {
- return function listGuideSlugs() {
- return deps.repository.listGuideSlugs();
- };
+  return function listGuideSlugs() {
+    return deps.repository.listGuideSlugs();
+  };
 }
 
 export type GetPricing = () => Promise<Result<PricingPlan, AppError>>;
 
 export function createGetPricing(deps: ContentDeps): GetPricing {
- return function getPricing() {
- return deps.repository.getPricing();
- };
+  return function getPricing() {
+    return deps.repository.getPricing();
+  };
 }
 
 export type GetLegalDocument = (
- slug: LegalDocumentSlug,
+  slug: LegalDocumentSlug,
 ) => Promise<Result<LegalDocument, AppError>>;
 
 export function createGetLegalDocument(deps: ContentDeps): GetLegalDocument {
- return function getLegalDocument(slug) {
- return deps.repository.getLegalDocument(slug);
- };
+  return function getLegalDocument(slug) {
+    return deps.repository.getLegalDocument(slug);
+  };
 }

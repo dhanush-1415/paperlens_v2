@@ -1,8 +1,7 @@
 'use client';
 
 import { useSidebarStore } from '@/shared/state/sidebar-store';
-import { cn } from '@/shared/ui/cn';
-import { Button, Input, Skeleton } from '@/shared/ui/components';
+import { Skeleton } from '@/shared/ui/components';
 import { MenuIcon, SearchIcon } from '@/shared/ui/icons';
 import { BellIcon } from '@/shared/ui/icons/dashboard-icons';
 import { ThemeToggle } from '@/shared/ui/theme';
@@ -10,13 +9,13 @@ import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 
 export interface AppTopBarProps {
-  /** 
-   * A server component or client element that renders the authenticated 
-   * user's profile dropdown/session chip. 
+  /**
+   * A server component or client element that renders the authenticated
+   * user's profile dropdown/session chip.
    */
   sessionChip: ReactNode;
-  
-  /** 
+
+  /**
    * Transformed translator object for the theme toggle labels.
    */
   themeLabels: {
@@ -48,14 +47,14 @@ export function AppTopBar({ sessionChip, themeLabels }: AppTopBarProps) {
             <label htmlFor="search-field" className="sr-only">
               Search
             </label>
-            <div className="relative rounded-full bg-surface-2 border border-border-subtle focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all">
+            <div className="relative rounded-full border border-border-subtle bg-surface-2 transition-all focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary">
               <SearchIcon
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary"
+                className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-text-tertiary"
                 aria-hidden="true"
               />
               <input
                 id="search-field"
-                className="block w-full border-0 bg-transparent py-2.5 pl-11 pr-4 text-sm text-text-primary placeholder:text-text-tertiary focus:ring-0 outline-none"
+                className="block w-full border-0 bg-transparent py-2.5 pr-4 pl-11 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:ring-0"
                 placeholder="Global Command Search..."
                 type="search"
                 name="search"
@@ -71,12 +70,12 @@ export function AppTopBar({ sessionChip, themeLabels }: AppTopBarProps) {
               dark: themeLabels.dark,
               system: themeLabels.system,
             }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/40 bg-surface-1 shadow-sm hover:shadow-md hover:bg-surface-2 transition-all text-text-secondary hover:text-text-primary"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/40 bg-surface-1 text-text-secondary shadow-sm transition-all hover:bg-surface-2 hover:text-text-primary hover:shadow-md"
           />
-          
+
           <button
             type="button"
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/40 bg-surface-1 shadow-sm hover:shadow-md hover:bg-surface-2 transition-all text-text-secondary hover:text-text-primary"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/40 bg-surface-1 text-text-secondary shadow-sm transition-all hover:bg-surface-2 hover:text-text-primary hover:shadow-md"
           >
             <span className="sr-only">View notifications</span>
             <BellIcon className="h-5 w-5" aria-hidden="true" />

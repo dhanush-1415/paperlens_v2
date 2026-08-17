@@ -1,5 +1,5 @@
 export {
- ANALYZE_FIELDS,
- analyzeDocumentSchema,
- type AnalyzeDocumentFormValues,
+  ANALYZE_FIELDS,
+  analyzeDocumentSchema,
+  type AnalyzeDocumentFormValues,
 } from './analyze-input';

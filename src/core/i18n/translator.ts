@@ -22,58 +22,58 @@ import type { MessageParams, Translator } from './types';
 import type { Logger } from '../logging/types';
 
 export interface TranslatorOptions {
- locale: Locale;
- /** The active locale's strings. Partial: anything untranslated falls back to English. */
- messages: Partial<Dictionary>;
- logger?: Logger;
+  locale: Locale;
+  /** The active locale's strings. Partial: anything untranslated falls back to English. */
+  messages: Partial<Dictionary>;
+  logger?: Logger;
 }
 
 export function createTranslator(options: TranslatorOptions): Translator {
- const { locale, messages, logger } = options;
- const meta = localeMeta(locale);
- const scoped = logger?.child('i18n');
+  const { locale, messages, logger } = options;
+  const meta = localeMeta(locale);
+  const scoped = logger?.child('i18n');
 
- // Built once per translator rather than per call: constructing an `Intl` formatter is
- // measurably expensive and this runs on every pluralized string in a list.
- const pluralRules = new Intl.PluralRules(meta.intlTag);
+  // Built once per translator rather than per call: constructing an `Intl` formatter is
+  // measurably expensive and this runs on every pluralized string in a list.
+  const pluralRules = new Intl.PluralRules(meta.intlTag);
 
- function lookup(key: string): string | undefined {
- const translated = (messages as Record<string, string | undefined>)[key];
- if (translated !== undefined) return translated;
- return (en as Record<string, string | undefined>)[key];
- }
+  function lookup(key: string): string | undefined {
+    const translated = (messages as Record<string, string | undefined>)[key];
+    if (translated !== undefined) return translated;
+    return (en as Record<string, string | undefined>)[key];
+  }
 
- return {
- locale,
- dir: meta.dir,
+  return {
+    locale,
+    dir: meta.dir,
 
- t(key: MessageKey, params?: MessageParams): string {
- const template = lookup(key);
- if (template === undefined) {
- scoped?.warn('missing translation', { key, locale });
- return key;
- }
- return interpolate(template, params);
- },
+    t(key: MessageKey, params?: MessageParams): string {
+      const template = lookup(key);
+      if (template === undefined) {
+        scoped?.warn('missing translation', { key, locale });
+        return key;
+      }
+      return interpolate(template, params);
+    },
 
- plural(baseKey: string, count: number, params?: MessageParams): string {
- const category = pluralRules.select(count);
- // `_other` is the CLDR fallback and every locale defines it, so a locale that omits a
- // rarer category still renders something grammatical rather than the raw key.
- const template = lookup(`${baseKey}_${category}`) ?? lookup(`${baseKey}_other`);
+    plural(baseKey: string, count: number, params?: MessageParams): string {
+      const category = pluralRules.select(count);
+      // `_other` is the CLDR fallback and every locale defines it, so a locale that omits a
+      // rarer category still renders something grammatical rather than the raw key.
+      const template = lookup(`${baseKey}_${category}`) ?? lookup(`${baseKey}_other`);
 
- if (template === undefined) {
- scoped?.warn('missing plural translation', { key: baseKey, category, locale });
- return baseKey;
- }
+      if (template === undefined) {
+        scoped?.warn('missing plural translation', { key: baseKey, category, locale });
+        return baseKey;
+      }
 
- return interpolate(template, { count, ...params });
- },
+      return interpolate(template, { count, ...params });
+    },
 
- has(key: MessageKey): boolean {
- return (messages as Record<string, string | undefined>)[key] !== undefined;
- },
- };
+    has(key: MessageKey): boolean {
+      return (messages as Record<string, string | undefined>)[key] !== undefined;
+    },
+  };
 }
 
 /**
@@ -84,11 +84,11 @@ export function createTranslator(options: TranslatorOptions): Translator {
  * is the difference between a test that protects behaviour and one that protects prose.
  */
 export function createKeyTranslator(locale: Locale = 'en'): Translator {
- return {
- locale,
- dir: localeMeta(locale).dir,
- t: (key) => key,
- plural: (baseKey, count) => `${baseKey}:${count}`,
- has: () => true,
- };
+  return {
+    locale,
+    dir: localeMeta(locale).dir,
+    t: (key) => key,
+    plural: (baseKey, count) => `${baseKey}:${count}`,
+    has: () => true,
+  };
 }

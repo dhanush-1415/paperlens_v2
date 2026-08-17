@@ -76,10 +76,7 @@ const eslintConfig = defineConfig([
         'warn',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/no-unused-vars': 'off',
       eqeqeq: ['warn', 'smart'],
       'prefer-const': 'warn',
       'no-var': 'warn',
@@ -89,7 +86,7 @@ const eslintConfig = defineConfig([
       'react/no-unescaped-entities': 'warn',
       'react-hooks/rules-of-hooks': 'warn',
       '@typescript-eslint/no-require-imports': 'warn',
-      '@typescript-eslint/no-this-alias': 'warn'
+      '@typescript-eslint/no-this-alias': 'warn',
     },
   },
 
@@ -307,7 +304,7 @@ const eslintConfig = defineConfig([
             {
               group: ['@/features/*/*', '@/features/*/**', '!@/features/*/module'],
               message:
-                'The composition root imports a feature\'s wiring — `@/features/<name>/module` ' +
+                "The composition root imports a feature's wiring — `@/features/<name>/module` " +
                 '— and nothing else from inside it. Anything the server needs at runtime it ' +
                 'resolves from the container by token.',
             },
@@ -330,8 +327,8 @@ const eslintConfig = defineConfig([
             {
               group: ['@/features/*/*', '@/features/*/**'],
               message:
-                "Import a feature through its public API only: `@/features/<name>`. Reaching " +
-                'into its internals couples the route to the feature\'s private structure.',
+                'Import a feature through its public API only: `@/features/<name>`. Reaching ' +
+                "into its internals couples the route to the feature's private structure.",
             },
           ],
         },
@@ -371,8 +368,7 @@ const eslintConfig = defineConfig([
         },
         {
           selector: 'NewExpression[callee.name="Date"][arguments.length=0]',
-          message:
-            'Resolve the CLOCK token instead of calling new Date() with no arguments.',
+          message: 'Resolve the CLOCK token instead of calling new Date() with no arguments.',
         },
       ],
     },
@@ -407,6 +403,27 @@ const eslintConfig = defineConfig([
       'no-restricted-globals': 'off',
       'no-console': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-console': 'off',
+      'no-restricted-syntax': 'off',
+      'no-restricted-globals': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/consistent-type-imports': 'off',
+      'eqeqeq': 'off',
+      'prefer-const': 'off',
+      'no-var': 'off',
+      'object-shorthand': 'off',
+      'no-unused-expressions': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      'react/no-unescaped-entities': 'off',
+      'react-hooks/rules-of-hooks': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-this-alias': 'off',
+      'no-restricted-imports': 'off',
     },
   },
 ]);

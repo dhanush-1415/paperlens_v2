@@ -32,98 +32,97 @@ import { cn } from '@/shared/ui/cn';
 import type { LayoutElement } from '../primitives/polymorphic';
 
 const stackVariants = cva('flex', {
- variants: {
- direction: {
- column: 'flex-col',
- row: 'flex-row',
- 'row-responsive': 'flex-col sm:flex-row',
- },
- gap: {
- none: 'gap-0',
- xs: 'gap-1',
- sm: 'gap-2',
- md: 'gap-4',
- lg: 'gap-6',
- xl: 'gap-8',
- '2xl': 'gap-12',
- },
- align: {
- start: 'items-start',
- center: 'items-center',
- end: 'items-end',
- stretch: 'items-stretch',
- baseline: 'items-baseline',
- },
- justify: {
- start: 'justify-start',
- center: 'justify-center',
- end: 'justify-end',
- between: 'justify-between',
- },
- wrap: {
- true: 'flex-wrap',
- false: 'flex-nowrap',
- },
- /**
- * `min-w-0` on the stack itself.
- *
- * A flex child defaults to `min-width: auto`, which means it refuses to shrink below its
- * content — so one long unbroken string (a filename, a URL, a document title) pushes the
- * row wider than its parent and the whole page gains a horizontal scrollbar. This is the
- * single most common layout bug in a flexbox codebase, and it is invisible until real
- * data arrives. On by default; turn it off only for a stack whose intrinsic width is the
- * point.
- */
- shrink: {
- true: 'min-w-0',
- false: '',
- },
- },
- defaultVariants: {
- direction: 'column',
- gap: 'md',
- align: 'stretch',
- justify: 'start',
- wrap: false,
- shrink: true,
- },
+  variants: {
+    direction: {
+      column: 'flex-col',
+      row: 'flex-row',
+      'row-responsive': 'flex-col sm:flex-row',
+    },
+    gap: {
+      none: 'gap-0',
+      xs: 'gap-1',
+      sm: 'gap-2',
+      md: 'gap-4',
+      lg: 'gap-6',
+      xl: 'gap-8',
+      '2xl': 'gap-12',
+    },
+    align: {
+      start: 'items-start',
+      center: 'items-center',
+      end: 'items-end',
+      stretch: 'items-stretch',
+      baseline: 'items-baseline',
+    },
+    justify: {
+      start: 'justify-start',
+      center: 'justify-center',
+      end: 'justify-end',
+      between: 'justify-between',
+    },
+    wrap: {
+      true: 'flex-wrap',
+      false: 'flex-nowrap',
+    },
+    /**
+     * `min-w-0` on the stack itself.
+     *
+     * A flex child defaults to `min-width: auto`, which means it refuses to shrink below its
+     * content — so one long unbroken string (a filename, a URL, a document title) pushes the
+     * row wider than its parent and the whole page gains a horizontal scrollbar. This is the
+     * single most common layout bug in a flexbox codebase, and it is invisible until real
+     * data arrives. On by default; turn it off only for a stack whose intrinsic width is the
+     * point.
+     */
+    shrink: {
+      true: 'min-w-0',
+      false: '',
+    },
+  },
+  defaultVariants: {
+    direction: 'column',
+    gap: 'md',
+    align: 'stretch',
+    justify: 'start',
+    wrap: false,
+    shrink: true,
+  },
 });
 
 export interface StackProps
- extends HTMLAttributes<HTMLElement>,
- VariantProps<typeof stackVariants> {
- /**
- * Semantic tag. Use `ul`/`ol` when the children are genuinely a list — a stack of cards
- * rendered as `div`s tells a screen reader nothing about how many there are.
- */
- as?: LayoutElement;
+  extends HTMLAttributes<HTMLElement>, VariantProps<typeof stackVariants> {
+  /**
+   * Semantic tag. Use `ul`/`ol` when the children are genuinely a list — a stack of cards
+   * rendered as `div`s tells a screen reader nothing about how many there are.
+   */
+  as?: LayoutElement;
 }
 
 export function Stack({
- as = 'div',
- direction,
- gap,
- align,
- justify,
- wrap,
- shrink,
- className,
- ...props
+  as = 'div',
+  direction,
+  gap,
+  align,
+  justify,
+  wrap,
+  shrink,
+  className,
+  ...props
 }: StackProps) {
- // Widening annotation — see the note in primitives/polymorphic.ts.
- const Component: ElementType = as;
- return (
- <Component
- className={cn(
- stackVariants({ direction, gap, align, justify, wrap, shrink }),
- // `list-none` so `as="ul"` does not need the caller to remember it. Harmless on
- // every other tag.
- as === 'ul' || as === 'ol' ? 'list-none' : null,
- className,
- )}
- {...props}
- />
- );
+  // Widening annotation — see the note in primitives/polymorphic.ts.
+  const Component: ElementType = as;
+  return (
+    <Component
+      className={cn(
+        stackVariants({ direction, gap, align, justify, wrap, shrink }),
+        // `list-none` so `as="ul"` does not need the caller to remember it. Harmless on
+        // every other tag.
+        as === 'ul' || as === 'ol' ? 'list-none' : null,
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export { stackVariants };

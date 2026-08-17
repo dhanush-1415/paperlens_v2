@@ -53,16 +53,16 @@ export interface KeyEntity {
 }
 
 export const CLAUSE_CATEGORIES = [
- 'auto_renewal',
- 'arbitration',
- 'liability_cap',
- 'unilateral_change',
- 'termination_penalty',
- 'data_sharing',
- 'late_fee',
- 'indemnity',
- 'non_compete',
- 'jurisdiction',
+  'auto_renewal',
+  'arbitration',
+  'liability_cap',
+  'unilateral_change',
+  'termination_penalty',
+  'data_sharing',
+  'late_fee',
+  'indemnity',
+  'non_compete',
+  'jurisdiction',
 ] as const;
 
 /**
@@ -73,13 +73,13 @@ export const CLAUSE_CATEGORIES = [
  * product can learn what people actually paste.
  */
 export const DOCUMENT_TYPES = [
- 'rental_agreement',
- 'employment_contract',
- 'terms_of_service',
- 'loan_agreement',
- 'insurance_policy',
- 'service_contract',
- 'other',
+  'rental_agreement',
+  'employment_contract',
+  'terms_of_service',
+  'loan_agreement',
+  'insurance_policy',
+  'service_contract',
+  'other',
 ] as const;
 
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
@@ -93,20 +93,20 @@ export type DocumentType = (typeof DOCUMENT_TYPES)[number];
  * highlight in place rather than showing a detached quotation.
  */
 export interface RiskFlag {
- readonly id: string;
- readonly category: ClauseCategory;
- readonly level: RiskLevel;
- /** Short, plain-language headline. "Renews automatically without notice". */
- readonly title: string;
- /** The clause itself, verbatim from the source document. */
- readonly excerpt: string;
- /** Why it matters, in the user's language rather than the drafter's. */
- readonly explanation: string;
- /** What to do about it. Absent when there is nothing useful to say. */
- readonly recommendation?: string;
- /** Offsets into the source text. Half-open: `[charStart, charEnd)`. */
- readonly charStart: number;
- readonly charEnd: number;
+  readonly id: string;
+  readonly category: ClauseCategory;
+  readonly level: RiskLevel;
+  /** Short, plain-language headline. "Renews automatically without notice". */
+  readonly title: string;
+  /** The clause itself, verbatim from the source document. */
+  readonly excerpt: string;
+  /** Why it matters, in the user's language rather than the drafter's. */
+  readonly explanation: string;
+  /** What to do about it. Absent when there is nothing useful to say. */
+  readonly recommendation?: string;
+  /** Offsets into the source text. Half-open: `[charStart, charEnd)`. */
+  readonly charStart: number;
+  readonly charEnd: number;
 }
 
 /**
@@ -118,9 +118,9 @@ export interface RiskFlag {
  * agree — a threshold duplicated in a template is a threshold that drifts.
  */
 export interface RiskScore {
- readonly value: number;
- readonly level: RiskLevel;
- readonly counts: Readonly<Record<RiskLevel, number>>;
+  readonly value: number;
+  readonly level: RiskLevel;
+  readonly counts: Readonly<Record<RiskLevel, number>>;
 }
 
 /**
@@ -132,32 +132,32 @@ export interface RiskScore {
  * key — and would have to be rewritten the day that changes.
  */
 export interface AnalysisDraft {
- readonly ownerId: string;
- readonly title: string;
- readonly documentType: DocumentType;
- readonly charCount: number;
- readonly flags: readonly RiskFlag[];
- readonly score: RiskScore;
- readonly summary: string | null;
- readonly actionPlan: readonly string[];
- readonly urgency: string | null;
- readonly rawText: string;
- readonly fileUrl?: string | null;
- readonly mimeType?: string | null;
- readonly entities: readonly KeyEntity[];
- readonly legitimacy: string | null;
- readonly confidence: string | null;
- readonly suggestedQuestions: readonly string[];
- readonly timeline?: readonly any[];
- readonly deadlineDate?: string | null;
- /** ISO 8601. Produced from an injected clock, never from `new Date()` inside a rule. */
- readonly analyzedAt: string;
+  readonly ownerId: string;
+  readonly title: string;
+  readonly documentType: DocumentType;
+  readonly charCount: number;
+  readonly flags: readonly RiskFlag[];
+  readonly score: RiskScore;
+  readonly summary: string | null;
+  readonly actionPlan: readonly string[];
+  readonly urgency: string | null;
+  readonly rawText: string;
+  readonly fileUrl?: string | null;
+  readonly mimeType?: string | null;
+  readonly entities: readonly KeyEntity[];
+  readonly legitimacy: string | null;
+  readonly confidence: string | null;
+  readonly suggestedQuestions: readonly string[];
+  readonly timeline?: readonly any[];
+  readonly deadlineDate?: string | null;
+  /** ISO 8601. Produced from an injected clock, never from `new Date()` inside a rule. */
+  readonly analyzedAt: string;
 }
 
 /** A persisted analysis. Identity assigned by the repository. */
 export interface DocumentAnalysis extends AnalysisDraft {
- readonly id: string;
- readonly resolvedFlagIds: readonly string[];
+  readonly id: string;
+  readonly resolvedFlagIds: readonly string[];
 }
 
 /**
@@ -168,19 +168,19 @@ export interface DocumentAnalysis extends AnalysisDraft {
  * turn a fast page into a slow one once a user has three hundred documents.
  */
 export interface DocumentAnalysisSummary {
- readonly id: string;
- readonly title: string;
- readonly documentType: DocumentType;
- readonly score: RiskScore;
- readonly analyzedAt: string;
+  readonly id: string;
+  readonly title: string;
+  readonly documentType: DocumentType;
+  readonly score: RiskScore;
+  readonly analyzedAt: string;
 }
 
 export function toSummary(analysis: DocumentAnalysis): DocumentAnalysisSummary {
- return {
- id: analysis.id,
- title: analysis.title,
- documentType: analysis.documentType,
- score: analysis.score,
- analyzedAt: analysis.analyzedAt,
- };
+  return {
+    id: analysis.id,
+    title: analysis.title,
+    documentType: analysis.documentType,
+    score: analysis.score,
+    analyzedAt: analysis.analyzedAt,
+  };
 }

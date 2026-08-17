@@ -24,16 +24,16 @@ export interface PdfViewerProps {
 }
 
 export const PdfViewer = forwardRef<HTMLDivElement, PdfViewerProps>(({ src }, ref) => {
-  const pagesRef   = useRef<HTMLDivElement>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState<string | null>(null);
+  const pagesRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [numPages, setNumPages] = useState(0);
 
   useEffect(() => {
     if (!src) return;
 
     let cancelled = false;
-     
+
     setLoading(true);
     setError(null);
     setNumPages(0);
@@ -43,11 +43,11 @@ export const PdfViewer = forwardRef<HTMLDivElement, PdfViewerProps>(({ src }, re
         const pdfjsLib = await getPdfJs();
 
         const pdf = await pdfjsLib.getDocument({
-          url:                       src,
-          cMapUrl:                   'https://unpkg.com/pdfjs-dist/cmaps/',
-          cMapPacked:                true,
-          disableAutoFetch:          false,
-          disableFontFace:           false,
+          url: src,
+          cMapUrl: 'https://unpkg.com/pdfjs-dist/cmaps/',
+          cMapPacked: true,
+          disableAutoFetch: false,
+          disableFontFace: false,
         }).promise;
 
         if (cancelled) return;
@@ -62,15 +62,16 @@ export const PdfViewer = forwardRef<HTMLDivElement, PdfViewerProps>(({ src }, re
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           if (cancelled) return;
 
-          const page     = await pdf.getPage(pageNum);
+          const page = await pdf.getPage(pageNum);
           const viewport = page.getViewport({ scale: 1.5 });
 
-          const wrapper        = document.createElement('div');
-          wrapper.style.cssText = 'margin-bottom:8px;border-radius:8px;overflow:hidden;line-height:0';
+          const wrapper = document.createElement('div');
+          wrapper.style.cssText =
+            'margin-bottom:8px;border-radius:8px;overflow:hidden;line-height:0';
 
-          const canvas         = document.createElement('canvas');
-          canvas.width         = viewport.width;
-          canvas.height        = viewport.height;
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
           canvas.style.cssText = 'width:100%;display:block';
 
           wrapper.appendChild(canvas);
@@ -91,25 +92,24 @@ export const PdfViewer = forwardRef<HTMLDivElement, PdfViewerProps>(({ src }, re
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [src]);
 
   return (
-    <div ref={ref} className="flex-1 min-h-0 overflow-y-auto p-4 pr-12">
-
+    <div ref={ref} className="min-h-0 flex-1 overflow-y-auto p-4 pr-12">
       {/* Loading state */}
       {loading && (
         <div className="flex h-full flex-col items-center justify-center gap-3 text-text-tertiary">
           <Loader2 className="h-7 w-7 animate-spin" />
-          <p className="text-sm">
-            {numPages > 0 ? `Rendering pages…` : 'Loading PDF…'}
-          </p>
+          <p className="text-sm">{numPages > 0 ? `Rendering pages…` : 'Loading PDF…'}</p>
         </div>
       )}
 
       {/* Error state */}
       {!loading && error && (
-        <div className="flex h-full flex-col items-center justify-center gap-3 text-center p-6">
+        <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2">
             <FileText className="h-6 w-6 text-text-tertiary" />
           </div>
@@ -118,10 +118,7 @@ export const PdfViewer = forwardRef<HTMLDivElement, PdfViewerProps>(({ src }, re
       )}
 
       {/* Pages container — hidden until loading completes */}
-      <div
-        ref={pagesRef}
-        style={{ display: loading ? 'none' : 'block' }}
-      />
+      <div ref={pagesRef} style={{ display: loading ? 'none' : 'block' }} />
     </div>
   );
 });

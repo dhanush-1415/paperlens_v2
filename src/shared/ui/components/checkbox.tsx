@@ -27,32 +27,32 @@ import { CheckIcon } from '../icons';
 export type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'>;
 
 export function Checkbox({ className, ...props }: CheckboxProps) {
- return (
- <span className="relative inline-flex shrink-0 items-center justify-center">
- <input
- type="checkbox"
- className={cn(
- 'peer size-5 cursor-pointer appearance-none rounded-selection',
- 'border border-border-strong bg-surface-2',
- 'transition-[background-color,border-color] duration-(--duration-micro) ease-brand',
- 'hover:border-brand-primary',
- // `brand-solid` for the fill, because the tick drawn on it is `text-on-brand`.
- 'checked:border-brand-solid checked:bg-brand-solid',
- 'disabled:cursor-not-allowed disabled:opacity-50',
- 'aria-invalid:border-risk-critical',
- className,
- )}
- {...props}
- />
- {/* `pointer-events-none` so clicks fall through to the input underneath — without it
+  return (
+    <span className="relative inline-flex shrink-0 items-center justify-center">
+      <input
+        type="checkbox"
+        className={cn(
+          'peer size-5 cursor-pointer appearance-none rounded-selection',
+          'border border-border-strong bg-surface-2',
+          'transition-[background-color,border-color] duration-(--duration-micro) ease-brand',
+          'hover:border-brand-primary',
+          // `brand-solid` for the fill, because the tick drawn on it is `text-on-brand`.
+          'checked:border-brand-solid checked:bg-brand-solid',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          'aria-invalid:border-risk-critical',
+          className,
+        )}
+        {...props}
+      />
+      {/* `pointer-events-none` so clicks fall through to the input underneath — without it
  the tick swallows the second click and the box cannot be unchecked. */}
- <CheckIcon
- className={cn(
- 'pointer-events-none absolute size-3.5 text-text-on-brand',
- 'opacity-0 peer-checked:opacity-100',
- )}
- strokeWidth={3}
- />
- </span>
- );
+      <CheckIcon
+        className={cn(
+          'pointer-events-none absolute size-3.5 text-text-on-brand',
+          'opacity-0 peer-checked:opacity-100',
+        )}
+        strokeWidth={3}
+      />
+    </span>
+  );
 }

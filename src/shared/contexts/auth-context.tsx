@@ -75,7 +75,7 @@ export function createBrowserSupabaseClient() {
         detectSessionInUrl: true,
         flowType: 'pkce',
       },
-    }
+    },
   );
 }
 
@@ -102,7 +102,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         try {
           localStorage.removeItem('pl:scan-draft:v1');
           localStorage.removeItem('pl:sessionHint');
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     },
     [router],
@@ -128,11 +130,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     });
   }, [pathname]);
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, isLoading }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {
