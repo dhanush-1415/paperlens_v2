@@ -18,11 +18,6 @@ async function AuthDynamicShell({ children, t }: { children: React.ReactNode; t:
   await connection();
   const session = await getPublicSession();
 
-export default async function AuthLayout({ children }: LayoutProps<'/'>) {
-  const scope = getRequestScope();
-  const t = scope.resolve(TRANSLATOR);
-  const session = await getPublicSession();
-
   return (
     <AuthAnimation>
       <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
