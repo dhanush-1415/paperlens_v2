@@ -3,7 +3,7 @@ import { ShieldCheck, Clock, Calendar, FileText, AlertTriangle } from 'lucide-re
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { prisma } from '@/server/prisma';
+import { prisma } from '@/server/db/prisma';
 import { serverEnv } from '@/config/env.server';
 
 // Shared pages must not be indexed by search engines.
