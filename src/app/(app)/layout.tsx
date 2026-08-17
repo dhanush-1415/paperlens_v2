@@ -10,6 +10,7 @@ import { Button, Container, Skeleton, Text, ThemeToggle, AppSidebar, AppTopBar, 
 
 import Link from 'next/link';
 import { AuthProvider } from '@/shared/contexts/auth-context';
+import { VaultChat } from '@/features/vault';
 
 /**
  * The signed-in shell.
@@ -144,6 +145,7 @@ async function DynamicShell({ children, themeLabels }: { children: React.ReactNo
               {children}
             </div>
           </main>
+          <VaultChat />
         </div>
       </div>
     </AuthProvider>

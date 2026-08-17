@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 // --- Constants ----------------------------------------------------------------
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
-const AUDIO_INPUT_ACCEPT = '.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus';
+const AUDIO_INPUT_ACCEPT = 'audio/mpeg,audio/wav,audio/mp4,audio/aac,audio/ogg,audio/flac,audio/webm,audio/opus,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus';
 
 // Decorative bar heights (px) — used for idle waveform + preview waveform
 const IDLE_BARS    = [4, 8, 6, 12, 9, 16, 10, 20, 13, 18, 8, 22, 14, 18, 10, 15, 7, 19, 11, 16, 8, 13, 6, 10, 5];
