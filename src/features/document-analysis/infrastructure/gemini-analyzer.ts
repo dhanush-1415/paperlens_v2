@@ -34,7 +34,9 @@ You MUST also provide a high-level assessment of the document:
 - urgency: The overall urgency of the document: 'critical', 'medium', or 'low'.
 - entities: Extract key entities (Names, companies, monetary amounts, important dates) with an iconHint (e.g. 'building', 'user', 'currency', 'calendar').
 - legitimacy & confidence: Analyze the document for phishing, scam markers, or abnormal structure. Output legitimacy ('VERIFIED_FORMAT', 'UNVERIFIABLE', 'SUSPICIOUS') and confidence ('HIGH', 'MEDIUM', 'LOW').
-- suggestedQuestions: Provide exactly 4 highly contextual questions the user could ask a Copilot about this document.`;
+- suggestedQuestions: Provide exactly 4 highly contextual questions the user could ask a Copilot about this document.
+
+CRITICAL INSTRUCTION: If the provided file (audio, video, document, or image) contains NO discernible textual content, speech, or clauses (e.g. it is pure noise, an empty file, or an unrelated image), YOU MUST SET the \`isValidDocument\` boolean field to \`false\` and provide an \`invalidReason\` string explaining why. Otherwise, set \`isValidDocument\` to \`true\`.`;
 
 const RISK_FLAG_SCHEMA = z.object({
   flags: z.array(z.object({
@@ -66,6 +68,8 @@ const RISK_FLAG_SCHEMA = z.object({
     riskLevel: z.enum(['critical', 'caution', 'safe']),
     description: z.string().describe('A brief description of what was discussed or agreed upon at this timestamp.')
   })).optional().describe('For video or audio files, map identified risks or key topics to specific timestamps.'),
+  isValidDocument: z.boolean().default(true).describe('Set to false if the file contains no discernible text, clauses, or speech.'),
+  invalidReason: z.string().optional().describe('If isValidDocument is false, explain why.'),
 });
 
 export function createGeminiAnalyzer(): DocumentAnalyzer {
@@ -102,6 +106,10 @@ export function createGeminiAnalyzer(): DocumentAnalyzer {
           ],
           temperature: 0.1,
         });
+
+        if (object.isValidDocument === false) {
+          throw new Error(object.invalidReason || 'The uploaded file does not contain any discernible textual content or speech.');
+        }
 
         const found: RiskFlag[] = [];
         const seen = new Set<ClauseCategory>();

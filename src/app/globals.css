@@ -198,9 +198,6 @@
     scroll-padding-top: 6rem;
     -webkit-text-size-adjust: 100%;
     
-    /* 120fps Smooth Scrolling for premium feel */
-    scroll-behavior: smooth;
-    
     /* Hardware acceleration for scroll */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: none;

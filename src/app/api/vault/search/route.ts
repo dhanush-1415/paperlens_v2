@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     if (query.split(' ').length > 2 || query.length > 10) {
       try {
         const { embedding } = await embed({
-          model: google.textEmbeddingModel('text-embedding-004'),
+          model: google.textEmbeddingModel('embedding-001'),
           value: query,
         });
         

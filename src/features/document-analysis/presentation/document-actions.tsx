@@ -7,7 +7,7 @@ import { DownloadIcon, Trash2Icon, RefreshCwIcon, LanguagesIcon, Settings2Icon, 
 import { toast } from 'sonner';
 import { toggleResolvedAction, deleteDocumentAction } from '../../vault/actions';
 
-export function DocumentActions({ documentId, initialResolved = false }: { documentId: string, initialResolved?: boolean }) {
+export function DocumentActions({ documentId, initialResolved = false, canExport = false }: { documentId: string, initialResolved?: boolean, canExport?: boolean }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
@@ -108,10 +108,14 @@ export function DocumentActions({ documentId, initialResolved = false }: { docum
         Re-analyze
       </Button>
       
-      <Button variant="secondary" size="sm" onClick={handleExport}>
-        <DownloadIcon className="w-4 h-4 mr-2" />
-        Export
-      </Button>
+      <Tooltip content={canExport ? "Download PDF Report" : "Upgrade to Pro to export PDF reports"}>
+        <div>
+          <Button variant="secondary" size="sm" onClick={handleExport} disabled={!canExport}>
+            <DownloadIcon className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </Tooltip>
 
       <Button 
         variant="ghost" 

@@ -1,6 +1,6 @@
 import { requireSession } from '@/server/bootstrap';
 import { BillingPage } from '@/features/billing';
-import { getUserPlan } from '@/server/dal/plan';
+import { getUserPlan, getUserInvoices } from '@/server/dal/plan';
 import { prisma } from '@/server/db/prisma';
 import { scoreOf } from '@/features/document-analysis/domain';
 
@@ -63,5 +63,7 @@ export default async function BillingRoute() {
     lastScanDate: analyses.length > 0 ? analyses.reduce((latest, a) => new Date(Math.max(latest.getTime(), new Date(a.analyzedAt).getTime())), new Date(0)) : null
   };
 
-  return <BillingPage planData={planData} usageData={usageData} paymentMethod={paymentMethod} invoices={[]} />;
+  const invoices = await getUserInvoices(session.userId);
+
+  return <BillingPage planData={planData} usageData={usageData} paymentMethod={paymentMethod} invoices={invoices} />;
 }

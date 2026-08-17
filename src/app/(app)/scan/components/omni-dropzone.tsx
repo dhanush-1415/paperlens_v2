@@ -619,7 +619,7 @@ export function OmniDropzone() {
               <div className="col-span-2">
                 <Text size="xs" tone="secondary" className="font-inter uppercase tracking-wider font-semibold mb-1">Supported Types</Text>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {['PDF', 'DOCX', 'TXT', 'MP3', 'WAV', 'PNG', 'JPEG'].map(type => (
+                  {['PDF', 'DOCX', 'TXT', 'MP3', 'WAV', 'PNG', 'JPEG', 'MP4', 'WEBM'].map(type => (
                     <span key={type} className="px-2 py-0.5 rounded bg-surface-1 border border-border-strong/50 text-[10px] font-mono font-bold text-text-secondary">
                       {type}
                     </span>
