@@ -6,9 +6,9 @@ import { type SerializedAppError } from '@/core/errors/app-error';
 import { type Result } from '@/core/result/result';
 import {
   signUpAction,
-  signInWithGoogleFormAction,
   checkEmailAvailabilityAction,
 } from '@/server/actions/auth';
+import { createBrowserSupabaseClient } from '@/shared/contexts/auth-context';
 import { Alert, Button, Field, Input, Text } from '@/shared/ui';
 
 type FormState = Result<never, SerializedAppError> | null;
@@ -27,6 +27,24 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
     'idle',
   );
   const [touchedEmail, setTouchedEmail] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  async function handleGoogleLogin() {
+    setIsGoogleLoading(true);
+    const supabase = createBrowserSupabaseClient();
+    const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
+    if (redirectTo) callbackUrl.searchParams.set('next', redirectTo);
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: callbackUrl.toString() },
+    });
+    
+    if (error) {
+      alert(error.message);
+      setIsGoogleLoading(false);
+    }
+  }
 
   const error = state !== null && !state.ok ? state.error : null;
   const fieldError = (name: string) => {
@@ -201,15 +219,16 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
         <div className="h-px flex-1 bg-border-strong"></div>
       </div>
 
-      <form action={signInWithGoogleFormAction} className="w-full">
-        {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
+      <div className="w-full">
         <Button
           variant="secondary"
           size="lg"
           fullWidth
           className="rounded-full"
-          type="submit"
-          disabled={isPending}
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isPending || isGoogleLoading}
+          loading={isGoogleLoading}
           startIcon={
             <svg
               width="18"
@@ -240,7 +259,7 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
         >
           Continue with Google
         </Button>
-      </form>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { useActionState, useState } from 'react';
 
 import { type SerializedAppError } from '@/core/errors/app-error';
 import { type Result } from '@/core/result/result';
-import { signInAction, signInWithGoogleFormAction } from '@/server/actions/auth';
+import { signInAction } from '@/server/actions/auth';
+import { createBrowserSupabaseClient } from '@/shared/contexts/auth-context';
 import { Alert, Button, Field, Input, Text } from '@/shared/ui';
 
 type FormState = Result<never, SerializedAppError> | null;
@@ -18,6 +19,24 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  async function handleGoogleLogin() {
+    setIsGoogleLoading(true);
+    const supabase = createBrowserSupabaseClient();
+    const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
+    if (redirectTo) callbackUrl.searchParams.set('next', redirectTo);
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: callbackUrl.toString() },
+    });
+    
+    if (error) {
+      alert(error.message);
+      setIsGoogleLoading(false);
+    }
+  }
 
   const error = state !== null && !state.ok ? state.error : null;
   const fieldError = (name: string) => error?.fieldErrors?.[name]?.[0];
@@ -128,15 +147,16 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
         <div className="h-px flex-1 bg-border-strong"></div>
       </div>
 
-      <form action={signInWithGoogleFormAction} className="w-full">
-        {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
+      <div className="w-full">
         <Button
           variant="secondary"
           size="lg"
           fullWidth
           className="rounded-full"
-          type="submit"
-          disabled={isPending}
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isPending || isGoogleLoading}
+          loading={isGoogleLoading}
           startIcon={
             <svg
               width="18"
@@ -167,7 +187,7 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
         >
           Continue with Google
         </Button>
-      </form>
+      </div>
     </div>
   );
 }
