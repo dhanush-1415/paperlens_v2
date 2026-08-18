@@ -54,7 +54,7 @@ ${contextStr ? contextStr : 'No relevant documents found.'}
       temperature: 0.2,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error: any) {
     console.error('Vault Chat error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

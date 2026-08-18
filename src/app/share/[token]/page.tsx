@@ -147,11 +147,11 @@ export default async function SharePage({ params }: Props) {
           <article className="flex flex-col overflow-hidden rounded-3xl border border-border-strong bg-surface-2/50 shadow-2xl backdrop-blur-xl">
             {/* Risk assessment header banner */}
             <div
-              className={`flex items-center gap-2 border-b border-border-strong px-6 py-4 ${risk.bg}`}
+              className={`flex items-center gap-2 border-b border-border-strong px-6 py-4 ${risk?.bg || ''}`}
             >
-              <span aria-hidden="true">{risk.emoji}</span>
+              <span aria-hidden="true">{risk?.emoji}</span>
               <span className="text-[10px] font-extrabold tracking-widest text-text-secondary uppercase">
-                Risk Score: <span className={risk.text}>{risk.label}</span>
+                Risk Score: <span className={risk?.text}>{risk?.label}</span>
               </span>
               {doc.deadlineDate && (
                 <span className="ml-auto flex items-center gap-1 rounded-lg border border-border-strong bg-canvas px-2 py-1 text-[9px] font-bold text-text-primary">

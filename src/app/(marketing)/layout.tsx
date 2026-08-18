@@ -74,7 +74,15 @@ const tenant = resolveTenant(serverEnv.TENANT_ID);
 
 const COPYRIGHT_YEAR = new Date().getFullYear();
 
-async function MarketingDynamicShell({ children, t, guides }: { children: React.ReactNode; t: any; guides: any }) {
+async function MarketingDynamicShell({
+  children,
+  t,
+  guides,
+}: {
+  children: React.ReactNode;
+  t: any;
+  guides: any;
+}) {
   await connection();
   const session = await getPublicSession();
 
@@ -156,7 +164,9 @@ export default async function MarketingLayout({ children }: any) {
 
   return (
     <Suspense fallback={null}>
-      <MarketingDynamicShell t={t} guides={guides}>{children}</MarketingDynamicShell>
+      <MarketingDynamicShell t={t} guides={guides}>
+        {children}
+      </MarketingDynamicShell>
     </Suspense>
   );
 }

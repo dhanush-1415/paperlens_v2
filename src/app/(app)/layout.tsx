@@ -94,11 +94,7 @@ function AppShellSkeleton() {
   );
 }
 
-async function DynamicShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+async function DynamicShell({ children }: { children: React.ReactNode }) {
   await connection();
   const t = getRequestScope().resolve(TRANSLATOR);
   const themeLabels = {
@@ -162,7 +158,7 @@ async function DynamicShell({
                     Your {plan} tier has reached its maximum capacity. Upgrade to unlock unmetered
                     multi-page analysis.
                   </Text>
-                  <Text size="2xs" className="mt-0.5 truncate font-medium text-white/90 sm:hidden">
+                  <Text size="xs" className="mt-0.5 truncate font-medium text-white/90 sm:hidden">
                     Upgrade to continue
                   </Text>
                 </div>

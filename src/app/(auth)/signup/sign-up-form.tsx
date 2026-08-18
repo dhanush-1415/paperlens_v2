@@ -4,10 +4,7 @@ import { useActionState, useState } from 'react';
 
 import { type SerializedAppError } from '@/core/errors/app-error';
 import { type Result } from '@/core/result/result';
-import {
-  signUpAction,
-  checkEmailAvailabilityAction,
-} from '@/server/actions/auth';
+import { signUpAction, checkEmailAvailabilityAction } from '@/server/actions/auth';
 import { createBrowserSupabaseClient } from '@/shared/contexts/auth-context';
 import { Alert, Button, Field, Input, Text } from '@/shared/ui';
 
@@ -34,12 +31,12 @@ export function SignUpForm({ redirectTo }: SignUpFormProps) {
     const supabase = createBrowserSupabaseClient();
     const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
     if (redirectTo) callbackUrl.searchParams.set('next', redirectTo);
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: callbackUrl.toString() },
     });
-    
+
     if (error) {
       alert(error.message);
       setIsGoogleLoading(false);

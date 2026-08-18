@@ -45,7 +45,7 @@ export function SettingsPage({
 
       {/* Settings Content */}
       <div className="mt-2">
-        <div className="animate-in fade-in slide-in-from-bottom-2 flex max-w-4xl flex-col gap-6">
+        <div className="animate-in fade-in slide-in-from-bottom-2 flex w-full flex-col gap-6">
           <div className="rounded-[1.25rem] border border-border-subtle bg-surface-1 p-5 shadow-sm transition-all hover:border-brand-secondary/30 sm:p-6">
             <div className="mb-6 flex items-center gap-4 border-b border-border-subtle pb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-secondary/10 text-brand-secondary shadow-sm shadow-brand-secondary/20">

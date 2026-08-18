@@ -128,13 +128,13 @@ export default async function Page({
 
   // Initialize map with all dates in range
   for (let d = new Date(startDate); d <= endOfDay; d.setDate(d.getDate() + 1)) {
-    const dateKey = d.toISOString().split('T')[0] as string;
-    processingMap.set(dateKey, 0);
+    const dateKey = d.toISOString().split('T')[0] || '';
+    if (dateKey) processingMap.set(dateKey, 0);
   }
 
   allAnalyses.forEach((doc) => {
-    const dateStr = doc.analyzedAt.toISOString().split('T')[0] as string;
-    if (processingMap.has(dateStr)) {
+    const dateStr = doc.analyzedAt.toISOString().split('T')[0] || '';
+    if (dateStr && processingMap.has(dateStr)) {
       processingMap.set(dateStr, processingMap.get(dateStr)! + 1);
     }
   });

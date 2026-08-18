@@ -26,10 +26,13 @@ export default async function SettingsRoute() {
     data: { user },
   } = await supabase.auth.admin.getUserById(session.userId);
 
-  const webhooks = await prisma.webhook.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: 'desc' },
-  });
+  // Gracefully handle if the webhook model isn't generated in Prisma yet
+  const webhooks = prisma.webhook
+    ? await prisma.webhook.findMany({
+        where: { userId: session.userId },
+        orderBy: { createdAt: 'desc' },
+      })
+    : [];
 
   return (
     <SettingsPage

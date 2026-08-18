@@ -26,12 +26,12 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
     const supabase = createBrowserSupabaseClient();
     const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
     if (redirectTo) callbackUrl.searchParams.set('next', redirectTo);
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: callbackUrl.toString() },
     });
-    
+
     if (error) {
       alert(error.message);
       setIsGoogleLoading(false);

@@ -163,8 +163,8 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
             >
               <CalendarIcon className="size-4" />
               <span>
-                {format(dateRange[0]!.startDate, 'MMM d, yyyy')} -{' '}
-                {format(dateRange[0]!.endDate, 'MMM d, yyyy')}
+                {dateRange[0] ? format(dateRange[0].startDate, 'MMM d, yyyy') : 'Start Date'} -{' '}
+                {dateRange[0] ? format(dateRange[0].endDate, 'MMM d, yyyy') : 'End Date'}
               </span>
             </button>
 
@@ -504,7 +504,10 @@ export function AnalyticsPage({ data }: { data?: AnalyticsData }) {
       <EnterpriseReportTemplate
         ref={reportRef}
         data={analytics}
-        dateRange={{ startDate: dateRange[0]!.startDate, endDate: dateRange[0]!.endDate }}
+        dateRange={{
+          startDate: dateRange[0]?.startDate || new Date(),
+          endDate: dateRange[0]?.endDate || new Date(),
+        }}
       />
     </div>
   );

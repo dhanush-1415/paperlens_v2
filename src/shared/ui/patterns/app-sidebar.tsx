@@ -235,14 +235,24 @@ export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }
   const toggle = useSidebarStore((s) => s.toggle);
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
 
-  // Auto-collapse sidebar on document view, restore preference otherwise
+  // Auto-collapse sidebar on document view or smaller screens, restore preference otherwise
   useEffect(() => {
-    const isDocumentRoute = pathname.startsWith('/document/');
-    if (isDocumentRoute) {
-      setCollapsed(true, true);
-    } else {
-      setCollapsed(userCollapsedPreference, true);
-    }
+    const handleLayout = () => {
+      const isDocumentRoute = pathname.startsWith('/document/');
+      // 1024px is the 'lg' breakpoint. We auto-collapse on smaller desktop screens.
+      const isSmallScreen = window.innerWidth < 1024;
+
+      if (isDocumentRoute || isSmallScreen) {
+        setCollapsed(true, true);
+      } else {
+        setCollapsed(userCollapsedPreference, true);
+      }
+    };
+
+    handleLayout();
+
+    window.addEventListener('resize', handleLayout);
+    return () => window.removeEventListener('resize', handleLayout);
   }, [pathname, userCollapsedPreference, setCollapsed]);
 
   // Auto-dismiss mobile drawer on navigation

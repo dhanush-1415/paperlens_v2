@@ -93,13 +93,13 @@ export async function getUserInvoices(userId: string) {
   if (sub.lemonCustomerId) {
     try {
       const { listOrders } = await import('@/lib/lemonsqueezy');
-      const res = await listOrders({ filter: { customerId: sub.lemonCustomerId } });
+      const res = await listOrders({ filter: { customerId: sub.lemonCustomerId } as any });
       if (res.data) {
-        for (const inv of res.data) {
+        for (const inv of res.data as any[]) {
           invoices.push({
             id: String(inv.id),
             date: new Date(inv.attributes.created_at).toLocaleDateString(),
-            amount: `$${(inv.attributes.total / 100).toFixed(2)}`,
+            amount: `$${((inv.attributes.total as number) / 100).toFixed(2)}`,
             status: inv.attributes.status === 'paid' ? 'Paid' : inv.attributes.status,
             downloadUrl: inv.attributes.urls?.receipt || '#',
           });
@@ -112,11 +112,11 @@ export async function getUserInvoices(userId: string) {
     try {
       const { getRazorpayInvoices } = await import('@/lib/razorpay');
       const rzpInvoices = await getRazorpayInvoices(sub.razorpayCustomerId);
-      for (const inv of rzpInvoices) {
+      for (const inv of rzpInvoices as any[]) {
         invoices.push({
           id: inv.receipt || inv.id,
-          date: new Date((inv.created_at || 0) * 1000).toLocaleDateString(),
-          amount: `₹${((inv.amount || 0) / 100).toFixed(2)}`,
+          date: new Date(((inv.created_at as number) || 0) * 1000).toLocaleDateString(),
+          amount: `₹${(((inv.amount as number) || 0) / 100).toFixed(2)}`,
           status: inv.status === 'issued' ? 'Paid' : inv.status || 'Paid',
           downloadUrl: inv.short_url || '#',
         });

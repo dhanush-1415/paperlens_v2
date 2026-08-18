@@ -18,7 +18,6 @@ import {
 import { ScannerCamera } from '@/features/document-analysis/presentation/scanner-camera';
 import { AudioUploader } from './audio-uploader';
 import { VideoUploader } from './video-uploader';
-import { SampleDemoBar } from './sample-demo-bar';
 import { SecurityBadges } from './security-badges';
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
@@ -40,15 +39,18 @@ export function OmniDropzone() {
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionPct, setCompressionPct] = useState(0);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // Strictly auto-scroll to the bottom of the page when landed.
-    // We use a small timeout to ensure all layout paints and animations
-    // have completed calculating their final DOM height.
+    // Auto-scroll to the top of the dropzone so the tabs are visible below the header.
     const scrollTimer = setTimeout(() => {
-      window.scrollTo({
-        top: document.body.scrollHeight + 5000, // Overshoot to guarantee bottom
-        behavior: 'smooth',
-      });
+      if (containerRef.current) {
+        const y = containerRef.current.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({
+          top: Math.max(0, y),
+          behavior: 'smooth',
+        });
+      }
     }, 150);
 
     return () => clearTimeout(scrollTimer);
@@ -307,7 +309,7 @@ export function OmniDropzone() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col" ref={containerRef}>
       <Dialog
         size="xl"
         open={isUpgradeModalOpen}
@@ -563,7 +565,7 @@ export function OmniDropzone() {
       </div>
 
       {/* Main Layout: Linear Stack matching clearcut-app */}
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+      <div className="mx-auto flex w-full flex-col gap-6">
         {/* Active Tab Content Area */}
         <div
           className={cn(
@@ -713,12 +715,6 @@ export function OmniDropzone() {
         </div>
 
         {/* -- Bottom Utilities Area -- */}
-
-        {/* Sample Demo Bar */}
-        <SampleDemoBar
-          onSelectSample={(sampleText) => handleUrlAnalyze(sampleText)}
-          disabled={isUploading || isAnalyzing}
-        />
 
         {/* Supported formats strip */}
         <div className="rounded-2xl border border-border-subtle bg-surface-2/30 px-4 py-4 sm:px-5">

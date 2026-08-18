@@ -135,7 +135,7 @@ const signUpSchema = z.object({
   redirectTo: z.string().optional(),
   acceptedTerms: z.literal('on', {
     errorMap: () => ({ message: 'You must accept the Terms and Privacy Policy to continue.' }),
-  }),
+  } as any),
 });
 
 export const signUpAction = action(

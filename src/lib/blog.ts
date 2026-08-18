@@ -22,8 +22,8 @@ function parseFrontmatter(rawContent: string) {
   const match = rawContent.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!match) return { data: {}, content: rawContent };
 
-  const frontmatterStr = match[1];
-  const content = match[2];
+  const frontmatterStr = match[1] || '';
+  const content = match[2] || '';
 
   const data: Record<string, string> = {};
   frontmatterStr.split(/\r?\n/).forEach((line) => {

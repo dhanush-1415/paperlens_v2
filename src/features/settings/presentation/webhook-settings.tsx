@@ -74,7 +74,7 @@ export function WebhookSettings({ webhooks }: WebhookSettingsProps) {
                   </div>
                 </div>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handleDelete(wh.id)}
                   className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
@@ -103,7 +103,7 @@ export function WebhookSettings({ webhooks }: WebhookSettingsProps) {
               onChange={(e) => setSecret(e.target.value)}
               className="flex-1 rounded-lg border border-border-subtle bg-surface-1 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none"
             />
-            <Button onClick={handleAdd} isLoading={isAdding} disabled={!url} className="px-6">
+            <Button onClick={handleAdd} loading={isAdding} disabled={!url} className="px-6">
               Add Endpoint
             </Button>
           </div>
