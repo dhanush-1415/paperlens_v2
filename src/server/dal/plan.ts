@@ -95,7 +95,7 @@ export async function getUserInvoices(userId: string) {
       const { listOrders } = await import('@/lib/lemonsqueezy');
       const res = await listOrders({ filter: { customerId: sub.lemonCustomerId } as any });
       if (res.data) {
-        for (const inv of res.data as any[]) {
+        for (const inv of (res.data as unknown as any[])) {
           invoices.push({
             id: String(inv.id),
             date: new Date(inv.attributes.created_at).toLocaleDateString(),
@@ -112,7 +112,7 @@ export async function getUserInvoices(userId: string) {
     try {
       const { getRazorpayInvoices } = await import('@/lib/razorpay');
       const rzpInvoices = await getRazorpayInvoices(sub.razorpayCustomerId);
-      for (const inv of rzpInvoices as any[]) {
+      for (const inv of (rzpInvoices as unknown as any[])) {
         invoices.push({
           id: inv.receipt || inv.id,
           date: new Date(((inv.created_at as number) || 0) * 1000).toLocaleDateString(),
