@@ -38,7 +38,7 @@ export function ProfileDropdown({
         className="group flex cursor-pointer items-center gap-3 pr-1 pl-1"
         aria-expanded={isOpen}
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#9333EA] to-[#A855F7] text-[13px] font-bold text-white shadow-md ring-1 shadow-brand-primary/30 ring-border-strong/10 transition-all">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-purple-500 text-[13px] font-bold text-white shadow-md ring-1 shadow-brand-primary/30 ring-border-strong/10 transition-all">
           {userInitials}
         </div>
         <div className="hidden flex-col items-start leading-none md:flex">
@@ -71,7 +71,7 @@ export function ProfileDropdown({
       >
         <div className="px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#4F46E5] text-[14px] font-bold text-white shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[14px] font-bold text-white shadow-sm">
               {userInitials}
             </div>
             <div className="flex flex-col overflow-hidden">
@@ -140,7 +140,7 @@ export function ProfileDropdown({
           <form action={signOutAction}>
             <button
               type="submit"
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#ef4444] transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
             >
               <svg className="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

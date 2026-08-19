@@ -11,25 +11,23 @@ import { afterEach, beforeAll, vi } from 'vitest';
  * injected explicitly through the DI container.
  */
 
-beforeAll(() => {
-  // jsdom implements neither, and the design system's responsive + motion primitives
-  // read both. Default to "no preference, desktop width".
-  if (!window.matchMedia) {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: (query: string) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      }),
-    });
-  }
+if (!window.matchMedia) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  });
+}
 
+beforeAll(() => {
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
       observe() {}

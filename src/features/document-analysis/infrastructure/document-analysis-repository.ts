@@ -51,10 +51,10 @@ function toEntity(record: any): DocumentAnalysis {
 
   const analysis: DocumentAnalysis = {
     id: record.id,
-    ownerId: record.ownerId,
+    ownerId: record.ownerId ?? record.owner_id,
     title: record.title,
-    documentType: record.documentType,
-    charCount: record.charCount,
+    documentType: record.documentType ?? record.document_type,
+    charCount: record.charCount ?? record.char_count,
     flags,
     resolvedFlagIds: record.resolvedFlagIds || [],
     score: scoreOf(flags),
@@ -69,8 +69,16 @@ function toEntity(record: any): DocumentAnalysis {
     confidence: record.confidence,
     suggestedQuestions: record.suggestedQuestions || [],
     timeline: (record.timeline as any) || [],
-    deadlineDate: record.deadlineDate?.toISOString() || null,
-    analyzedAt: record.analyzedAt.toISOString(),
+    deadlineDate: record.deadlineDate
+      ? typeof record.deadlineDate === 'string'
+        ? record.deadlineDate
+        : record.deadlineDate.toISOString()
+      : null,
+    analyzedAt: record.analyzedAt
+      ? typeof record.analyzedAt === 'string'
+        ? record.analyzedAt
+        : record.analyzedAt.toISOString()
+      : record.analyzed_at,
   };
 
   /**
@@ -100,6 +108,32 @@ export function createDocumentAnalysisRepository(
     async save(draft) {
       return attempt(async () => {
         const id = uuid();
+
+        if (deps?.dataSource) {
+          const record = await deps.dataSource.insert({
+            id,
+            owner_id: draft.ownerId,
+            title: draft.title,
+            document_type: draft.documentType,
+            char_count: draft.charCount,
+            score_value: draft.score.value,
+            score_level: draft.score.level,
+            analyzed_at: new Date(draft.analyzedAt).toISOString(),
+            flags: draft.flags.map((f) => ({
+              id: f.id,
+              category: f.category,
+              level: f.level,
+              title: f.title,
+              excerpt: f.excerpt,
+              explanation: f.explanation,
+              recommendation: f.recommendation || null,
+              char_start: f.charStart,
+              char_end: f.charEnd,
+            })),
+            deleted_at: null,
+          });
+          return toEntity(record);
+        }
 
         const record = await prisma.documentAnalysis.create({
           data: {
@@ -143,6 +177,11 @@ export function createDocumentAnalysisRepository(
 
     async findById(id, ownerId) {
       return attempt(async () => {
+        if (deps?.dataSource) {
+          const record = await deps.dataSource.selectById(id, ownerId);
+          return record === null ? null : toEntity(record);
+        }
+
         const record = await prisma.documentAnalysis.findFirst({
           where: { id, ownerId, deletedAt: null },
         });
@@ -152,6 +191,11 @@ export function createDocumentAnalysisRepository(
 
     async listRecent(ownerId, limit) {
       return attempt(async () => {
+        if (deps?.dataSource) {
+          const records = await deps.dataSource.selectRecent(ownerId, limit);
+          return records.map((record: any) => toSummary(toEntity(record)));
+        }
+
         const records = await prisma.documentAnalysis.findMany({
           where: { ownerId, deletedAt: null },
           orderBy: { analyzedAt: 'desc' },
@@ -169,6 +213,11 @@ export function createDocumentAnalysisRepository(
 
     async remove(id, ownerId) {
       return attempt(async () => {
+        if (deps?.dataSource) {
+          await deps.dataSource.softDelete(id, ownerId);
+          return;
+        }
+
         await prisma.documentAnalysis.updateMany({
           where: { id, ownerId },
           data: { deletedAt: new Date() },

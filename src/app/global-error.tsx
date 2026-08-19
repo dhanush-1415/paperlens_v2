@@ -44,7 +44,7 @@ const CRITICAL_CSS = `
 
  @media (prefers-color-scheme: dark) {
  :root {
- --ge-canvas: #0b0f19;
+ --ge-canvas: #0a1224;
  --ge-surface: #111827;
  --ge-border: #1f2937;
  --ge-text: #F5F6F8;
