@@ -28,7 +28,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { cn } from '@/shared/ui/cn';
 import { Badge, Text, Tooltip, Drawer } from '@/shared/ui';
@@ -230,10 +230,16 @@ export interface AppSidebarProps {
 
 export function AppSidebar({ role, plan, scansUsed, productName, signOutAction }: AppSidebarProps) {
   const pathname = usePathname();
-  const isCollapsed = useSidebarStore((s) => s.isCollapsed);
+  const isCollapsedStore = useSidebarStore((s) => s.isCollapsed);
   const userCollapsedPreference = useSidebarStore((s) => s.userCollapsedPreference);
   const toggle = useSidebarStore((s) => s.toggle);
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
+
+  const [isMounted, setIsMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setIsMounted(true), []);
+
+  const isCollapsed = isMounted ? isCollapsedStore : false;
 
   // Auto-collapse sidebar on document view or smaller screens, restore preference otherwise
   useEffect(() => {

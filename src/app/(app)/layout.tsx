@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { connection } from 'next/server';
 
 import { resolveTenant } from '@/config/tenant';
 import { serverEnv } from '@/config/env.server';
@@ -113,8 +114,6 @@ async function DynamicShell({ children }: { children: React.ReactNode }) {
   let scansLimit = 0;
   if (session?.userId) {
     try {
-      const { connection } = await import('next/server');
-      await connection();
       const { getUserPlan } = await import('@/server/dal/plan');
       const { subscription, plan: dbPlan } = await getUserPlan();
       scansUsed = subscription.scansUsed;
@@ -190,8 +189,6 @@ async function DynamicShell({ children }: { children: React.ReactNode }) {
     </AuthProvider>
   );
 }
-
-import { connection } from 'next/server';
 
 export default async function AppLayout({ children }: any) {
   return (

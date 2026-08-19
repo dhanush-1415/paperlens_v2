@@ -5,8 +5,8 @@ import { prisma } from '@/server/db/prisma';
 import { scoreOf } from '@/features/document-analysis/domain/risk';
 
 export async function GET(req: Request) {
+  await connection();
   try {
-    await connection();
     const session = await requireSession();
     const { searchParams } = new URL(req.url);
     const rawParentId = searchParams.get('parentId');
