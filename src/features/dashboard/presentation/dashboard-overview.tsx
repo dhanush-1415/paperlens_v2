@@ -68,11 +68,13 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
               className="text-3xl font-extrabold tracking-tight text-white drop-shadow-sm sm:text-4xl"
             >
               Good{' '}
-              {new Date().getHours() < 12
-                ? 'Morning'
-                : new Date().getHours() < 18
-                  ? 'Afternoon'
-                  : 'Evening'}
+              <span suppressHydrationWarning>
+                {new Date().getHours() < 12
+                  ? 'Morning'
+                  : new Date().getHours() < 18
+                    ? 'Afternoon'
+                    : 'Evening'}
+              </span>
               , {user.name || user.email.split('@')[0]} 👋
             </Heading>
             <Text className="max-w-xl text-sm font-medium tracking-wide text-white/90 sm:text-base">
@@ -285,6 +287,7 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
                                     size="xs"
                                     tone="tertiary"
                                     className="mt-0.5 font-medium sm:hidden"
+                                    suppressHydrationWarning
                                   >
                                     Analyzed {new Date(doc.analyzedAt).toLocaleDateString()}
                                   </Text>
@@ -301,7 +304,7 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
                               </Badge>
                             </td>
                             <td className="hidden px-6 py-4 sm:table-cell">
-                              <Text size="sm" tone="secondary" className="font-medium">
+                              <Text size="sm" tone="secondary" className="font-medium" suppressHydrationWarning>
                                 {new Date(doc.analyzedAt).toLocaleDateString()}
                               </Text>
                             </td>
