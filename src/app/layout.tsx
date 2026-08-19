@@ -66,6 +66,10 @@ export const metadata: Metadata = {
   },
   description: appConfig.description,
   applicationName: tenant.productName,
+  keywords: ["Document analysis", "AI document scanning", "OCR", "PaperLens", "legal document AI", "contract analysis"],
+  authors: [{ name: tenant.productName }],
+  creator: tenant.productName,
+  publisher: tenant.productName,
   referrer: 'strict-origin-when-cross-origin',
   formatDetection: { telephone: false, address: false, email: false },
   openGraph: {
@@ -74,11 +78,23 @@ export const metadata: Metadata = {
     title: `${tenant.productName} — ${tenant.tagline}`,
     description: appConfig.description,
     url: appConfig.url,
+    images: [
+      {
+        url: `${appConfig.url}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: `${tenant.productName} - Understand any document`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: tenant.productName,
+    title: `${tenant.productName} — ${tenant.tagline}`,
     description: appConfig.description,
+    images: [`${appConfig.url}/og-image.png`],
+  },
+  alternates: {
+    canonical: appConfig.url,
   },
   /**
    * Pre-production deployments are excluded from search engines at the source. A staging
@@ -86,7 +102,17 @@ export const metadata: Metadata = {
    */
   robots: appConfig.isPreProduction
     ? { index: false, follow: false }
-    : { index: true, follow: true },
+    : { 
+        index: true, 
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        }
+      },
 };
 
 /**
