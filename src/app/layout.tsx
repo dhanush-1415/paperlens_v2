@@ -151,8 +151,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         {/* First, before anything paints: the theme must be resolved before the browser has
  content to show. */}
         <ThemeScript />
-        {/* Plausible analytics – loaded after consent */}
-        <Script src="https://plausible.io/js/plausible.js" defer data-domain="paperlens.io" />
+        {/* Plausible analytics – loaded off the main thread to eliminate TBT */}
+        <Script 
+          src="https://plausible.io/js/plausible.js" 
+          strategy="lazyOnload" 
+          data-domain="paperlens.co" 
+        />
         {/* Tenant tokens */}
         <TenantTokens tenant={tenant} />
       </head>
