@@ -66,7 +66,14 @@ export const metadata: Metadata = {
   },
   description: appConfig.description,
   applicationName: tenant.productName,
-  keywords: ["Document analysis", "AI document scanning", "OCR", "PaperLens", "legal document AI", "contract analysis"],
+  keywords: [
+    'Document analysis',
+    'AI document scanning',
+    'OCR',
+    'PaperLens',
+    'legal document AI',
+    'contract analysis',
+  ],
   authors: [{ name: tenant.productName }],
   creator: tenant.productName,
   publisher: tenant.productName,
@@ -102,8 +109,8 @@ export const metadata: Metadata = {
    */
   robots: appConfig.isPreProduction
     ? { index: false, follow: false }
-    : { 
-        index: true, 
+    : {
+        index: true,
         follow: true,
         googleBot: {
           index: true,
@@ -111,7 +118,7 @@ export const metadata: Metadata = {
           'max-video-preview': -1,
           'max-image-preview': 'large',
           'max-snippet': -1,
-        }
+        },
       },
 };
 

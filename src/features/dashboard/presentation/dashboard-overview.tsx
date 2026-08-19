@@ -304,7 +304,12 @@ export function DashboardOverview({ user, usage, dashboardData }: DashboardOverv
                               </Badge>
                             </td>
                             <td className="hidden px-6 py-4 sm:table-cell">
-                              <Text size="sm" tone="secondary" className="font-medium" suppressHydrationWarning>
+                              <Text
+                                size="sm"
+                                tone="secondary"
+                                className="font-medium"
+                                suppressHydrationWarning
+                              >
                                 {new Date(doc.analyzedAt).toLocaleDateString()}
                               </Text>
                             </td>
