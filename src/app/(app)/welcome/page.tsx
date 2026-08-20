@@ -1,6 +1,7 @@
 import { requireSession } from '@/server/bootstrap';
 import { DashboardOverview } from '@/features/dashboard';
 import { prisma } from '@/server/db/prisma';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Dashboard',
@@ -9,6 +10,7 @@ export const metadata = {
 export const instant = false;
 
 export default async function DashboardPage() {
+  await connection();
   const session = await requireSession();
 
   // Graceful degradation: wrap database queries in a try-catch to prevent page crashes

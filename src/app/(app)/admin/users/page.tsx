@@ -1,11 +1,13 @@
 import { requireSession } from '@/server/bootstrap';
 import { Heading, Text, Badge, Button, DataTable } from '@/shared/ui';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Admin - Users',
 };
 
 export default async function AdminUsersPage() {
+  await connection();
   await requireSession();
 
   const { prisma } = await import('@/server/db/prisma');

@@ -65,8 +65,10 @@ function Report({ analysis, plan }: { readonly analysis: any; plan: any }) {
 }
 
 import { prisma } from '@/server/db/prisma';
+import { connection } from 'next/server';
 
 async function DocumentContainer({ params }: { params: Promise<{ id: string }> }) {
+  await connection();
   const { id } = await params;
   const session = await requirePermission('document.read');
   const result = await getServerContainer().resolve(GET_DOCUMENT_ANALYSIS)(id, session.userId);

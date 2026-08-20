@@ -3,6 +3,7 @@ import { BillingPage } from '@/features/billing';
 import { getUserPlan, getUserInvoices } from '@/server/dal/plan';
 import { prisma } from '@/server/db/prisma';
 import { scoreOf } from '@/features/document-analysis/domain';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Billing & Usage',
@@ -11,6 +12,7 @@ export const metadata = {
 export const instant = false;
 
 export default async function BillingRoute() {
+  await connection();
   const session = await requireSession(); // Ensure user is authenticated
 
   let plan: any = { displayName: 'Free Plan', quotaScansPerMonth: 10 };
