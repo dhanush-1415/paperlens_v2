@@ -10,10 +10,15 @@ export default async function AdminLogsPage() {
 
   const { prisma } = await import('@/server/db/prisma');
 
-  const recentDocs = await prisma.documentAnalysis.findMany({
-    take: 50,
-    orderBy: { analyzedAt: 'desc' },
-  });
+  let recentDocs: any[] = [];
+  try {
+    recentDocs = await prisma.documentAnalysis.findMany({
+      take: 50,
+      orderBy: { analyzedAt: 'desc' },
+    });
+  } catch (error) {
+    console.error('Database connection failed gracefully on Admin Logs Page:', error);
+  }
 
   let rawAuthLogs: any[] = [];
   try {

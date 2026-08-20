@@ -30,27 +30,63 @@ export default async function Page({
   const endOfDay = new Date(endDate);
   endOfDay.setHours(23, 59, 59, 999);
 
-  // 1. Total Scans and Growth (filtered by date range)
-  const totalScans = await prisma.documentAnalysis.count({
-    where: {
-      ownerId: session.userId,
-      deletedAt: null,
-      analyzedAt: { gte: startDate, lte: endOfDay },
-    },
-  });
+  let totalScans = 0;
+  let priorPeriodScans = 0;
+  let vaultDocs = 0;
+  let allAnalyses: any[] = [];
+  let recentDocs: any[] = [];
 
-  // Growth is calculated relative to the prior period of the same length
-  const periodDurationMs = endOfDay.getTime() - startDate.getTime();
-  const priorPeriodStart = new Date(startDate.getTime() - periodDurationMs);
-  const priorPeriodEnd = new Date(startDate.getTime() - 1);
+  try {
+    // 1. Total Scans and Growth (filtered by date range)
+    totalScans = await prisma.documentAnalysis.count({
+      where: {
+        ownerId: session.userId,
+        deletedAt: null,
+        analyzedAt: { gte: startDate, lte: endOfDay },
+      },
+    });
 
-  const priorPeriodScans = await prisma.documentAnalysis.count({
-    where: {
-      ownerId: session.userId,
-      deletedAt: null,
-      analyzedAt: { gte: priorPeriodStart, lte: priorPeriodEnd },
-    },
-  });
+    // Growth is calculated relative to the prior period of the same length
+    const periodDurationMs = endOfDay.getTime() - startDate.getTime();
+    const priorPeriodStart = new Date(startDate.getTime() - periodDurationMs);
+    const priorPeriodEnd = new Date(startDate.getTime() - 1);
+
+    priorPeriodScans = await prisma.documentAnalysis.count({
+      where: {
+        ownerId: session.userId,
+        deletedAt: null,
+        analyzedAt: { gte: priorPeriodStart, lte: priorPeriodEnd },
+      },
+    });
+
+    // 2. Vault Docs
+    vaultDocs = await prisma.document.count({
+      where: { userId: session.userId },
+    });
+
+    // 3. Risk Distribution & High Risk
+    allAnalyses = await prisma.documentAnalysis.findMany({
+      where: {
+        ownerId: session.userId,
+        deletedAt: null,
+        analyzedAt: { gte: startDate, lte: endOfDay },
+      },
+      select: { scoreLevel: true, analyzedAt: true },
+    });
+
+    // 4. Recent Activity (Fetch up to 1000 for detailed enterprise report)
+    recentDocs = await prisma.documentAnalysis.findMany({
+      where: {
+        ownerId: session.userId,
+        deletedAt: null,
+        analyzedAt: { gte: startDate, lte: endOfDay },
+      },
+      orderBy: { analyzedAt: 'desc' },
+      take: 1000,
+    });
+  } catch (error) {
+    console.error('Database connection failed gracefully on AnalyticsPage:', error);
+  }
 
   let totalScansGrowth = '0% this period';
   if (priorPeriodScans > 0) {
@@ -59,21 +95,6 @@ export default async function Page({
   } else if (totalScans > 0) {
     totalScansGrowth = `+100% prior period`;
   }
-
-  // 2. Vault Docs
-  const vaultDocs = await prisma.document.count({
-    where: { userId: session.userId },
-  });
-
-  // 3. Risk Distribution & High Risk
-  const allAnalyses = await prisma.documentAnalysis.findMany({
-    where: {
-      ownerId: session.userId,
-      deletedAt: null,
-      analyzedAt: { gte: startDate, lte: endOfDay },
-    },
-    select: { scoreLevel: true, analyzedAt: true },
-  });
 
   const safeCount = allAnalyses.filter(
     (a) => a.scoreLevel === 'safe' || a.scoreLevel === 'low',
@@ -92,17 +113,6 @@ export default async function Page({
     cautionPercentage: Math.round((cautionCount / totalSafeCautionCritical) * 100),
     criticalPercentage: Math.round((criticalCount / totalSafeCautionCritical) * 100),
   };
-
-  // 4. Recent Activity (Fetch up to 1000 for detailed enterprise report)
-  const recentDocs = await prisma.documentAnalysis.findMany({
-    where: {
-      ownerId: session.userId,
-      deletedAt: null,
-      analyzedAt: { gte: startDate, lte: endOfDay },
-    },
-    orderBy: { analyzedAt: 'desc' },
-    take: 1000,
-  });
 
   const recentActivity = recentDocs.map((doc) => {
     let risk: 'safe' | 'caution' | 'critical' = 'safe';

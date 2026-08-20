@@ -11,47 +11,62 @@ export const instant = false;
 export default async function DashboardPage() {
   const session = await requireSession();
 
-  // Fetch real data in parallel
-  const [
-    totalScans,
-    activeDocuments,
-    recentDocuments,
-    allCriticalCount,
-    recentDocsForChart,
-    userSubscription,
-  ] = await Promise.all([
-    prisma.documentAnalysis.count({
-      where: { ownerId: session.userId, deletedAt: null },
-    }),
-    prisma.documentAnalysis.count({
-      where: {
-        ownerId: session.userId,
-        deletedAt: null,
-        scoreLevel: { in: ['critical', 'caution'] },
-      },
-    }),
-    prisma.documentAnalysis.findMany({
-      where: { ownerId: session.userId, deletedAt: null },
-      orderBy: { analyzedAt: 'desc' },
-      take: 5,
-    }),
-    prisma.documentAnalysis.count({
-      where: { ownerId: session.userId, deletedAt: null, scoreLevel: 'critical' },
-    }),
-    prisma.documentAnalysis.findMany({
-      where: {
-        ownerId: session.userId,
-        analyzedAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0) - 6 * 24 * 60 * 60 * 1000),
+  // Graceful degradation: wrap database queries in a try-catch to prevent page crashes
+  // due to Vercel/Supabase IPv6 connection timeouts.
+  let totalScans = 0;
+  let activeDocuments = 0;
+  let recentDocuments: any[] = [];
+  let allCriticalCount = 0;
+  let recentDocsForChart: { analyzedAt: Date }[] = [];
+  let userSubscription: any = null;
+
+  try {
+    const results = await Promise.all([
+      prisma.documentAnalysis.count({
+        where: { ownerId: session.userId, deletedAt: null },
+      }),
+      prisma.documentAnalysis.count({
+        where: {
+          ownerId: session.userId,
+          deletedAt: null,
+          scoreLevel: { in: ['critical', 'caution'] },
         },
-      },
-      select: { analyzedAt: true },
-    }),
-    prisma.userSubscription.findUnique({
-      where: { userId: session.userId },
-      include: { plan: true },
-    }),
-  ]);
+      }),
+      prisma.documentAnalysis.findMany({
+        where: { ownerId: session.userId, deletedAt: null },
+        orderBy: { analyzedAt: 'desc' },
+        take: 5,
+      }),
+      prisma.documentAnalysis.count({
+        where: { ownerId: session.userId, deletedAt: null, scoreLevel: 'critical' },
+      }),
+      prisma.documentAnalysis.findMany({
+        where: {
+          ownerId: session.userId,
+          analyzedAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0) - 6 * 24 * 60 * 60 * 1000),
+          },
+        },
+        select: { analyzedAt: true },
+      }),
+      prisma.userSubscription.findUnique({
+        where: { userId: session.userId },
+        include: { plan: true },
+      }),
+    ]);
+
+    [
+      totalScans,
+      activeDocuments,
+      recentDocuments,
+      allCriticalCount,
+      recentDocsForChart,
+      userSubscription,
+    ] = results;
+  } catch (error) {
+    // Suppress the error from crashing the UI, but log it so the monitoring catches it
+    console.error('Database connection failed gracefully on DashboardPage:', error);
+  }
 
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const activityMap = new Map(days.map((d) => [d, 0]));

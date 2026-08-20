@@ -10,14 +10,21 @@ export default async function AdminUsersPage() {
 
   const { prisma } = await import('@/server/db/prisma');
 
-  const profiles = await prisma.profile.findMany({
-    take: 50,
-    orderBy: { updatedAt: 'desc' },
-  });
+  let profiles: any[] = [];
+  let subscriptions: any[] = [];
+  
+  try {
+    profiles = await prisma.profile.findMany({
+      take: 50,
+      orderBy: { updatedAt: 'desc' },
+    });
 
-  const subscriptions = await prisma.userSubscription.findMany({
-    include: { plan: true },
-  });
+    subscriptions = await prisma.userSubscription.findMany({
+      include: { plan: true },
+    });
+  } catch (error) {
+    console.error('Database connection failed gracefully on Admin Users Page:', error);
+  }
 
   const { serverEnv } = await import('@/config/env.server');
   const { createClient } = await import('@supabase/supabase-js');

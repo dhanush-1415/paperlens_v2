@@ -13,32 +13,46 @@ export const instant = false;
 export default async function BillingRoute() {
   const session = await requireSession(); // Ensure user is authenticated
 
-  const { plan, subscription } = await getUserPlan();
+  let plan: any = { displayName: 'Free Plan', quotaScansPerMonth: 10 };
+  let subscription: any = { scansUsed: 0, usageResetAt: new Date() };
+  let dbSub: any = null;
+  let analyses: any[] = [];
+  let invoices: any[] = [];
+
+  try {
+    const planResult = await getUserPlan();
+    plan = planResult.plan;
+    subscription = planResult.subscription;
+
+    dbSub = await prisma.userSubscription.findUnique({
+      where: { userId: session.userId },
+    });
+
+    analyses = await prisma.documentAnalysis.findMany({
+      where: { ownerId: session.userId, deletedAt: null },
+    });
+    
+    invoices = await getUserInvoices(session.userId);
+  } catch (error) {
+    console.error('Database connection failed gracefully on BillingRoute:', error);
+  }
 
   const planData = {
     plan: {
-      displayName: plan.displayName,
-      quotaScansPerMonth: plan.quotaScansPerMonth,
+      displayName: plan?.displayName || 'Free Plan',
+      quotaScansPerMonth: plan?.quotaScansPerMonth || 10,
     },
     subscription: {
-      scansUsed: subscription.scansUsed,
-      usageResetAt: subscription.usageResetAt.toISOString(),
+      scansUsed: subscription?.scansUsed || 0,
+      usageResetAt: subscription?.usageResetAt?.toISOString() || new Date().toISOString(),
     },
   };
-
-  const dbSub = await prisma.userSubscription.findUnique({
-    where: { userId: session.userId },
-  });
 
   const paymentMethod = dbSub?.lemonSubscriptionId
     ? 'LemonSqueezy'
     : dbSub?.razorpaySubscriptionId
       ? 'Razorpay'
       : null;
-
-  const analyses = await prisma.documentAnalysis.findMany({
-    where: { ownerId: session.userId, deletedAt: null },
-  });
   const { serverEnv } = await import('@/config/env.server');
   const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(
@@ -76,7 +90,7 @@ export default async function BillingRoute() {
         : null,
   };
 
-  const invoices = await getUserInvoices(session.userId);
+
 
   return (
     <BillingPage

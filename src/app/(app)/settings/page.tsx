@@ -11,10 +11,23 @@ export const instant = false;
 export default async function SettingsRoute() {
   const session = await requireSession(); // Ensure user is authenticated
 
-  // Fetch profile if exists
-  const profile = await prisma.profile.findUnique({
-    where: { id: session.userId },
-  });
+  // Graceful degradation for database timeouts
+  let profile: any = null;
+  let webhooks: any[] = [];
+  try {
+    profile = await prisma.profile.findUnique({
+      where: { id: session.userId },
+    });
+
+    webhooks = prisma.webhook
+      ? await prisma.webhook.findMany({
+          where: { userId: session.userId },
+          orderBy: { createdAt: 'desc' },
+        })
+      : [];
+  } catch (error) {
+    console.error('Database connection failed gracefully on SettingsPage:', error);
+  }
 
   const { serverEnv } = await import('@/config/env.server');
   const { createClient } = await import('@supabase/supabase-js');
@@ -25,14 +38,6 @@ export default async function SettingsRoute() {
   const {
     data: { user },
   } = await supabase.auth.admin.getUserById(session.userId);
-
-  // Gracefully handle if the webhook model isn't generated in Prisma yet
-  const webhooks = prisma.webhook
-    ? await prisma.webhook.findMany({
-        where: { userId: session.userId },
-        orderBy: { createdAt: 'desc' },
-      })
-    : [];
 
   return (
     <SettingsPage

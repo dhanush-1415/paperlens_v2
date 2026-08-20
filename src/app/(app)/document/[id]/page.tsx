@@ -80,10 +80,15 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
     analysisData.flags.length > 0 &&
     analysisData.resolvedFlagIds.length >= analysisData.flags.length;
 
-  const sub = await prisma.userSubscription.findFirst({
-    where: { userId: session.userId },
-    include: { plan: true },
-  });
+  let sub: any = null;
+  try {
+    sub = await prisma.userSubscription.findFirst({
+      where: { userId: session.userId },
+      include: { plan: true },
+    });
+  } catch (error) {
+    console.error('Database connection failed gracefully on DocumentPage:', error);
+  }
 
   const plan = {
     canChat: sub ? sub.chatMessagesUsed < (sub.plan?.quotaChatMessagesPerMonth || 20) : false,
