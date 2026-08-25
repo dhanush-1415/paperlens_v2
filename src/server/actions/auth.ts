@@ -194,6 +194,9 @@ export const verifyOtpAction = action(
       throw attempt.error;
     }
 
+    const { sendWelcomeEmail } = await import('@/lib/emails/welcome');
+    void sendWelcomeEmail(email);
+
     redirect(DEFAULT_AUTHENTICATED_ROUTE);
   },
 );

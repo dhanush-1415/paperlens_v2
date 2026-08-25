@@ -19,7 +19,7 @@ import { forbiddenError, validationError } from '@/core/errors/app-error';
 import { ANALYSIS_SOURCE, ANALYZE_RATE_SCOPE } from '../constants';
 import { ANALYZE_DOCUMENT } from '../tokens';
 import { analyzeDocumentSchema } from '../validation';
-import { extractTextFromFile } from '../application';
+
 import { vectorizeDocument } from '../application/vectorize-document';
 import { dispatchWebhookEvent } from '@/features/webhooks/application';
 
@@ -109,6 +109,7 @@ export const analyzeDocumentAction = action(
       mimeType = file.type;
 
       // Upload original file to Supabase Storage
+      console.info(`[Action] Uploading ${file.size} byte file to Supabase Storage...`);
       if (serverEnv.SUPABASE_URL && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
         try {
           const supabaseAdmin = createClient(
@@ -128,53 +129,9 @@ export const analyzeDocumentAction = action(
           fileUrl = data.publicUrl;
         } catch (e) {
           console.error('Failed to upload to S3', e);
-          // Continue anyway; we don't want to break the pipeline if S3 fails
-        }
-      }
-      if (
-        file.type.startsWith('image/') ||
-        file.type.startsWith('audio/') ||
-        file.type.startsWith('video/')
-      ) {
-        const buffer = await file.arrayBuffer();
-        media = {
-          data: Buffer.from(buffer).toString('base64'),
-          mimeType: file.type,
-        };
-        formData.set(
-          'text',
-          '[Media File Analysis: This file contains image/video content that will be analysed natively by the AI vision model. Bypass min length validation limit.]',
-        ); // Satisfy Zod schema
-      } else {
-        try {
-          const extractedText = await extractTextFromFile(file);
-
-          // HEURISTIC: For PDFs, check if the extracted text is meaningful.
-          // If it's mostly garbage (e.g. from embedded fonts) or empty, fall back to Vision.
-          const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-          const letterCount = (extractedText.match(/\p{L}/gu) ?? []).length;
-          const textIsMeaningful =
-            extractedText.trim().length > 20 && letterCount / extractedText.trim().length > 0.4;
-
-          if (isPdf && !textIsMeaningful) {
-            const buffer = await file.arrayBuffer();
-            media = {
-              data: Buffer.from(buffer).toString('base64'),
-              mimeType: 'application/pdf',
-            };
-            formData.set(
-              'text',
-              '[Scanned PDF sent as media for native AI OCR because no readable text was extracted by pdf-parse. Bypass min length limit.]',
-            );
-          } else {
-            formData.set('text', extractedText);
+          if (file) {
+            throw new Error("File uploads are now processed directly via Supabase and FastAPI pipeline.");
           }
-        } catch (error) {
-          throw validationError({
-            text: [
-              'Failed to extract text from the provided file. Ensure it is a supported format.',
-            ],
-          });
         }
       }
     }
@@ -191,17 +148,21 @@ export const analyzeDocumentAction = action(
     const startedAt = container.resolve(CLOCK)().getTime();
 
     // 5 ─ The operation. One resolved use case, one call, no assembly.
+    console.info(`[Action] Invoking Gemini Analysis with ${media ? 'Media (Vision)' : 'Text'} payload...`);
     const analysis = unwrapOrThrow(
       await container.resolve(ANALYZE_DOCUMENT)({
         ownerId: session.userId,
         text: input.text,
         media,
         documentType: input.documentType,
+        tone: input.tone,
         fileUrl,
         mimeType,
         ...(input.title === undefined ? {} : { title: input.title }),
       }),
     );
+
+    console.info(`[Action] Gemini Analysis completed successfully in ${container.resolve(CLOCK)().getTime() - startedAt}ms.`);
 
     container.resolve(ANALYTICS).track('document.analyzed', {
       documentId: analysis.id,
@@ -320,13 +281,12 @@ export const analyzeUrlAction = action(
       if (!response.ok) throw new Error('Failed to fetch URL');
       const html = await response.text();
 
-      const fakeFile = {
-        name: 'url.html',
-        type: 'text/html',
-        arrayBuffer: async () => Buffer.from(html).buffer as ArrayBuffer,
-        text: async () => html,
-      };
-      extractedText = await extractTextFromFile(fakeFile as any);
+      extractedText = html
+                        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                        .replace(/<[^>]+>/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
     } catch (e) {
       throw validationError({
         url: ['Could not read the contents of this URL. Ensure it is public and accessible.'],
@@ -347,5 +307,82 @@ export const analyzeUrlAction = action(
     await incrementScanUsage(session.userId);
     expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
     redirect(ROUTES.document(analysis.id));
+  },
+);
+
+export const reanalyzeDocumentAction = action(
+  'document.reanalyze',
+  async (_previous: unknown, formData: FormData): Promise<never> => {
+    const session = unwrapOrThrow(await checkPermissionResult('document.create'));
+    const container = getServerContainer();
+
+    const documentId = formData.get('documentId') as string;
+    const tone = formData.get('tone') as 'simple' | 'professional' | undefined;
+
+    if (!documentId) {
+      throw forbiddenError('Missing required identifiers');
+    }
+
+    const { prisma } = await import('@/server/db/prisma');
+
+    const doc = await prisma.documentAnalysis.findFirst({
+      where: { id: documentId, ownerId: session.userId },
+    });
+
+    if (!doc) throw forbiddenError('Document not found');
+
+    const requestedTone = tone || 'professional';
+    const isForce = formData.get('force') === 'true';
+    const cachedAnalyses = (doc.cachedAnalyses as Record<string, any>) || {};
+
+    let updateData: any;
+
+    if (cachedAnalyses[requestedTone] && !isForce) {
+      updateData = cachedAnalyses[requestedTone];
+    } else {
+      // Manually run the analyzer. 
+      // We bypass the ANALYZE_DOCUMENT usecase so we don't create a new database record.
+      const { DOCUMENT_ANALYZER } = await import('../tokens');
+      const analyzer = container.resolve(DOCUMENT_ANALYZER);
+      
+      const analysisResult = await analyzer.analyze({
+        text: doc.rawText,
+        documentType: doc.documentType as any,
+        tone: requestedTone as any,
+      });
+
+      if (analysisResult.ok === false) {
+        throw analysisResult.error;
+      }
+
+      const { scoreOf } = await import('../domain/risk');
+      const score = scoreOf(analysisResult.value.flags);
+
+      updateData = {
+        flags: analysisResult.value.flags as any,
+        scoreValue: score.value,
+        scoreLevel: score.level,
+        summary: analysisResult.value.summary,
+        actionPlan: analysisResult.value.actionPlan as string[],
+        urgency: analysisResult.value.urgency,
+        entities: analysisResult.value.entities as any,
+        legitimacy: analysisResult.value.legitimacy,
+        confidence: analysisResult.value.confidence,
+        suggestedQuestions: analysisResult.value.suggestedQuestions as string[],
+      };
+
+      cachedAnalyses[requestedTone] = updateData;
+    }
+
+    await prisma.documentAnalysis.update({
+      where: { id: documentId },
+      data: {
+        ...updateData,
+        cachedAnalyses,
+      },
+    });
+
+    expire([...documentTags(documentId, session.userId), ...vaultTags(session.userId)]);
+    redirect(ROUTES.document(documentId));
   },
 );

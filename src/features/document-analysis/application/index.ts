@@ -22,5 +22,4 @@ export {
   type RiskScoreDto,
 } from './dto';
 
-export { extractTextFromFile, type FileInput } from './extract-text';
-export { compressPdf } from './compress-pdf';
+

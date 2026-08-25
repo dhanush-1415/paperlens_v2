@@ -11,6 +11,8 @@ import { TenantTokens, ThemeScript } from '@/shared/ui/theme';
 import { Providers } from './providers';
 import { CookieConsent } from '@/shared/ui/patterns/cookie-consent';
 import { ROUTES } from '@/shared/constants/routes';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import './globals.css';
 
@@ -180,6 +182,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             policyHref={ROUTES.cookies as any}
           />
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

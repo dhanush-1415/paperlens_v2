@@ -32,7 +32,11 @@ export const CSP_STRATEGY: CspStrategy = 'compatible';
 
 /** Origins the browser is allowed to talk to. Add third parties here, nowhere else. */
 const CSP_ALLOWLIST = {
-  connect: ['https://plausible.io'] as string[],
+  connect: [
+    'https://plausible.io',
+    'http://localhost:8000',
+    process.env.NEXT_PUBLIC_FASTAPI_URL || ''
+  ].filter(Boolean) as string[],
   img: [] as string[],
   font: [] as string[],
   script: ['https://plausible.io'] as string[],
@@ -109,7 +113,7 @@ export const SECURITY_HEADERS: ReadonlyArray<{ key: string; value: string }> = [
     value: [
       'accelerometer=()',
       'autoplay=()',
-      'camera=()',
+      'camera=(self)',
       'display-capture=()',
       'encrypted-media=()',
       'fullscreen=(self)',

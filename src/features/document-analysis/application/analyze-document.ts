@@ -52,6 +52,7 @@ export interface AnalyzeDocumentInput {
     readonly mimeType: string;
   };
   readonly documentType: DocumentType;
+  readonly tone?: 'simple' | 'professional';
   /** Optional. Derived from the document's own first line when absent. */
   readonly title?: string;
   readonly fileUrl?: string;
@@ -127,6 +128,7 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
       text,
       documentType: input.documentType,
       media: input.media,
+      tone: input.tone,
     });
 
     /**
@@ -172,6 +174,20 @@ export function createAnalyzeDocument(deps: AnalyzeDocumentDeps): AnalyzeDocumen
       suggestedQuestions: flags.value.suggestedQuestions,
       timeline: flags.value.timeline,
       analyzedAt: deps.now().toISOString(),
+      cachedAnalyses: {
+        [input.tone || 'professional']: {
+          flags: flags.value.flags,
+          scoreValue: scoreOf(flags.value.flags).value,
+          scoreLevel: scoreOf(flags.value.flags).level,
+          summary: flags.value.summary,
+          actionPlan: flags.value.actionPlan || [],
+          urgency: flags.value.urgency,
+          entities: flags.value.entities || [],
+          legitimacy: flags.value.legitimacy,
+          confidence: flags.value.confidence,
+          suggestedQuestions: flags.value.suggestedQuestions,
+        },
+      },
     };
 
     const saved = await deps.repository.save(draft);

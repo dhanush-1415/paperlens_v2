@@ -6,6 +6,11 @@ import { Button } from '@/shared/ui/components/button';
 import { cn } from '@/shared/ui/cn';
 import { toast } from 'sonner';
 
+function isNextRedirect(error: any): boolean {
+  if (!error) return false;
+  return error.message?.includes('NEXT_REDIRECT') || error.digest?.includes('NEXT_REDIRECT');
+}
+
 // --- Constants ----------------------------------------------------------------
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -291,6 +296,7 @@ export function AudioUploader({ onFileReady, onScanningChange, disabled }: Audio
         await onFileReady(f);
         setState('idle');
       } catch (err) {
+        if (isNextRedirect(err)) throw err;
         const msg = err instanceof Error ? err.message : 'Analysis failed. Please try again.';
         setError(msg);
         setState('error');

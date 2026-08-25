@@ -32,13 +32,8 @@ import { DOCUMENT_TYPES } from '../domain';
  */
 export const analyzeDocumentSchema = z.object({
   text: documentTextSchema,
-  /**
-   * `z.enum` over the domain's own tuple, so the schema cannot fall out of step with the
-   * union it validates. Adding a document type to the domain automatically widens this; the
-   * label record in `constants.ts` then fails to compile until the new type is named, which
-   * is exactly the order those two changes should happen in.
-   */
   documentType: z.enum(DOCUMENT_TYPES, { message: 'validation.required' }),
+  tone: z.enum(['simple', 'professional']).optional(),
   title: optionalTextSchema(120),
 });
 
@@ -56,4 +51,5 @@ export const ANALYZE_FIELDS = {
   text: 'text',
   documentType: 'documentType',
   title: 'title',
+  tone: 'tone',
 } as const satisfies Record<keyof AnalyzeDocumentFormValues, string>;

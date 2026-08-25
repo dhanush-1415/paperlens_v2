@@ -9,7 +9,6 @@ import {
 } from './application';
 import {
   createDocumentAnalysisRepository,
-  createFakeAnalysisDataSource,
   createGeminiAnalyzer,
 } from './infrastructure';
 import {
@@ -54,17 +53,7 @@ export function registerDocumentAnalysis(container: Container): void {
 
   container.register(
     DOCUMENT_ANALYSIS_REPOSITORY,
-    (c) =>
-      createDocumentAnalysisRepository({
-        /**
-         * Constructed inline rather than given its own token. The data source is an
-         * implementation detail *of the repository* — no other consumer exists, and a token
-         * would advertise it as a seam the architecture does not want anyone using. When a
-         * real store arrives with a connection pool worth sharing, that is the moment it
-         * earns a token.
-         */
-        dataSource: createFakeAnalysisDataSource({ now: c.resolve(CLOCK) }),
-      }),
+    (c) => createDocumentAnalysisRepository(),
     'singleton',
   );
 

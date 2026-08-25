@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------
+  # Redis Message Broker
+  # ---------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - paperlens_network
+    restart: always
+
+  # ---------------------------------------------
+  # FastAPI Web Server
+  # ---------------------------------------------
+  web:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - paperlens_network
+    restart: always
+
+  # ---------------------------------------------
+  # Celery Worker Node
+  # ---------------------------------------------
+  celery_worker:
+    build: .
+    command: celery -A celery_worker.celery_app worker --loglevel=info --concurrency=4
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - web
+    networks:
+      - paperlens_network
+    restart: always
+
+networks:
+  paperlens_network:
+    driver: bridge
+
+volumes:
+  redis_data:

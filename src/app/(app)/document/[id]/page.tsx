@@ -60,16 +60,18 @@ const LABELS: AnalysisReportLabels = {
  * oracle that confirms which documents exist by returning 403 for the ones that do. Rendering
  * the same 404 for both is the other half of that decision.
  */
-function Report({ analysis, plan }: { readonly analysis: any; plan: any }) {
-  return <AnalysisReport analysis={analysis} labels={LABELS} plan={plan} />;
+function Report({ analysis, plan, tone }: { readonly analysis: any; plan: any; tone?: string }) {
+  return <AnalysisReport analysis={analysis} labels={LABELS} plan={plan} tone={tone} />;
 }
 
 import { prisma } from '@/server/db/prisma';
 import { connection } from 'next/server';
 
-async function DocumentContainer({ params }: { params: Promise<{ id: string }> }) {
+async function DocumentContainer({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   await connection();
   const { id } = await params;
+  const resolvedParams = await searchParams;
+  const tone = typeof resolvedParams.tone === 'string' ? resolvedParams.tone : undefined;
   const session = await requirePermission('document.read');
   const result = await getServerContainer().resolve(GET_DOCUMENT_ANALYSIS)(id, session.userId);
 
@@ -112,7 +114,7 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
       </header>
 
       <main className="min-h-0 flex-1 overflow-hidden">
-        <Report analysis={analysisDto} plan={plan} />
+        <Report analysis={analysisDto} plan={plan} tone={tone} />
       </main>
 
       <SidebarCollapser />
@@ -120,10 +122,10 @@ async function DocumentContainer({ params }: { params: Promise<{ id: string }> }
   );
 }
 
-export default function DocumentPage(props: PageProps<'/document/[id]'>) {
+export default function DocumentPage(props: any) {
   return (
     <Suspense fallback={<LoadingState label="Loading your analysis" />}>
-      <DocumentContainer params={props.params} />
+      <DocumentContainer params={props.params} searchParams={props.searchParams} />
     </Suspense>
   );
 }
