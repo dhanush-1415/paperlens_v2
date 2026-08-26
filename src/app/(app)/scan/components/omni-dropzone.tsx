@@ -142,11 +142,18 @@ export function OmniDropzone() {
       // Navigate to the Vault page (or the Job Status page if one existed)
       router.push(ROUTES.vault);
     } catch (e: any) {
-      if (e?.message?.includes('NEXT_REDIRECT')) {
-        throw e;
+      const isRedirect = e?.message?.includes('NEXT_REDIRECT') || e?.digest?.includes('NEXT_REDIRECT');
+      if (isRedirect) {
+        // Next.js redirect digest format: NEXT_REDIRECT;replace;/document/123;303
+        const targetUrl = e?.digest?.split(';')?.[2];
+        if (targetUrl) {
+          router.push(targetUrl);
+          return;
+        }
       }
       console.error('Upload failed:', e);
       toast.error('Failed to process documents. Please try again.');
+      throw e;
     } finally {
       setIsUploading(false);
       setUploadProgress(null);
