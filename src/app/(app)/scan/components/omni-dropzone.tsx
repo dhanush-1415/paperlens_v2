@@ -117,9 +117,10 @@ export function OmniDropzone() {
       if (validFiles.length === 1) {
         // Single file: use synchronous pipeline for immediate deep analysis and redirect
         const formData = new FormData();
-        formData.append('file', validFiles[0]);
+        const file = validFiles[0]!;
+        formData.append('file', file);
         formData.append('documentType', 'other');
-        formData.append('title', validFiles[0].name);
+        formData.append('title', file.name);
         
         // This will extract text via FastAPI, validate, and redirect to /document/[id] inside the action
         const result = (await analyzeDocumentAction(null, formData)) as any;
