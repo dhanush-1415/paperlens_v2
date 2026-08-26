@@ -114,6 +114,20 @@ export function OmniDropzone() {
     setIsUploading(true);
     setUploadProgress({ total: validFiles.length, current: 0 });
     try {
+      if (validFiles.length === 1) {
+        // Single file: use synchronous pipeline for immediate deep analysis and redirect
+        const formData = new FormData();
+        formData.append('file', validFiles[0]);
+        formData.append('documentType', 'other');
+        formData.append('title', validFiles[0].name);
+        
+        // This will extract text via FastAPI, validate, and redirect to /document/[id] inside the action
+        const result = (await analyzeDocumentAction(null, formData)) as any;
+        handleAnalysisResult(result);
+        return; 
+      }
+
+      // Multiple files: use async FastAPI bulk processing pipeline
       const userId = user?.id || user?.userId;
       if (!userId) throw new Error("Not authenticated");
       
@@ -124,10 +138,13 @@ export function OmniDropzone() {
       // Ping FastAPI
       await triggerFastApiAnalysisJob(batchResult);
       
-      // Redirect to dashboard or bulk view
+      // Navigate to the Vault page (or the Job Status page if one existed)
       router.push(ROUTES.vault);
     } catch (e: any) {
-      console.error('Bulk upload failed:', e);
+      if (e?.message?.includes('NEXT_REDIRECT')) {
+        throw e;
+      }
+      console.error('Upload failed:', e);
       toast.error('Failed to process documents. Please try again.');
     } finally {
       setIsUploading(false);

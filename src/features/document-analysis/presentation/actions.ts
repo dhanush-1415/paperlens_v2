@@ -127,11 +127,32 @@ export const analyzeDocumentAction = action(
 
           const { data } = supabaseAdmin.storage.from('vault-documents').getPublicUrl(filePath);
           fileUrl = data.publicUrl;
-        } catch (e) {
-          console.error('Failed to upload to S3', e);
-          if (file) {
-            throw new Error("File uploads are now processed directly via Supabase and FastAPI pipeline.");
+
+          // EXTRACT TEXT VIA FASTAPI
+          console.info(`[Action] Requesting text extraction from FastAPI for ${fileUrl}...`);
+          const fastApiUrl = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
+          const extractRes = await fetch(`${fastApiUrl}/api/v1/extract`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file_url: fileUrl, filename: file.name }),
+          });
+
+          if (extractRes.ok) {
+            const extractData = await extractRes.json();
+            if (extractData.status === 'success') {
+               if (extractData.content.type === 'text') {
+                   formData.set('text', extractData.content.text);
+               } else if (extractData.content.type === 'vision') {
+                   formData.set('text', extractData.content.text || '[Image File]');
+                   media = { data: extractData.content.images[0], mimeType: 'image/jpeg' };
+               }
+            }
+          } else {
+             console.error('[Action] FastAPI extraction failed:', await extractRes.text());
           }
+
+        } catch (e) {
+          console.error('Failed to upload or extract via FastAPI', e);
         }
       }
     }
