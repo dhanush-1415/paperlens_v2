@@ -219,6 +219,10 @@ export const analyzeDocumentAction = action(
      */
     expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
 
+    if (formData.get('noRedirect') === 'true') {
+      return { ok: true, id: analysis.id } as any;
+    }
+
     /**
      * 7 ─ Redirect, deliberately outside any try/catch.
      *

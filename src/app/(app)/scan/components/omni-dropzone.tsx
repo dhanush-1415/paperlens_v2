@@ -121,9 +121,16 @@ export function OmniDropzone() {
         formData.append('file', file);
         formData.append('documentType', 'other');
         formData.append('title', file.name);
+        formData.append('noRedirect', 'true');
         
-        // This will extract text via FastAPI, validate, and redirect to /document/[id] inside the action
+        // This will extract text via FastAPI, validate, and return the document ID
         const result = (await analyzeDocumentAction(null, formData)) as any;
+        
+        if (result && result.ok && result.id) {
+          router.push(ROUTES.document(result.id));
+          return;
+        }
+
         handleAnalysisResult(result);
         return; 
       }
@@ -139,18 +146,9 @@ export function OmniDropzone() {
       // Ping FastAPI
       await triggerFastApiAnalysisJob(batchResult);
       
-      // Navigate to the Vault page (or the Job Status page if one existed)
+      // Navigate to the Vault page
       router.push(ROUTES.vault);
     } catch (e: any) {
-      const isRedirect = e?.message?.includes('NEXT_REDIRECT') || e?.digest?.includes('NEXT_REDIRECT');
-      if (isRedirect) {
-        // Next.js redirect digest format: NEXT_REDIRECT;replace;/document/123;303
-        const targetUrl = e?.digest?.split(';')?.[2];
-        if (targetUrl) {
-          router.push(targetUrl);
-          return;
-        }
-      }
       console.error('Upload failed:', e);
       toast.error('Failed to process documents. Please try again.');
       throw e;
