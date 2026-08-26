@@ -29,6 +29,7 @@ import {
 export interface AnalysisRequest {
   readonly text: string; // The extracted text, or an empty string if it's media-only
   readonly documentType: DocumentType;
+  readonly tone?: 'simple' | 'professional';
   readonly media?: {
     readonly data: string; // Base64 encoded string
     readonly mimeType: string;

@@ -67,10 +67,20 @@ export function DocumentActions({
 
   const handleReanalyze = async () => {
     setIsReanalyzing(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setIsReanalyzing(false);
-    toast.success('Document re-analyzed successfully.');
-    router.refresh();
+    try {
+      document.getElementById('analysis-report-content')?.classList.add('blur-sm', 'opacity-60', 'pointer-events-none');
+      const { reanalyzeDocumentAction } = await import('./actions');
+      const fd = new FormData();
+      fd.append('documentId', documentId);
+      fd.append('force', 'true');
+      await reanalyzeDocumentAction(undefined, fd);
+      toast.success('Document re-analyzed successfully.');
+    } catch (e) {
+      toast.error('Failed to re-analyze document.');
+    } finally {
+      document.getElementById('analysis-report-content')?.classList.remove('blur-sm', 'opacity-60', 'pointer-events-none');
+      setIsReanalyzing(false);
+    }
   };
 
   const handleExport = () => {

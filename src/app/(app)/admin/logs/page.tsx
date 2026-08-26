@@ -1,11 +1,13 @@
 import { requireSession } from '@/server/bootstrap';
 import { Heading, Text, Badge, DataTable } from '@/shared/ui';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Admin - System Logs',
 };
 
 export default async function AdminLogsPage() {
+  await connection();
   await requireSession();
 
   const { prisma } = await import('@/server/db/prisma');

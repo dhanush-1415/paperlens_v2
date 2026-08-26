@@ -1,6 +1,7 @@
 import { requireSession } from '@/server/bootstrap';
 import { SettingsPage } from '@/features/settings';
 import { prisma } from '@/server/db/prisma';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Settings',
@@ -9,6 +10,7 @@ export const metadata = {
 export const instant = false;
 
 export default async function SettingsRoute() {
+  await connection();
   const session = await requireSession(); // Ensure user is authenticated
 
   // Graceful degradation for database timeouts

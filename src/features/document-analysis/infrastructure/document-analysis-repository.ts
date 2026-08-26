@@ -57,6 +57,7 @@ function toEntity(record: any): DocumentAnalysis {
     charCount: record.charCount ?? record.char_count,
     flags,
     resolvedFlagIds: record.resolvedFlagIds || [],
+    cachedAnalyses: record.cachedAnalyses || {},
     score: scoreOf(flags),
     summary: record.summary,
     actionPlan: record.actionPlan || [],
@@ -157,6 +158,7 @@ export function createDocumentAnalysisRepository(
             timeline: (draft.timeline || []) as any,
             deadlineDate: draft.deadlineDate ? new Date(draft.deadlineDate) : null,
             analyzedAt: new Date(draft.analyzedAt),
+            cachedAnalyses: draft.cachedAnalyses || {},
             flags: draft.flags.map((f) => ({
               id: f.id,
               category: f.category,

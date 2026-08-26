@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { requireSession } from '@/server/bootstrap';
 import { prisma } from '@/server/db/prisma';
@@ -16,34 +16,18 @@ export async function POST(req: Request) {
     }
 
     const cookieStore = await cookies();
-    const supabase = createServerClient(
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options),
-              );
-            } catch {
-              // Ignore in server routes
-            }
-          },
-        },
-      },
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
     // Sanitize filename and create unique path
     const fileExt = file.name.split('.').pop();
     const fileName = `${session.userId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-    // Upload to Supabase Storage Bucket ('document_vault')
+    // Upload to Supabase Storage Bucket ('vault-documents')
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('document_vault')
+      .from('vault-documents')
       .upload(fileName, file);
 
     if (uploadError) {

@@ -1,6 +1,7 @@
 import { requireSession } from '@/server/bootstrap';
 import { ProfilePage } from '@/features/settings';
 import { prisma } from '@/server/db/prisma';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Profile Settings',
@@ -9,6 +10,7 @@ export const metadata = {
 export const instant = false;
 
 export default async function ProfileRoute() {
+  await connection();
   const session = await requireSession(); // Ensure user is authenticated
 
   // Graceful degradation

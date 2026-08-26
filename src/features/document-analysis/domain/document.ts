@@ -152,6 +152,7 @@ export interface AnalysisDraft {
   readonly deadlineDate?: string | null;
   /** ISO 8601. Produced from an injected clock, never from `new Date()` inside a rule. */
   readonly analyzedAt: string;
+  readonly cachedAnalyses?: Record<string, any>;
 }
 
 /** A persisted analysis. Identity assigned by the repository. */

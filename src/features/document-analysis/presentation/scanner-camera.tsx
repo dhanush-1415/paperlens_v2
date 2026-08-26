@@ -1,6 +1,9 @@
 'use client';
-
 import { useRef, useState, useCallback, useEffect } from 'react';
+function isNextRedirect(error: any): boolean {
+  if (!error) return false;
+  return error.message?.includes('NEXT_REDIRECT') || error.digest?.includes('NEXT_REDIRECT');
+}
 import type { DocumentAnalysis } from '@/features/document-analysis/domain';
 // Allowed extensions and MIME types
 export const INPUT_ACCEPT =
@@ -14,7 +17,6 @@ export function isAccepted(file: File): boolean {
   return true; // We do more specific validation later if needed
 }
 import imageCompression from 'browser-image-compression';
-import { compressPdf } from '@/features/document-analysis/application';
 import {
   Camera,
   Upload,
@@ -36,14 +38,18 @@ import { cn } from '@/shared/ui/cn';
 
 // Simple base64 conversion utilities
 function canvasToBase64(canvas: HTMLCanvasElement): string {
-  return canvas.toDataURL('image/jpeg', 0.85);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  return dataUrl.split(',')[1] || '';
 }
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(',')[1] || '');
+    };
     reader.onerror = (error) => reject(error);
   });
 }
@@ -223,9 +229,9 @@ export function ScannerCamera({
           // Stay in uploading state — router.push in onFileReady navigates away
           // and unmounts this component, so no manual reset is needed.
         } catch (err) {
+          if (isNextRedirect(err)) throw err;
           // Parent (onFileReady) is responsible for showing the error toast.
           // Reset to idle so the user can try again without a full error screen.
-          console.error('[scanner] file processing error:', err);
           setMode('idle');
         }
         return;
@@ -266,16 +272,21 @@ export function ScannerCamera({
     try {
       const onProgress = (pct: number) => setCompressionPct(pct);
 
-      const compressed =
-        oversizedFile.type === 'application/pdf'
-          ? await compressPdf(oversizedFile, { targetBytes: MAX_FILE_SIZE, onProgress })
-          : await imageCompression(oversizedFile, {
-              maxSizeMB: 4,
-              maxWidthOrHeight: 2048,
-              initialQuality: 0.7,
-              useWebWorker: true,
-              onProgress,
-            });
+      if (oversizedFile.type === 'application/pdf') {
+         toast.error("Large PDF processing is handled by the backend directly now.");
+         setIsModalOpen(false);
+         setOversizedFile(null);
+         setIsCompressing(false);
+         return;
+      }
+
+      const compressed = await imageCompression(oversizedFile, {
+        maxSizeMB: 4,
+        maxWidthOrHeight: 2048,
+        initialQuality: 0.7,
+        useWebWorker: true,
+        onProgress,
+      });
 
       setIsModalOpen(false);
       setOversizedFile(null);
@@ -297,8 +308,8 @@ export function ScannerCamera({
         try {
           await onFileReady(compressed);
         } catch (err) {
+          if (isNextRedirect(err)) throw err;
           // Parent handles the error toast — reset to idle so user can retry.
-          console.error('[scanner] compressed file processing error:', err);
           setMode('idle');
         }
       } else {
@@ -331,6 +342,7 @@ export function ScannerCamera({
       try {
         await onFileReady(file);
       } catch (err) {
+        if (isNextRedirect(err)) throw err;
         console.error('[scanner] camera analyze error:', err);
         setErrorMessage('Something went wrong. Please try again.');
         setMode('error');
@@ -629,15 +641,16 @@ export function ScannerCamera({
             {/* Controls */}
             <div className="absolute right-0 bottom-0 left-0 flex gap-3 bg-gradient-to-t from-black/70 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               <Button
-                variant="secondary"
-                className="flex-1 border-white/30 bg-white/10 text-white backdrop-blur transition-all duration-200 hover:bg-white/20 active:scale-[0.98]"
+                variant="ghost"
+                className="flex-1 text-white hover:bg-white/20 hover:text-white"
                 onClick={reset}
               >
                 <X className="mr-2 h-4 w-4" />
                 Cancel
               </Button>
               <Button
-                className="bg-background text-foreground hover:bg-muted flex-1 transition-all duration-200 active:scale-[0.98]"
+                variant="primary"
+                className="flex-1 shadow-xl"
                 onClick={capturePhoto}
               >
                 <Camera className="mr-2 h-4 w-4" />
@@ -660,14 +673,15 @@ export function ScannerCamera({
             <div className="flex gap-3 p-4">
               <Button
                 variant="secondary"
-                className="flex-1 gap-2 transition-all duration-200 active:scale-[0.98]"
+                className="flex-1 shadow-sm"
                 onClick={reset}
               >
                 <RotateCcw className="h-4 w-4" />
                 Retake
               </Button>
               <Button
-                className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 gap-2 transition-all duration-200 active:scale-[0.98]"
+                variant="primary"
+                className="flex-1 shadow-sm"
                 onClick={analyzeImage}
               >
                 <Zap className="h-4 w-4" />

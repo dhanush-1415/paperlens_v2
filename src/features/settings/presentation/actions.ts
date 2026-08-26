@@ -21,7 +21,19 @@ export async function requestAccountDeletionAction(): Promise<{
       data: { deletionRequestedAt: now },
     });
 
-    // Email sending could be implemented here as well in the future
+    // Send the deletion scheduled email
+    const { serverEnv } = await import('@/config/env.server');
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      serverEnv.SUPABASE_URL as string,
+      serverEnv.SUPABASE_SERVICE_ROLE_KEY as string,
+    );
+    const { data: { user } } = await supabase.auth.admin.getUserById(session.userId);
+    
+    if (user?.email) {
+      const { sendDeletionScheduledEmail } = await import('@/lib/emails/deletion-scheduled');
+      void sendDeletionScheduledEmail(user.email, now.toISOString(), user.user_metadata?.display_name);
+    }
 
     revalidatePath('/settings');
     return { success: true };

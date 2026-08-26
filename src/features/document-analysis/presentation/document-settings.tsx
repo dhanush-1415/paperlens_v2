@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Scale, Globe } from 'lucide-react';
+import { useState, useTransition, useEffect } from 'react';
+import { Scale, Globe, Loader2Icon } from 'lucide-react';
 import { cn } from '@/shared/ui/cn';
 import { DocumentLanguageSelector } from './document-language-selector';
 import { toast } from 'sonner';
+import { reanalyzeDocumentAction } from './actions';
 
 export function DocumentSettings({
   documentId,
@@ -17,11 +18,33 @@ export function DocumentSettings({
 }) {
   const [tone, setTone] = useState<'simple' | 'professional'>(initialTone);
   const [language, setLanguage] = useState<string | null>(initialLanguage);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const el = document.getElementById('analysis-report-content');
+    if (el) {
+      if (isPending) {
+        el.classList.add('blur-sm', 'opacity-60', 'pointer-events-none');
+      } else {
+        el.classList.remove('blur-sm', 'opacity-60', 'pointer-events-none');
+      }
+    }
+  }, [isPending]);
 
   const handleToneChange = (newTone: 'simple' | 'professional') => {
     setTone(newTone);
-    toast.success(`Tone changed to ${newTone}`);
-    // Future backend integration: trigger re-analyze here
+    toast.loading(`Re-analyzing document with ${newTone} tone...`, { id: 'tone-change' });
+    startTransition(async () => {
+      try {
+        const fd = new FormData();
+        fd.append('documentId', documentId);
+        fd.append('tone', newTone);
+        await reanalyzeDocumentAction(undefined, fd);
+        toast.success(`Report updated successfully!`, { id: 'tone-change' });
+      } catch (e) {
+        toast.error(`Failed to update report tone.`, { id: 'tone-change' });
+      }
+    });
   };
 
   const handleLanguageChange = (newLang: string | null) => {
@@ -52,13 +75,17 @@ export function DocumentSettings({
             <button
               key={t}
               onClick={() => handleToneChange(t)}
+              disabled={isPending || tone === t}
               className={cn(
-                'flex cursor-pointer items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150',
+                'flex cursor-pointer items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-all duration-150 disabled:opacity-70 disabled:cursor-not-allowed',
                 tone === t
                   ? 'bg-brand-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-text-primary',
               )}
             >
+              {isPending && tone === t ? (
+                <Loader2Icon className="mr-1 h-3 w-3 animate-spin" />
+              ) : null}
               {t === 'simple' ? 'Simple' : 'Professional'}
             </button>
           ))}

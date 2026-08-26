@@ -27,6 +27,7 @@ export interface AnalysisReportProps {
   readonly analysis: AnalysisDto;
   readonly labels: AnalysisReportLabels;
   readonly plan?: { canChat: boolean; usage: { chatMsgs: number }; limits: { chatMsgs: number } };
+  readonly tone?: string;
 }
 
 export interface AnalysisReportLabels {
@@ -115,7 +116,7 @@ const hasLostInformation = (title: string) => {
   return /^[0-9]+-/.test(title);
 };
 
-export function AnalysisReport({ analysis, labels, plan }: AnalysisReportProps) {
+export function AnalysisReport({ analysis, labels, plan, tone }: AnalysisReportProps) {
   const urgency =
     analysis.urgency ||
     (analysis.score.level === 'critical'
@@ -151,7 +152,7 @@ export function AnalysisReport({ analysis, labels, plan }: AnalysisReportProps) 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-surface-1 lg:flex-row">
       {/* LEFT PANE: Report Data (Scrollable) */}
-      <div className="custom-scrollbar relative block h-full flex-1 overflow-y-auto pb-10">
+      <div id="analysis-report-content" className="custom-scrollbar relative block h-full flex-1 overflow-y-auto pb-10 transition-all duration-300">
         <div className="pointer-events-none absolute top-0 left-0 h-[300px] w-full bg-gradient-to-b from-brand-primary/5 to-transparent" />
 
         {/* -- Header ---------------------------------- */}
@@ -376,8 +377,8 @@ export function AnalysisReport({ analysis, labels, plan }: AnalysisReportProps) 
         )}
 
         {/* -- Settings / Toggles ------------------------------------------ */}
-        <div className="mt-4 px-6 md:px-8">
-          <DocumentSettings documentId={analysis.id} />
+        <div className="mt-auto px-4 pb-4">
+          <DocumentSettings documentId={analysis.id} initialTone={tone as any || 'professional'} />
         </div>
 
         {/* Findings */}

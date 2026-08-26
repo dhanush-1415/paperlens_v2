@@ -15,29 +15,28 @@ import {
   analyzeDocumentAction,
   analyzeUrlAction,
 } from '@/features/document-analysis/presentation/actions';
+import { ROUTES } from '@/shared/constants/routes';
 import { ScannerCamera } from '@/features/document-analysis/presentation/scanner-camera';
 import { AudioUploader } from './audio-uploader';
 import { VideoUploader } from './video-uploader';
 import { SecurityBadges } from './security-badges';
+import { uploadDocumentsBatch, triggerFastApiAnalysisJob } from '@/features/document-analysis/application/upload-service';
+import { useAuth } from '@/shared/contexts/auth-context';
 
-const MAX_FILE_SIZE = 4.5 * 1024 * 1024;
-const MAX_COMPRESSIBLE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // Increased to 50MB for FastAPI backend
 
 export function OmniDropzone() {
+  const { user } = useAuth();
   const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState('document');
-  const [textState, textFormAction, isTextPending] = useActionState(analyzeDocumentAction, null);
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ total: number; current: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [oversizedFile, setOversizedFile] = useState<File | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionPct, setCompressionPct] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -68,212 +67,103 @@ export function OmniDropzone() {
 
   const handleAnalysisResult = (result: any) => {
     if (result && !result.ok && result.error) {
+      const errorMsg =
+        result.error.fieldErrors?.text?.[0] ||
+        result.error.messageKey ||
+        result.error.message ||
+        'Failed to process document. Please try again.';
+
       if (
         result.error.code === 'FORBIDDEN' ||
-        result.error.message?.toLowerCase().includes('quota') ||
-        result.error.message?.toLowerCase().includes('plan')
+        errorMsg.toLowerCase().includes('quota') ||
+        errorMsg.toLowerCase().includes('plan')
       ) {
         setIsUpgradeModalOpen(true);
       } else {
-        toast.error(result.error.message || 'Failed to process document. Please try again.');
+        toast.error(errorMsg);
       }
     }
   };
-
-  useEffect(() => {
-    if (textState && !textState.ok && textState.error) {
-      setTimeout(() => handleAnalysisResult(textState), 0);
-    }
-  }, [textState]);
 
   const [isCameraActive, setIsCameraActive] = useState(false);
 
-  const executeUpload = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const analysisFormData = new FormData();
-      analysisFormData.append('file', file);
-      analysisFormData.append('documentType', 'other');
-      analysisFormData.append('title', file.name);
-
-      const result = (await analyzeDocumentAction(null, analysisFormData)) as any;
-      handleAnalysisResult(result);
-      if (result && !result.ok) throw new Error('Analysis failed');
-    } catch (e: any) {
-      if (e?.message?.includes('NEXT_REDIRECT')) throw e;
-      console.error(e);
-      // We rely on handleAnalysisResult to show the specific error (if any)
-      // but we throw so the caller (ScannerCamera) resets its state.
-      throw e;
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const processFile = async (file: File) => {
-    if (!file) return;
-
-    // Extract file extension safely
-    const extMatch = file.name.match(/\.[0-9a-z]+$/i);
-    const ext = extMatch ? extMatch[0].toLowerCase() : '';
-
-    // Explicitly reject known problematic binaries that aren't text/media
+  const processFiles = async (files: File[]) => {
+    if (!files.length) return;
+    
+    // We allow a wide range, but must protect against raw application binaries
     const rejectedBinaryExtensions = [
-      '.exe',
-      '.zip',
-      '.tar',
-      '.gz',
-      '.rar',
-      '.7z',
-      '.iso',
-      '.dmg',
-      '.bin',
-      '.dll',
-      '.so',
+      '.exe', '.zip', '.tar', '.gz', '.rar', '.7z', '.iso', '.dmg', '.bin', '.dll', '.so',
     ];
 
-    // We allow a wide range, but must protect against raw application binaries
-    if (
-      rejectedBinaryExtensions.includes(ext) ||
-      (!ext && file.type === 'application/octet-stream')
-    ) {
-      toast.error('Unsupported file format. Please upload a document, text file, or media file.');
-      return;
-    }
+    const validFiles = files.filter(file => {
+      const extMatch = file.name.match(/\.[0-9a-z]+$/i);
+      const ext = extMatch ? extMatch[0].toLowerCase() : '';
+      if (rejectedBinaryExtensions.includes(ext) || (!ext && file.type === 'application/octet-stream')) {
+        toast.error(`Unsupported file format: ${file.name}`);
+        return false;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 50MB.`);
+        return false;
+      }
+      return true;
+    });
 
-    if (file.size > MAX_COMPRESSIBLE_SIZE) {
-      toast.error(
-        `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is 10 MB.`,
-      );
-      return;
-    }
+    if (validFiles.length === 0) return;
 
-    if (file.size > MAX_FILE_SIZE) {
-      setOversizedFile(file);
-      setCompressionPct(0);
-      setIsModalOpen(true);
-      return;
-    }
-
-    await executeUpload(file);
-  };
-
-  const handleCompressAndScan = async () => {
-    if (!oversizedFile) return;
-    setIsCompressing(true);
-    setCompressionPct(0);
+    setIsUploading(true);
+    setUploadProgress({ total: validFiles.length, current: 0 });
     try {
-      let compressed: File | null = null;
-      let extractedText: string | null = null;
-      const onProgress = (pct: number) => setCompressionPct(pct);
-
-      if (oversizedFile.type === 'application/pdf') {
-        const pdfjsLib = await import('pdfjs-dist');
-        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-          'pdfjs-dist/build/pdf.worker.min.mjs',
-          import.meta.url,
-        ).toString();
-
-        const data = await oversizedFile.arrayBuffer();
-        const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
-        let fullText = '';
-        for (let i = 1; i <= pdfDoc.numPages; i++) {
-          const page = await pdfDoc.getPage(i);
-          const content = await page.getTextContent();
-          fullText += content.items.map((item: any) => item.str).join(' ') + '\n';
-          onProgress(Math.round((i / pdfDoc.numPages) * 100));
-        }
-
-        extractedText = fullText.trim();
-
-        // HEURISTIC
-        const letterCount = (extractedText.match(/\p{L}/gu) ?? []).length;
-        const textIsMeaningful =
-          extractedText.trim().length > 20 && letterCount / extractedText.trim().length > 0.4;
-
-        if (!textIsMeaningful) {
-          // If the text is garbage or empty, it's likely a scanned PDF.
-          // We MUST compress it visually (flattening to JPEGs) to bypass the 4.5MB limit
-          // while preserving visual data for Gemini Vision.
-          extractedText = null;
-
-          const { compressPdf } = await import('@/features/document-analysis/application');
-          compressed = await compressPdf(oversizedFile, {
-            targetBytes: MAX_FILE_SIZE,
-            onProgress,
-          });
-        }
-      } else {
-        const { default: imageCompression } = await import('browser-image-compression');
-        compressed = await imageCompression(oversizedFile, {
-          maxSizeMB: 4,
-          maxWidthOrHeight: 2048,
-          initialQuality: 0.7,
-          useWebWorker: true,
-          onProgress,
-        });
+      if (validFiles.length === 1) {
+        // Single file: use synchronous pipeline for immediate deep analysis and redirect
+        const formData = new FormData();
+        const file = validFiles[0]!;
+        formData.append('file', file);
+        formData.append('documentType', 'other');
+        formData.append('title', file.name);
+        
+        // This will extract text via FastAPI, validate, and redirect to /document/[id] inside the action
+        const result = (await analyzeDocumentAction(null, formData)) as any;
+        handleAnalysisResult(result);
+        return; 
       }
 
-      setIsModalOpen(false);
-      setOversizedFile(null);
-      setIsCompressing(false);
-      setCompressionPct(0);
-
-      if (compressed) {
-        if (compressed.size > MAX_FILE_SIZE) {
-          toast.error(
-            `Compressed file is still ${(compressed.size / 1024 / 1024).toFixed(1)} MB — try a smaller or simpler file.`,
-          );
-          return;
-        }
-        await executeUpload(compressed);
-        setIsModalOpen(false);
-        setOversizedFile(null);
-        setIsCompressing(false);
-        setCompressionPct(0);
-      } else if (extractedText) {
-        setIsUploading(true);
-        try {
-          const analysisFormData = new FormData();
-          analysisFormData.append('text', extractedText);
-          analysisFormData.append('documentType', 'other');
-          analysisFormData.append('title', oversizedFile.name);
-
-          const result = (await analyzeDocumentAction(null, analysisFormData)) as any;
-          setIsModalOpen(false);
-          setOversizedFile(null);
-          handleAnalysisResult(result);
-        } catch (e: any) {
-          if (e?.message?.includes('NEXT_REDIRECT')) throw e;
-          console.error(e);
-          toast.error('Failed to process document. Please try again.');
-        } finally {
-          setIsUploading(false);
-          setIsCompressing(false);
-          setCompressionPct(0);
-        }
+      // Multiple files: use async FastAPI bulk processing pipeline
+      const userId = user?.id || user?.userId;
+      if (!userId) throw new Error("Not authenticated");
+      
+      const batchResult = await uploadDocumentsBatch(validFiles, userId);
+      setUploadProgress(null);
+      toast.success(`Successfully queued ${validFiles.length} documents for analysis.`);
+      
+      // Ping FastAPI
+      await triggerFastApiAnalysisJob(batchResult);
+      
+      // Navigate to the Vault page (or the Job Status page if one existed)
+      router.push(ROUTES.vault);
+    } catch (e: any) {
+      if (e?.message?.includes('NEXT_REDIRECT')) {
+        throw e;
       }
-    } catch (err) {
-      console.error('Compression failed:', err);
-      setIsCompressing(false);
-      setCompressionPct(0);
-      toast.error('Processing failed. Please try selecting a different file.');
+      console.error('Upload failed:', e);
+      toast.error('Failed to process documents. Please try again.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
     }
   };
 
-  const onDrop = useCallback((e: React.DragEvent) => {
+  const onDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      if (file) processFile(file);
+      await processFiles(Array.from(e.dataTransfer.files));
     }
   }, []);
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      if (file) processFile(file);
+      await processFiles(Array.from(e.target.files));
     }
   };
 
@@ -436,65 +326,6 @@ export function OmniDropzone() {
             </p>
           </div>
         </div>
-      </Dialog>
-
-      <Dialog
-        open={isModalOpen}
-        onClose={() => {
-          if (!isCompressing) {
-            setIsModalOpen(false);
-            setOversizedFile(null);
-          }
-        }}
-        dismissOnBackdropClick={!isCompressing}
-        title="File Too Large"
-        description={
-          oversizedFile
-            ? `The file you selected is ${(oversizedFile.size / 1024 / 1024).toFixed(1)} MB, which exceeds the 4.5 MB upload limit. ${oversizedFile.type === 'application/pdf' ? 'We will extract the text locally before uploading to save bandwidth.' : 'We can securely compress this image for you right now.'}`
-            : ''
-        }
-        footer={
-          <>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setIsModalOpen(false);
-                setOversizedFile(null);
-              }}
-              disabled={isCompressing}
-            >
-              Cancel
-            </Button>
-            <Button variant="premium" onClick={handleCompressAndScan} loading={isCompressing}>
-              {isCompressing
-                ? oversizedFile?.type === 'application/pdf'
-                  ? `Extracting (${compressionPct}%)`
-                  : `Compressing (${compressionPct}%)`
-                : oversizedFile?.type === 'application/pdf'
-                  ? 'Extract & Continue'
-                  : 'Compress & Continue'}
-            </Button>
-          </>
-        }
-      >
-        {isCompressing && (
-          <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-text-secondary">
-              <span>
-                {oversizedFile?.type === 'application/pdf'
-                  ? 'Extracting text...'
-                  : 'Compressing...'}
-              </span>
-              <span>{compressionPct}%</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
-              <div
-                className="h-full rounded-full bg-brand-primary transition-all duration-300 ease-out"
-                style={{ width: `${compressionPct}%` }}
-              />
-            </div>
-          </div>
-        )}
       </Dialog>
       {/* Capability Segmented Control */}
       <div className="scrollbar-hide mb-6 flex w-full justify-start overflow-x-auto pb-2 sm:mb-8 sm:pb-0 md:justify-center">
@@ -682,7 +513,7 @@ export function OmniDropzone() {
             >
               <VideoUploader
                 onFileReady={async (file) => {
-                  await executeUpload(file);
+                  await processFiles([file]);
                 }}
                 disabled={isUploading}
               />
@@ -694,7 +525,7 @@ export function OmniDropzone() {
             >
               <AudioUploader
                 onFileReady={async (file) => {
-                  await executeUpload(file);
+                  await processFiles([file]);
                 }}
                 disabled={isUploading}
               />
@@ -706,7 +537,7 @@ export function OmniDropzone() {
             >
               <ScannerCamera
                 onResult={handleAnalysisResult}
-                onFileReady={executeUpload}
+                onFileReady={async (file) => await processFiles([file])}
                 onScanningChange={setIsUploading}
                 disabled={isUploading}
               />

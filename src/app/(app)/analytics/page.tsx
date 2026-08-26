@@ -1,5 +1,6 @@
 import { requireSession } from '@/server/bootstrap';
 import { AnalyticsPage } from '@/features/dashboard/presentation/analytics-page';
+import { connection } from 'next/server';
 
 export const metadata = {
   title: 'Analytics',
@@ -10,6 +11,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await connection();
   const params = await searchParams;
   const session = await requireSession();
   const { prisma } = await import('@/server/db/prisma');
