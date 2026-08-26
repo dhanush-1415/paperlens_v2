@@ -53,7 +53,7 @@ import { dispatchWebhookEvent } from '@/features/webhooks/application';
  */
 export const analyzeDocumentAction = action(
   'document.analyze',
-  async (_previous: unknown, formData: FormData): Promise<never> => {
+  async (_previous: unknown, formData: FormData): Promise<never | { ok: true; id: string }> => {
     const container = getServerContainer();
 
     // 1 ─ Authorization. Before anything is parsed, and certainly before anything is stored.
