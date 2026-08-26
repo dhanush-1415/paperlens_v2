@@ -126,8 +126,8 @@ export function OmniDropzone() {
         // This will extract text via FastAPI, validate, and return the document ID
         const result = (await analyzeDocumentAction(null, formData)) as any;
         
-        if (result && result.ok && result.id) {
-          router.push(ROUTES.document(result.id));
+        if (result?.ok && result.value?.id) {
+          router.push(ROUTES.document(result.value.id));
           return;
         }
 

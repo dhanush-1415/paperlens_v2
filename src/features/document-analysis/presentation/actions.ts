@@ -53,7 +53,7 @@ import { dispatchWebhookEvent } from '@/features/webhooks/application';
  */
 export const analyzeDocumentAction = action(
   'document.analyze',
-  async (_previous: unknown, formData: FormData): Promise<never | { ok: true; id: string }> => {
+  async (_previous: unknown, formData: FormData): Promise<never | { id: string }> => {
     const container = getServerContainer();
 
     // 1 ─ Authorization. Before anything is parsed, and certainly before anything is stored.
@@ -220,7 +220,7 @@ export const analyzeDocumentAction = action(
     expire([...documentTags(analysis.id, session.userId), ...vaultTags(session.userId)]);
 
     if (formData.get('noRedirect') === 'true') {
-      return { ok: true, id: analysis.id } as any;
+      return { id: analysis.id } as any;
     }
 
     /**
