@@ -73,7 +73,7 @@ export interface AnalysisFormProps {
  * The action never resolves to a value on success — it redirects. So the only state this form
  * ever holds is a failure, and `null` for "not submitted yet".
  */
-type FormState = Result<never, SerializedAppError> | null;
+type FormState = Result<never | { id: string }, SerializedAppError> | null;
 
 function fieldError(state: FormState, field: string): string | undefined {
   if (state === null || state.ok) return undefined;

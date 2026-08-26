@@ -132,7 +132,8 @@ export function OmniDropzone() {
         }
 
         handleAnalysisResult(result);
-        return; 
+        // Throw an error so the caller (ScannerCamera) resets its UI state
+        throw new Error('Analysis failed');
       }
 
       // Multiple files: use async FastAPI bulk processing pipeline
@@ -150,7 +151,9 @@ export function OmniDropzone() {
       router.push(ROUTES.vault);
     } catch (e: any) {
       console.error('Upload failed:', e);
-      toast.error('Failed to process documents. Please try again.');
+      if (e?.message !== 'Analysis failed') {
+        toast.error('Failed to process documents. Please try again.');
+      }
       throw e;
     } finally {
       setIsUploading(false);

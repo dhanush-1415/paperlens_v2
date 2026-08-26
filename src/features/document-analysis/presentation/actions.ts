@@ -1,5 +1,7 @@
 'use server';
 
+export const maxDuration = 60;
+
 import { redirect } from 'next/navigation';
 
 import { ANALYTICS, RATE_LIMITER, CLOCK } from '@/core/container';
@@ -128,14 +130,20 @@ export const analyzeDocumentAction = action(
           const { data } = supabaseAdmin.storage.from('vault-documents').getPublicUrl(filePath);
           fileUrl = data.publicUrl;
 
-          // EXTRACT TEXT VIA FASTAPI
+          // EXTRACT TEXT VIA FASTAPI (with 45s timeout)
           console.info(`[Action] Requesting text extraction from FastAPI for ${fileUrl}...`);
           const fastApiUrl = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 45000);
+          
           const extractRes = await fetch(`${fastApiUrl}/api/v1/extract`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ file_url: fileUrl, filename: file.name }),
+            signal: controller.signal,
           });
+          clearTimeout(timeoutId);
 
           if (extractRes.ok) {
             const extractData = await extractRes.json();

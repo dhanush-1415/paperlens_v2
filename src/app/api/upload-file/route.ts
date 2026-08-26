@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { requireSession } from '@/server/bootstrap';
 import { prisma } from '@/server/db/prisma';
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     const session = await requireSession();

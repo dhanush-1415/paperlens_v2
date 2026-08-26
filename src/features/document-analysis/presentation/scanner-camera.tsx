@@ -77,8 +77,8 @@ interface ScannerCameraProps {
 
 // --- Constants ----------------------------------------------------------------
 
-const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5 MB — soft limit; above this we compress before upload
-const MAX_COMPRESSIBLE_SIZE = 10 * 1024 * 1024; // 10 MB  — hard client limit, matches next.config bodySizeLimit + analyze.ts
+const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5 MB — soft limit; above this we compress images before upload
+const MAX_COMPRESSIBLE_SIZE = 50 * 1024 * 1024; // 50 MB — hard limit for FastAPI backend
 
 // --- Helpers ------------------------------------------------------------------
 
@@ -208,14 +208,14 @@ export function ScannerCamera({
         return;
       }
 
-      // Hard reject above 10 MB — matches server-side bodySizeLimit in next.config
+      // Hard reject above 50 MB
       if (file.size > MAX_COMPRESSIBLE_SIZE) {
-        toast.error(`File too large (${formatMB(file.size)} MB). Maximum size is 10 MB.`);
+        toast.error(`File too large (${formatMB(file.size)} MB). Maximum size is 50 MB.`);
         return;
       }
 
-      // Between 4.5 MB and 10 MB → show compression modal
-      if (file.size > MAX_FILE_SIZE) {
+      // Between 4.5 MB and 50 MB → show compression modal ONLY for images
+      if (file.size > MAX_FILE_SIZE && file.type.startsWith('image/')) {
         setOversizedFile(file);
         setCompressionPct(0);
         setIsModalOpen(true);
