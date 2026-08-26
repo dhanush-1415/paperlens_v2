@@ -133,8 +133,8 @@ typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.3
 tzlocal==5.4.4
-unstructured==0.25.2
-unstructured-client==0.46.1
+unstructured>=0.10.0
+unstructured-client
 urllib3==2.7.0
 uuid_utils==0.17.0
 uvicorn==0.52.4
