@@ -1,6 +1,5 @@
 'use server';
 
-export const maxDuration = 60;
 
 import { redirect } from 'next/navigation';
 
@@ -419,3 +418,5 @@ export const reanalyzeDocumentAction = action(
     redirect(ROUTES.document(documentId));
   },
 );
+
+export const maxDuration = 60;
