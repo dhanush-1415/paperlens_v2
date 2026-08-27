@@ -126,8 +126,11 @@ export const analyzeDocumentAction = action(
             upsert: true,
           });
 
-          const { data } = supabaseAdmin.storage.from('vault-documents').getPublicUrl(filePath);
-          fileUrl = data.publicUrl;
+          const { data, error } = await supabaseAdmin.storage.from('vault-documents').createSignedUrl(filePath, 3600); // 1 hour valid
+          if (error || !data) {
+             throw new Error("Failed to generate signed URL for document");
+          }
+          fileUrl = data.signedUrl;
 
           // EXTRACT TEXT VIA FASTAPI (with 45s timeout)
           console.info(`[Action] Requesting text extraction from FastAPI for ${fileUrl}...`);
@@ -153,13 +156,21 @@ export const analyzeDocumentAction = action(
                    formData.set('text', extractData.content.text || '[Image File]');
                    media = { data: extractData.content.images[0], mimeType: 'image/jpeg' };
                }
+            } else {
+               throw new Error(`FastAPI extraction returned unsuccessful status: ${extractData.status}`);
             }
           } else {
-             console.error('[Action] FastAPI extraction failed:', await extractRes.text());
+             const errorText = await extractRes.text();
+             console.error('[Action] FastAPI extraction failed:', errorText);
+             throw new Error(`FastAPI extraction failed: ${errorText}`);
           }
 
-        } catch (e) {
+        } catch (e: any) {
           console.error('Failed to upload or extract via FastAPI', e);
+          if (e.name === 'AbortError') {
+             throw new Error('Analysis timed out while waiting for the text extraction service.');
+          }
+          throw new Error(`Text extraction service failed: ${e.message}`);
         }
       }
     }

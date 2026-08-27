@@ -37,13 +37,17 @@ export async function uploadDocumentsBatch(
     // The API route creates a document record and uploads to Supabase.
     // It returns the document with storagePath. We need to construct the public URL or pass the path.
     // Assuming backend FastAPI can download via the public URL.
-    const { data: urlData } = createBrowserSupabaseClient().storage
+    const { data: urlData, error: urlError } = await createBrowserSupabaseClient().storage
       .from('vault-documents')
-      .getPublicUrl(json.document.storagePath);
+      .createSignedUrl(json.document.storagePath, 3600); // 1 hour
+
+    if (urlError || !urlData) {
+      throw new Error(`Failed to generate signed URL for ${file.name}`);
+    }
 
     documents.push({
       documentId: json.document.id,
-      fileUrl: urlData.publicUrl,
+      fileUrl: urlData.signedUrl,
       filename: file.name,
     });
   }
