@@ -111,10 +111,11 @@ export const analyzeDocumentAction = action(
 
       // Upload original file to Supabase Storage
       console.info(`[Action] Uploading ${file.size} byte file to Supabase Storage...`);
-      if (serverEnv.SUPABASE_URL && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
+      const supabaseUrl = serverEnv.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (supabaseUrl && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
         try {
           const supabaseAdmin = createClient(
-            serverEnv.SUPABASE_URL,
+            supabaseUrl,
             serverEnv.SUPABASE_SERVICE_ROLE_KEY,
           );
           const fileExt = file.name.split('.').pop() || 'bin';
@@ -153,7 +154,7 @@ export const analyzeDocumentAction = action(
                if (extractData.content.type === 'text') {
                    formData.set('text', extractData.content.text);
                } else if (extractData.content.type === 'vision') {
-                   formData.set('text', extractData.content.text || '[Image File]');
+                   formData.set('text', extractData.content.text || '[Image File Analyzed via Vision API. This document contains visual data that requires deep analysis.]');
                    media = { data: extractData.content.images[0], mimeType: 'image/jpeg' };
                }
             } else {
