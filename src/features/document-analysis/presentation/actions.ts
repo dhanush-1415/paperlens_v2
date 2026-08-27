@@ -419,4 +419,3 @@ export const reanalyzeDocumentAction = action(
   },
 );
 
-export const maxDuration = 60;
